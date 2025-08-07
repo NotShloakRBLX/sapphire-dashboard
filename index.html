@@ -9,7 +9,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
       height: 100%;
-      overflow: hidden;
+      overflow: auto; /* allow scrolling after login */
       font-family: "Segoe UI", Roboto, sans-serif;
       color: #333;
     }
@@ -19,10 +19,10 @@
     .hidden { opacity: 0; pointer-events: none; }
     .visible { opacity: 1; pointer-events: auto; }
 
-    /* ← ensure login sits on top → */
+    /* ← Login overlay on top → */
     #login-screen { z-index: 9999; }
 
-    /* ===== Page Container & Transitions ===== */
+    /* ===== Pages & Transitions ===== */
     .page {
       position: absolute; top: 0; left: 0;
       width: 100%; height: 100%;
@@ -33,13 +33,11 @@
     }
     .page.active { opacity: 1; pointer-events: auto; }
 
-    /* ===== Hero Header ===== */
+    /* ===== Header ===== */
     .header {
-      position: relative;
       background: linear-gradient(135deg, #2C3E50 0%, #4CA1AF 100%);
       padding: 80px 20px 100px;
-      text-align: center;
-      color: #fff;
+      text-align: center; color: #fff;
     }
     .main-title {
       font-size: 3rem; font-weight: 500;
@@ -50,9 +48,7 @@
     .content {
       max-width: 600px; margin: 20px auto 40px; padding: 0 20px;
     }
-    .balance-line {
-      font-size: 1.8rem; margin-bottom: 16px;
-    }
+    .balance-line { font-size: 1.8rem; margin-bottom: 16px; }
 
     /* ===== Details Box ===== */
     .details-box {
@@ -62,16 +58,16 @@
     .details-box p { margin-bottom: 12px; line-height: 1.5; }
     .details-box p:last-child { margin-bottom: 0; }
 
-    /* ===== Highlight Classes ===== */
+    /* ===== Highlights ===== */
     .highlight-credit { color: #ff5e5e; font-weight: bold; }
     .highlight-usage  { color: #1e8e3e; font-weight: bold; }
+    .highlight-debit  { color: #5196ff; font-weight: bold; }
 
     /* ===== Buttons ===== */
     .btn {
       display: block; width: 100%;
       font-size: 1.1rem; font-weight: 500;
-      padding: 14px 20px; border: none;
-      border-radius: 8px;
+      padding: 14px 20px; border: none; border-radius: 8px;
       background: linear-gradient(90deg, #0c2a4e, #123b61);
       color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
       cursor: pointer; transition: background 0.2s, box-shadow 0.2s;
@@ -92,13 +88,13 @@
     }
     .overlay.visible { opacity: 1; pointer-events: auto; }
 
-    /* ===== Modal & Transitions ===== */
+    /* ===== Modal ===== */
     .modal {
       position: fixed; top: 50%; left: 50%;
       transform: translate(-50%, -50%) scale(0.9);
       background: #fff; border-radius: 8px;
-      width: 340px; max-width: 90%; padding: 20px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      width: 340px; max-width: 90%;
+      padding: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);
       opacity: 0; pointer-events: none;
       transition: opacity 0.3s ease, transform 0.3s ease;
     }
@@ -113,50 +109,56 @@
     }
     .modal h3 { margin-bottom: 20px; }
 
-    /* ===== Transactions Colors & Bold ===== */
-    .highlight-debit { color: #5196ff; font-weight: bold; }
+    /* ===== Transactions List ===== */
     .transactions-list {
       list-style: none; margin-top: 16px; padding: 0;
       max-height: 300px; overflow-y: auto;
     }
-    .transactions-list li {
-      margin-bottom: 12px; line-height: 1.4;
+    .transactions-list li { margin-bottom: 12px; line-height: 1.4; }
+    .transactions-list .date-header { font-weight: bold; margin-bottom: 6px; }
+    .statement-header { display:none; } /* kept but hidden (no headers used) */
+
+    /* ===== TX-Item & Detail Styles ===== */
+    .tx-item {
+      border: 1px solid #ddd; border-radius: 6px;
+      padding: 12px; margin-bottom: 12px;
+      cursor: pointer; transition: background 0.2s;
+      background: #fff;
     }
-    .transactions-list .date-header {
-      font-weight: bold; margin-bottom: 6px;
+    .tx-item:hover { background: #f5f5f5; }
+    .tx-item .tx-summary { display: flex; justify-content: space-between; }
+
+    /* — SPACE FOR BACK BUTTON — */
+    #tx-detail-modal { padding-top: 56px; } /* room above title */
+    .modal .back-btn {
+      position: absolute;
+      top: 16px; left: 16px;
+      z-index: 2;
+      font-size: 1.2rem;
+      background: none; border: none;
+      cursor: pointer; color: #555;
     }
-    .statement-header {
-      margin: 24px 0 8px; font-style: italic; color: #555;
+
+    .points { color: #777; font-size: 0.9rem; margin-top: 4px; }
+    #tx-detail-modal .detail-rows .row {
+      border-top: 1px solid #eee; padding: 8px 0;
     }
+    #tx-detail-modal .detail-rows .row:first-child { border-top: none; }
+    .row-label { color: #777; font-size: 0.9rem; }
 
     /* ==== MOBILE OVERRIDES ==== */
     @media only screen and (max-width: 480px) {
-      /* let page and overlay scroll */
       html, body { height: auto !important; overflow-y: auto !important; }
       .page, #login-screen { height: auto !important; }
-
-      /* make login overlay scrollable */
-      #login-screen {
-        display: block !important;
-        overflow-y: auto !important;
-        padding: 20px;
-      }
-      #login-box {
-        margin: 0 auto;
-        width: 100% !important;
-        max-width: 360px;
-      }
-
+      #login-screen { display: block !important; overflow-y: auto !important; padding: 20px; }
+      #login-box { margin: 0 auto; width: 100% !important; max-width: 360px; }
       input { font-size: 0.9rem !important; }
       #login-btn { font-size: 1rem !important; padding: 10px !important; }
-
       .header { padding: 40px 10px 60px !important; }
       .main-title { font-size: 2rem !important; }
-
       .content { margin: 10px auto 20px !important; padding: 0 10px !important; }
       .balance-line { font-size: 1.5rem !important; }
       .details-box { padding: 16px !important; }
-
       .btn { font-size: 1rem !important; padding: 12px !important; }
       .modal { width: 90% !important; max-height: 80vh !important; overflow-y: auto !important; }
     }
@@ -168,16 +170,18 @@
   <div id="login-screen" class="fade visible"
        style="position:absolute;top:0;left:0;width:100%;height:100%;
               display:flex;align-items:center;justify-content:center;
-              background:linear-gradient(135deg,#2C3E50 0%,#4CA1AF 100%);
+              background:linear-gradient(135deg,#2C3E50,#4CA1AF);
               color:#fff;">
     <div id="login-box"
          style="background:rgba(255,255,255,0.1);padding:40px;border-radius:12px;
                 width:90%;max-width:360px;text-align:center;
                 box-shadow:0 8px 24px rgba(0,0,0,0.3);">
-      <h2 style="margin-bottom:24px;font-weight:300;font-size:1.8rem;">Welcome to Sapphire Reserve</h2>
+      <h2 style="margin-bottom:24px;font-weight:300;font-size:1.8rem;">
+        Welcome to Sapphire Reserve
+      </h2>
       <div id="login-error"
            style="height:1.2em;margin-bottom:12px;color:#ff5e5e;opacity:0;
-                  transition:opacity 0.3s;font-size:0.9rem;">
+                  transition:opacity .3s;font-size:.9rem;">
         Invalid credentials
       </div>
       <div style="position:relative;margin-bottom:20px;">
@@ -185,8 +189,7 @@
         <svg viewBox="0 0 24 24"
              style="position:absolute;top:50%;left:12px;transform:translateY(-50%);
                     width:20px;height:20px;fill:rgba(255,255,255,0.8);">
-          <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 
-                   0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
+          <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5 0-10 2.5-10 5v3h20v-3c0-2.5-5-5-10-5z"/>
         </svg>
         <input id="username" type="text" placeholder="Username"
                style="width:100%;padding:12px 12px 12px 44px;border:none;
@@ -198,8 +201,7 @@
         <svg viewBox="0 0 24 24"
              style="position:absolute;top:50%;left:12px;transform:translateY(-50%);
                     width:20px;height:20px;fill:rgba(255,255,255,0.8);">
-          <path d="M17 8V6c0-2.8-2.2-5-5-5S7 3.2 7 6v2H5v14h14V8h-2zm-8 0V6c0-
-                   1.7 1.3-3 3-3s3 1.3 3 3v2H9z"/>
+          <path d="M17 8V6a5 5 0 0 0-10 0v2H5v14h14V8h-2zM9 6a3 3 0 0 1 6 0v2H9V6z"/>
         </svg>
         <input id="password" type="password" placeholder="Password"
                style="width:100%;padding:12px 12px 12px 44px;border:none;
@@ -209,13 +211,13 @@
       <button id="login-btn"
               style="width:100%;padding:12px;background:#1e8e3e;border:none;
                      border-radius:6px;color:#fff;font-size:1.1rem;
-                     font-weight:500;cursor:pointer;transition:background 0.2s;">
+                     font-weight:500;cursor:pointer;transition:background .2s;">
         Log In
       </button>
     </div>
   </div>
 
-  <!-- === SAPPHIRE RESERVE DASHBOARD === -->
+  <!-- === DASHBOARD === -->
   <div id="dashboard" class="hidden fade">
     <div id="card" class="page active">
       <div class="header">
@@ -245,153 +247,32 @@
   <!-- === OVERLAY === -->
   <div id="overlay" class="overlay"></div>
 
-  <!-- === Recent Transactions Modal === -->
+  <!-- === Transactions List Modal === -->
   <div id="trans-modal" class="modal">
     <button id="close-trans" class="close-btn">×</button>
     <h3>Recent transactions</h3>
-    <ul class="transactions-list">
-      <li>
-        <div class="date-header">Pending (0)</div>
-        No pending transactions
-      </li>
-      <li class="statement-header">Aug 2025 Statement:</li>
 
-  <li>
-    <div class="date-header">Aug 07, 2025 (1)</div>
-    <div>CARD-PAYMENT-7295 – <span class="highlight-credit">-$12.46</span></div>
-  </li>
-      <li>
-    <div class="date-header">Aug 06, 2025 (1)</div>
-    <div>DD* DOORDASH – <span class="highlight-debit">$12.46</span></div>
-  </li>
-  <li>
-    <div class="date-header">Jul 24, 2025 (1)</div>
-    <div>CARD-PAYMENT-7295 – <span class="highlight-credit">-$41.77</span></div>
-  </li>
-  <li>
-    <div class="date-header">Jul 22, 2025 (1)</div>
-    <div>DD* DOORDASH DUNKIN – <span class="highlight-debit">$11.34</span></div>
-  </li>
-  <li>
-    <div class="date-header">Jul 17, 2025 (1)</div>
-    <div>CARD-PAYMENT-7295 – <span class="highlight-credit">-$35.28</span></div>
-  </li>
-  <li>
-    <div class="date-header">Jul 13, 2025 (1)</div>
-    <div>DD *DOORDASH TACO BELL – <span class="highlight-debit">$10.43</span></div>
-  </li>
-  <li>
-    <div class="date-header">Jul 11, 2025 (1)</div>
-    <div>AFFIRM.COM PAYMENTS – <span class="highlight-debit">$20.00</span></div>
-  </li>
-  <li>
-    <div class="date-header">Jul 08, 2025 (1)</div>
-    <div>WL* STEAM PURCHASE – <span class="highlight-credit">-$209.83 refunded</span></div>
-  </li>
+    <div class="date-header">Pending (0)</div>
+    <div style="margin-bottom:8px;color:#666;">No pending transactions</div>
 
-  <!-- Jun Statement -->
-  <li class="statement-header">Jun 2025 Statement:</li>
+    <!-- Dynamic list goes here -->
+    <ul id="tx-list" class="transactions-list"></ul>
+  </div>
 
-  <li>
-    <div class="date-header">Jul 07, 2025 (1)</div>
-    <div>CARD-PAYMENT-7295 – <span class="highlight-credit">-$40.00</span></div>
-  </li>
-  <li>
-    <div class="date-header">Jul 05, 2025 (1)</div>
-    <div>WL *STEAM PURCHASE – <span class="highlight-debit">$209.83</span></div>
-  </li>
-  <li>
-    <div class="date-header">Jun 22, 2025 (1)</div>
-    <div>FANATEC* Paypal – <span class="highlight-debit">$18.38</span></div>
-  </li>
-  <li>
-    <div class="date-header">Jun 20, 2025 (2)</div>
-    <div>Amazon – <span class="highlight-debit">$53.24</span></div>
-    <div>CARD-PAYMENT-7295 – <span class="highlight-credit">-$5.15</span></div>
-  </li>
-  <li>
-    <div class="date-header">Jun 19, 2025 (1)</div>
-    <div>CARD-PAYMENT-7295 – <span class="highlight-credit">-$184.51</span></div>
-  </li>
-  <li>
-    <div class="date-header">Jun 13, 2025 (1)</div>
-    <div>CHASE TRVL (MLR-LCA) – <span class="highlight-debit">$515.37</span> – TRAVEL – <span class="highlight-debit">$5.15</span></div>
-  </li>
-
-  <!-- May Statement -->
-  <li class="statement-header">May 2025 Statement:</li>
-
-  <div>CHASE TRVL (SAU-MLR) – <span class="highlight-debit">$16,163.97</span> – TRAVEL – <span class="highlight-debit">$161.63</span></div>
-  <li>
-    <div class="date-header">Jun 05, 2025 (1)</div>
-    <div>CHASE TRVL (RFD-SAU) – <span class="highlight-debit">$660.97</span> – TRAVEL – <span class="highlight-debit">$6.60</span></div>
-  </li>
-
-  <!-- Apr Statement -->
-  <li class="statement-header">Apr 2025 Statement:</li>
-
-  <li>
-    <div class="date-header">May 07, 2025 (1)</div>
-    <div>CARD-PAYMENT-7295 – <span class="highlight-credit">-$40.00</span></div>
-  </li>
-  <li>
-    <div class="date-header">Apr 29, 2025 (1)</div>
-    <div>CARD-PAYMENT-7295 – <span class="highlight-credit">-$48.60</span></div>
-  </li>
-  <li>
-    <div class="date-header">Apr 26, 2025 (1)</div>
-    <div>CHASE TRVL* SINGAPORE AIRLINES (GRA-TKO) – <span class="highlight-debit">$1,162.92</span> – TRAVEL – <span class="highlight-debit">$11.62</span></div>
-  </li>
-  <li>
-    <div class="date-header">Apr 24, 2025 (2)</div>
-    <div>CHASE TRVL (PER-LCA-GRA) – <span class="highlight-debit">$1,034.36</span> – TRAVEL – <span class="highlight-debit">$10.34</span></div>
-    <div>CHASE TRVL (TKO-SAU-GRI) – <span class="highlight-debit">$2,327.31</span> – TRAVEL – <span class="highlight-debit">$23.27</span></div>
-  </li>
-  <li>
-    <div class="date-header">Apr 23, 2025 (1)</div>
-    <div>AMERICAN AIRLINES (IZO-GRA) – <span class="highlight-debit">$147.32</span> – TRAVEL – <span class="highlight-debit">$1.47</span></div>
-  </li>
-  <li>
-    <div class="date-header">Apr 14, 2025 (1)</div>
-    <div>AMAZON MKTPLACE PMTS – <span class="highlight-credit">-$27.74 refunded</span></div>
-  </li>
-  <li>
-    <div class="date-header">Apr 13, 2025 (1)</div>
-    <div>APPLE.COM/BILL – <span class="highlight-debit">$11.73</span></div>
-  </li>
-  <li>
-    <div class="date-header">Apr 12, 2025 (1)</div>
-    <div>Printify, Inc – <span class="highlight-debit">$12.28</span></div>
-  </li>
-  <li>
-    <div class="date-header">Apr 11, 2025 (3)</div>
-    <div>GOOGLE *YT Primetime – <span class="highlight-debit">$13.87</span></div>
-    <div>APPLE.COM/BILL – <span class="highlight-debit">$21.31</span></div>
-    <div>Amazon.com – <span class="highlight-debit">$15.81</span></div>
-  </li>
-  <li>
-    <div class="date-header">Apr 10, 2025 (3)</div>
-    <div>AMAZON MKTPLACE PMTS – <span class="highlight-debit">$27.74</span></div>
-    <div>AMAZON MKTPLACE PMTS – <span class="highlight-debit">$12.27</span></div>
-    <div>Printify, Inc – <span class="highlight-debit">$19.92</span></div>
-  </li>
-  <li>
-    <div class="date-header">Apr 08, 2025 (4)</div>
-    <div>AFFIRM.COM PAYMENTS – <span class="highlight-debit">$25.00</span></div>
-    <div>DISCORD* GIFT-NITRO-MO – <span class="highlight-debit">$10.66</span></div>
-    <div>APPLE.COM/BILL – <span class="highlight-debit">$16.04</span></div>
-    <div>SP BACONS DESIGNS – <span class="highlight-debit">$31.00</span></div>
-  </li>
-  <li>
-    <div class="date-header">Apr 07, 2025 (2)</div>
-    <div>DISCORD* GIFT-NITRO-MO – <span class="highlight-debit">$10.66</span></div>
-    <div>DISCORD* GIFT-NITRO-MO – <span class="highlight-debit">$10.66</span></div>
-  </li>
-    </ul>
+  <!-- === Transaction Detail Modal === -->
+  <div id="tx-detail-modal" class="modal">
+    <button class="back-btn">← Back</button>
+    <h3>Transaction Details</h3>
+    <div class="detail-header">
+      <h4 id="detail-merchant">Merchant</h4>
+      <div id="detail-amount" class="highlight-debit">$0.00</div>
+      <div id="detail-points" class="points">0 pts</div>
+    </div>
+    <div class="detail-rows"><!-- JS populates rows here --></div>
   </div>
 
   <!-- === Pay Card Modal === -->
-  <div id="pay-modal" class="modal" style="width: 360px;">
+  <div id="pay-modal" class="modal" style="width:360px;">
     <button id="close-pay" class="close-btn">×</button>
     <h3>Pay Card</h3>
     <div class="details-box" style="margin:0;">
@@ -401,23 +282,121 @@
     </div>
   </div>
 
-  <!-- === Pay Card Modal === -->
-  <div id="pay-modal" class="modal" style="width:360px;">
-    <button id="close-pay" class="close-btn">×</button>
-    <h3>Pay Card</h3>
-    <div class="details-box" style="margin:0;">
-      <p><strong>Current balance:</strong> $0.00</p>
-      <p><strong>Remaining statement balance:</strong> $0.00</p>
-      <p><strong>Minimum payment due:</strong> $0.00</p>
-    </div>
-  </div>
-
   <script>
-    // Transactions modal
-    const overlay   = document.getElementById('overlay'),
-          transModal = document.getElementById('trans-modal'),
-          payModal   = document.getElementById('pay-modal');
+  document.addEventListener('DOMContentLoaded', () => {
+    const overlay     = document.getElementById('overlay');
+    const transModal  = document.getElementById('trans-modal');
+    const detailModal = document.getElementById('tx-detail-modal');
+    const payModal    = document.getElementById('pay-modal');
+    const loginScreen = document.getElementById('login-screen');
+    const dashboard   = document.getElementById('dashboard');
+    const errMsg      = document.getElementById('login-error');
+    const btn         = document.getElementById('login-btn');
 
+    /* ========= DATA STORE ========= */
+    const transactions = [      
+      { id:'t-2025-08-07-1', date:'Aug 07, 2025', merchant:'CARD-PAYMENT-7295',               amount:'-$12.46',  points:0,        category:'Payment',          cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-08-06-1', date:'Aug 06, 2025', merchant:'DD* DOORDASH',                    amount:'$12.46',   points:12.46,    category:'Food & Drink',     cardEnding:'****7295', status:'Posted' },
+
+      { id:'t-2025-07-24-1', date:'Jul 24, 2025', merchant:'CARD-PAYMENT-7295',               amount:'-$41.77',  points:0,        category:'Payment',          cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-07-22-1', date:'Jul 22, 2025', merchant:'DD* DOORDASH DUNKIN',             amount:'$11.34',   points:11.34,    category:'Food & Drink',     cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-07-17-1', date:'Jul 17, 2025', merchant:'CARD-PAYMENT-7295',               amount:'-$35.28',  points:0,        category:'Payment',          cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-07-13-1', date:'Jul 13, 2025', merchant:'DD *DOORDASH TACO BELL',          amount:'$10.43',   points:10.43,    category:'Food & Drink',     cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-07-11-1', date:'Jul 11, 2025', merchant:'AFFIRM.COM PAYMENTS',             amount:'$20.00',   points:20,       category:'Services',         cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-07-08-1', date:'Jul 08, 2025', merchant:'Refund received for WL* STEAM PURCHASE', amount:'-$209.83', points:-629.49, category:'Online Shopping', cardEnding:'****7295', status:'Refunded' },
+      { id:'t-2025-07-07-1', date:'Jul 07, 2025', merchant:'CARD-PAYMENT-7295',               amount:'-$40.00',  points:0,        category:'Payment',          cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-07-05-1', date:'Jul 05, 2025', merchant:'WL *STEAM PURCHASE',              amount:'$209.83',  points:629.49,   category:'Online Shopping',  cardEnding:'****7295', status:'Refunded' },
+
+      { id:'t-2025-06-22-1', date:'Jun 22, 2025', merchant:'FANATEC* Paypal',                 amount:'$18.38',   points:55.14,    category:'Online Shopping',  cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-06-20-1', date:'Jun 20, 2025', merchant:'Amazon',                           amount:'$53.24',   points:159.72,   category:'Online Shopping',  cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-06-20-2', date:'Jun 20, 2025', merchant:'CARD-PAYMENT-7295',               amount:'-$5.15',   points:0,        category:'Payment',          cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-06-19-1', date:'Jun 19, 2025', merchant:'CARD-PAYMENT-7295',               amount:'-$184.51', points:0,        category:'Payment',          cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-06-13-1', date:'Jun 13, 2025', merchant:'CHASE TRVL (MLR-LCA)',            amount:'$515.37',  points:2576.85,  category:'Travel',           cardEnding:'****7295', status:'Posted' },
+
+      { id:'t-2025-06-06-1', date:'Jun 06, 2025', merchant:'CHASE TRVL (SAU-MLR)',            amount:'-$16,163.97', points:-80819.85, category:'Travel',     cardEnding:'****7295', status:'Refunded' },
+      { id:'t-2025-06-05-1', date:'Jun 05, 2025', merchant:'CHASE TRVL (RFD-SAU)',            amount:'$660.97',  points:3304.85,  category:'Travel',         cardEnding:'****7295', status:'Posted' },
+
+      { id:'t-2025-05-07-1', date:'May 07, 2025', merchant:'CARD-PAYMENT-7295',               amount:'-$40.00',  points:0,        category:'Payment',          cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-04-29-1', date:'Apr 29, 2025', merchant:'CARD-PAYMENT-7295',               amount:'-$48.60',  points:0,        category:'Payment',          cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-04-26-1', date:'Apr 26, 2025', merchant:'CHASE TRVL* SINGAPORE AIRLINES (GRA - TKO)', amount:'$1,162.92', points:5814.60, category:'Travel', cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-04-24-1', date:'Apr 24, 2025', merchant:'CHASE TRVL (PER - LCA - GRA)',    amount:'$1,034.36', points:5171.80, category:'Travel',        cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-04-24-2', date:'Apr 24, 2025', merchant:'CHASE TRVL (TKO - SAU - GRI)',    amount:'$2,327.31', points:11636.55, category:'Travel',       cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-04-23-1', date:'Apr 23, 2025', merchant:'AMERICAN AIRLINES (IZO-GRA)',     amount:'$147.32',  points:736.60,   category:'Travel',          cardEnding:'****7295', status:'Posted' },
+
+      { id:'t-2025-04-14-1', date:'Apr 14, 2025', merchant:'AMAZON MKTPLACE PMTS',            amount:'-$27.74',  points:-83.22,   category:'Online Shopping',  cardEnding:'****7295', status:'Refunded' },
+      { id:'t-2025-04-13-1', date:'Apr 13, 2025', merchant:'APPLE.COM/BILL',                  amount:'$11.73',   points:35.19,    category:'Streaming',        cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-04-12-1', date:'Apr 12, 2025', merchant:'Printify, Inc',                   amount:'$12.28',   points:36.84,    category:'Online Shopping',  cardEnding:'****7295', status:'Posted' },
+
+      { id:'t-2025-04-11-1', date:'Apr 11, 2025', merchant:'GOOGLE *YT Primetime',            amount:'$13.87',   points:41.61,    category:'Streaming',        cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-04-11-2', date:'Apr 11, 2025', merchant:'APPLE.COM/BILL',                  amount:'$21.31',   points:63.93,    category:'Streaming',        cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-04-11-3', date:'Apr 11, 2025', merchant:'Amazon.com',                      amount:'$15.81',   points:47.43,    category:'Online Shopping',  cardEnding:'****7295', status:'Posted' },
+
+      { id:'t-2025-04-10-1', date:'Apr 10, 2025', merchant:'AMAZON MKTPLACE PMTS',            amount:'$27.74',   points:83.22,    category:'Online Shopping',  cardEnding:'****7295', status:'Refunded' },
+      { id:'t-2025-04-10-2', date:'Apr 10, 2025', merchant:'AMAZON MKTPLACE PMTS',            amount:'$12.27',   points:36.81,    category:'Online Shopping',  cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-04-10-3', date:'Apr 10, 2025', merchant:'Printify, Inc',                   amount:'$19.92',   points:59.76,    category:'Online Shopping',  cardEnding:'****7295', status:'Posted' },
+
+      { id:'t-2025-04-08-1', date:'Apr 08, 2025', merchant:'AFFIRM.COM PAYMENTS',             amount:'$25.00',   points:25,       category:'Services',         cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-04-08-2', date:'Apr 08, 2025', merchant:'DISCORD* GIFT-NITRO-MO',          amount:'$10.66',   points:31.98,    category:'Chatting',         cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-04-08-3', date:'Apr 08, 2025', merchant:'APPLE.COM/BILL',                  amount:'$16.04',   points:48.12,    category:'Streaming',        cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-04-08-4', date:'Apr 08, 2025', merchant:'SP BACONS DESIGNS',               amount:'$31.00',   points:93,       category:'Online Shopping',  cardEnding:'****7295', status:'Posted' },
+
+      { id:'t-2025-04-07-1', date:'Apr 07, 2025', merchant:'DISCORD* GIFT-NITRO-MO',          amount:'$10.66',   points:31.98,    category:'Chatting',         cardEnding:'****7295', status:'Posted' },
+      { id:'t-2025-04-07-2', date:'Apr 07, 2025', merchant:'DISCORD* GIFT-NITRO-MO',          amount:'$10.66',   points:31.98,    category:'Chatting',         cardEnding:'****7295', status:'Posted' }
+      // Add more objects here whenever you want
+    ];
+
+    const txListEl = document.getElementById('tx-list');
+
+    function openDetail(tx) {
+      document.getElementById('detail-merchant').textContent = tx.merchant;
+      document.getElementById('detail-amount').textContent   = tx.amount;
+      document.getElementById('detail-points').textContent   = (tx.points ?? 0) + ' pts';
+
+      const rows = [
+        { label: 'Date',        value: tx.date },
+        { label: 'Category',    value: tx.category },
+        { label: 'Card Ending', value: tx.cardEnding },
+        { label: 'Status',      value: tx.status }
+      ];
+      const container = detailModal.querySelector('.detail-rows');
+      container.innerHTML = rows.map(r =>
+        `<div class="row"><div class="row-label">${r.label}</div><div>${r.value}</div></div>`
+      ).join('');
+
+      transModal.classList.remove('visible');
+      detailModal.classList.add('visible');
+      overlay.classList.add('visible');
+    }
+
+    /* Render ONLY transaction cards — NO statement headers */
+    function renderList() {
+      txListEl.innerHTML = '';
+      transactions.forEach(tx => {
+        const li = document.createElement('li');
+        li.className = 'tx-item';
+        li.innerHTML = `
+          <div class="date-header">${tx.date}</div>
+          <div class="tx-summary">
+            <span>${tx.merchant}</span>
+            <span class="${tx.amount.trim().startsWith('-') ? 'highlight-credit' : 'highlight-debit'}">
+              ${tx.amount}
+            </span>
+          </div>
+        `;
+        li.addEventListener('click', () => openDetail(tx));
+        txListEl.appendChild(li);
+      });
+    }
+
+    // Helper to add transactions dynamically
+    window.addTransaction = function addTransaction(tx, {toTop = true} = {}) {
+      (toTop ? transactions.unshift(tx) : transactions.push(tx));
+      renderList();
+    };
+
+    renderList();
+
+    /* ========= Modals: open/close ========= */
     document.getElementById('show-trans').onclick = () => {
       overlay.classList.add('visible');
       transModal.classList.add('visible');
@@ -426,6 +405,11 @@
       transModal.classList.remove('visible');
       overlay.classList.remove('visible');
     };
+    document.querySelector('#tx-detail-modal .back-btn').onclick = () => {
+      detailModal.classList.remove('visible');
+      transModal.classList.add('visible');
+    };
+
     document.getElementById('pay-card').onclick = () => {
       overlay.classList.add('visible');
       payModal.classList.add('visible');
@@ -435,19 +419,16 @@
       overlay.classList.remove('visible');
     };
 
-    // Login logic
-    const loginScreen = document.getElementById('login-screen'),
-          dashboard   = document.getElementById('dashboard'),
-          errMsg      = document.getElementById('login-error'),
-          btn         = document.getElementById('login-btn');
-
+    /* ========= Login ========= */
     btn.addEventListener('click', () => {
-      const u = document.getElementById('username').value.trim(),
-            p = document.getElementById('password').value;
-      if (u === 'shloak' && p === 'Sac') {
-        loginScreen.classList.remove('visible'); loginScreen.classList.add('hidden');
+      const u = document.getElementById('username').value.trim();
+      const p = document.getElementById('password').value;
+      if (u === 'shloak' && p === 'sac') {
+        loginScreen.classList.remove('visible');
+        loginScreen.classList.add('hidden');
         setTimeout(() => {
-          dashboard.classList.remove('hidden'); dashboard.classList.add('visible');
+          dashboard.classList.remove('hidden');
+          dashboard.classList.add('visible');
         }, 400);
       } else {
         errMsg.style.opacity = '1';
@@ -459,9 +440,20 @@
         if (e.key === 'Enter') btn.click();
       });
     });
-  </script>
 
+    /* Example to add a tx:
+    addTransaction({
+      id: 't-2025-08-09-1',
+      date: 'Aug 09, 2025',
+      merchant: 'Amazon',
+      amount: '$32.15',
+      points: 96.45,
+      category: 'Online Shopping',
+      cardEnding: '****7295',
+      status: 'Posted'
+    });
+    */
+  });
+  </script>
 </body>
 </html>
-
-
