@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chase Sapphire Reserve</title>
+  <style>
+    /* ===== Reset & Base ===== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; font-family: "Segoe UI", Roboto, sans-serif; color: #333; }
+
+    /* — Fade & Visibility Utilities — */
+    .fade {
+      transition: opacity 0.4s ease;
+    }
+    .hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ← NEW: ensure login sits on top of everything → */
+    #login-screen {
+      z-index: 9999;
+    }
+
+    /* ===== Page Container & Transitions ===== */
+    .page {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: #fff;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.4s ease;
+      overflow-y: auto;
+    }
+    .page.active {
+      opacity: 1; pointer-events: auto;
+    }
+
+    /* ===== Hero Header ===== */
+    .header {
+      position: relative;
+      background: linear-gradient(135deg, #2C3E50 0%, #4CA1AF 100%);
+      padding: 80px 20px 100px;
+      text-align: center;
+      color: #fff;
+    }
+    .header-label {
+      position: absolute; top: 20px; left: 20px;
+      font-size: 0.9rem; opacity: 0.8;
+    }
+    .main-title {
+      font-size: 3rem; font-weight: 500;
+      color: #4285F4; margin-bottom: 10px;
+    }
+
+    /* ===== Content ===== */
+    .content {
+      max-width: 600px; margin: 20px auto 40px; padding: 0 20px;
+    }
+    .balance-line {
+      font-size: 1.8rem; margin-bottom: 16px;
+    }
+
+    /* ===== Details Box ===== */
+    .details-box {
+      border: 1px solid #ddd; border-radius: 6px;
+      background: #fafafa; padding: 20px; margin-bottom: 30px;
+    }
+    .details-box p {
+      margin-bottom: 12px; line-height: 1.5;
+    }
+    .details-box p:last-child { margin-bottom: 0; }
+
+    /* ===== Highlight Classes ===== */
+    .highlight-credit {
+      color: #ff5e5e;
+      font-weight: bold;
+    }
+    .highlight-usage {
+      color: #1e8e3e;
+      font-weight: bold;
+    }
+
+    /* ===== Buttons ===== */
+    .btn {
+      display: block; width: 100%;
+      font-size: 1.1rem; font-weight: 500;
+      padding: 14px 20px; border: none;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #0c2a4e, #123b61);
+      color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      cursor: pointer; transition: background 0.2s, box-shadow 0.2s;
+      margin-bottom: 20px;
+    }
+    .btn:hover {
+      background: linear-gradient(90deg, #0a2340, #0f2f4d);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+    }
+
+    /* ===== Overlay ===== */
+    .overlay {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .overlay.visible {
+      opacity: 1; pointer-events: auto;
+    }
+
+    /* ===== Modal & Transitions ===== */
+    .modal {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      background: #fff; border-radius: 8px;
+      width: 340px; max-width: 90%; padding: 20px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .modal.visible {
+      opacity: 1; pointer-events: auto;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    .modal .close-btn {
+      position: absolute; top: 8px; right: 8px;
+      font-size: 1.2rem; background: none; border: none;
+      cursor: pointer;
+    }
+    .modal h3 { margin-bottom: 20px; }
+
+    /* ===== Transactions Colors & Bold ===== */
+    .highlight-debit  { color: #5196ff; font-weight: bold; }
+    .transactions-list {
+      list-style: none; margin-top: 16px; padding: 0;
+      max-height: 300px; overflow-y: auto;
+    }
+    .transactions-list li {
+      margin-bottom: 12px; line-height: 1.4;
+    }
+    .transactions-list .date-header {
+      font-weight: bold; margin-bottom: 6px;
+    }
+
+    .statement-header {
+      margin: 24px 0 8px;
+      font-style: italic;
+      color: #555;
+    }
+
+  </style>
+</head>
+<body>
+
+<!-- LOGIN OVERLAY -->
+<div id="login-screen" class="fade visible" style="position:absolute;top:0;left:0;
+    width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#2C3E50 0%,#4CA1AF 100%);color:#fff;">
+  <div id="login-box" style="background:rgba(255,255,255,0.1);padding:40px;border-radius:12px;
+       width:90%;max-width:360px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,0.3);">
+    <h2 style="margin-bottom:24px;font-weight:300;font-size:1.8rem;">
+      Welcome to Sapphire Reserve
+    </h2>
+    <div id="login-error"
+         style="height:1.2em;margin-bottom:12px;color:#ff5e5e;opacity:0;
+                transition:opacity 0.3s;font-size:0.9rem;">
+      Invalid credentials
+    </div>
+    <div style="position:relative;margin-bottom:20px;">
+      <!-- user icon SVG -->
+      <svg viewBox="0 0 24 24"
+           style="position:absolute;top:50%;left:12px;transform:translateY(-50%);
+                  width:20px;height:20px;fill:rgba(255,255,255,0.8);">
+        <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 
+                 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
+      </svg>
+      <input id="username" type="text" placeholder="Username"
+             style="width:100%;padding:12px 12px 12px 44px;border:none;
+                    border-radius:6px;background:rgba(255,255,255,0.2);
+                    color:#fff;font-size:1rem;"
+      />
+    </div>
+    <div style="position:relative;margin-bottom:20px;">
+      <!-- lock icon SVG -->
+      <svg viewBox="0 0 24 24"
+           style="position:absolute;top:50%;left:12px;transform:translateY(-50%);
+                  width:20px;height:20px;fill:rgba(255,255,255,0.8);">
+        <path d="M17 8V6c0-2.8-2.2-5-5-5S7 3.2 7 6v2H5v14h14V8h-2zm-8 0V6c0-
+                 1.7 1.3-3 3-3s3 1.3 3 3v2H9z"/>
+      </svg>
+      <input id="password" type="password" placeholder="Password"
+             style="width:100%;padding:12px 12px 12px 44px;border:none;
+                    border-radius:6px;background:rgba(255,255,255,0.2);
+                    color:#fff;font-size:1rem;"
+      />
+    </div>
+    <button id="login-btn"
+            style="width:100%;padding:12px;background:#1e8e3e;border:none;
+                   border-radius:6px;color:#fff;font-size:1.1rem;
+                   font-weight:500;cursor:pointer;transition:background 0.2s;">
+      Log In
+    </button>
+  </div>
+</div>
+
+
+  <!-- === SAPPHIRE RESERVE PAGE === -->
+<div id="dashboard" class="hidden fade">  
+  <div id="card" class="page active">
+    <div class="header">
+      <div class="header-label">Chase Sapphire Reserve</div>
+      <div class="main-title">Sapphire Reserve</div>
+    </div>
+    <div class="content">
+      <div class="balance-line">
+        <strong>Current Balance:</strong> <span class="highlight-debit">$12.46</span>
+      </div>
+      <div class="details-box">
+        <p><strong>Available balance:</strong> $312.54</p>
+        <p><strong>Current balance:</strong> $12.46</p>
+        <p><strong>Total credit limit:</strong> $325.00</p>
+        <p><strong>Credit used:</strong> <span class="highlight-usage"> 3.83%</span></p>
+        <p><strong>Remaining statement balance:</strong> $0.00</p>
+        <p><strong>Next payment date:</strong> 08/07/2025</p>
+        <p><strong>Statement closing date:</strong> 08/08/2025</p>
+        <p><strong>Minimum payment due:</strong> $12.46</p>
+        <p><strong>APR as of 08/06/25:</strong> 20.22%</p>
+      </div>
+      <button id="show-trans" class="btn">Recent transactions</button>
+      <button id="pay-card" class="btn">Pay Card</button>
+    </div>
+  </div>
+</div> <!-- /#dashboard -->
+
+  <!-- === OVERLAY === -->
+  <div id="overlay" class="overlay"></div>
+
+  <!-- === Recent Transactions Modal === -->
+  <div id="trans-modal" class="modal">
+    <button id="close-trans" class="close-btn">×</button>
+    <h3>Recent transactions</h3>
+    <ul class="transactions-list">
+      <li>
+        <div class="date-header">Pending (0)</div>
+        No pending transactions
+      </li>
+      <li class="statement-header">Aug 2025 Statement:</li>
+
+  <li>
+    <div class="date-header">Aug 06, 2025 (1)</div>
+    <div>DD* DOORDASH – <span class="highlight-debit">$12.46</span></div>
+  </li>
+  <li>
+    <div class="date-header">Jul 24, 2025 (1)</div>
+    <div>CARD-PAYMENT-7295 – <span class="highlight-credit">-$41.77</span></div>
+  </li>
+  <li>
+    <div class="date-header">Jul 22, 2025 (1)</div>
+    <div>DD* DOORDASH DUNKIN – <span class="highlight-debit">$11.34</span></div>
+  </li>
+  <li>
+    <div class="date-header">Jul 17, 2025 (1)</div>
+    <div>CARD-PAYMENT-7295 – <span class="highlight-credit">-$35.28</span></div>
+  </li>
+  <li>
+    <div class="date-header">Jul 13, 2025 (1)</div>
+    <div>DD *DOORDASH TACO BELL – <span class="highlight-debit">$10.43</span></div>
+  </li>
+  <li>
+    <div class="date-header">Jul 11, 2025 (1)</div>
+    <div>AFFIRM.COM PAYMENTS – <span class="highlight-debit">$20.00</span></div>
+  </li>
+  <li>
+    <div class="date-header">Jul 08, 2025 (1)</div>
+    <div>WL* STEAM PURCHASE – <span class="highlight-credit">-$209.83 refunded</span></div>
+  </li>
+
+  <!-- Jun Statement -->
+  <li class="statement-header">Jun 2025 Statement:</li>
+
+  <li>
+    <div class="date-header">Jul 07, 2025 (1)</div>
+    <div>CARD-PAYMENT-7295 – <span class="highlight-credit">-$40.00</span></div>
+  </li>
+  <li>
+    <div class="date-header">Jul 05, 2025 (1)</div>
+    <div>WL *STEAM PURCHASE – <span class="highlight-debit">$209.83</span></div>
+  </li>
+  <li>
+    <div class="date-header">Jun 22, 2025 (1)</div>
+    <div>FANATEC* Paypal – <span class="highlight-debit">$18.38</span></div>
+  </li>
+  <li>
+    <div class="date-header">Jun 20, 2025 (2)</div>
+    <div>Amazon – <span class="highlight-debit">$53.24</span></div>
+    <div>CARD-PAYMENT-7295 – <span class="highlight-credit">-$5.15</span></div>
+  </li>
+  <li>
+    <div class="date-header">Jun 19, 2025 (1)</div>
+    <div>CARD-PAYMENT-7295 – <span class="highlight-credit">-$184.51</span></div>
+  </li>
+  <li>
+    <div class="date-header">Jun 13, 2025 (1)</div>
+    <div>CHASE TRVL (MLR-LCA) – <span class="highlight-debit">$515.37</span> – TRAVEL – <span class="highlight-debit">$5.15</span></div>
+  </li>
+
+  <!-- May Statement -->
+  <li class="statement-header">May 2025 Statement:</li>
+
+  <div>CHASE TRVL (SAU-MLR) – <span class="highlight-debit">$16,163.97</span> – TRAVEL – <span class="highlight-debit">$161.63</span></div>
+  <li>
+    <div class="date-header">Jun 05, 2025 (1)</div>
+    <div>CHASE TRVL (RFD-SAU) – <span class="highlight-debit">$660.97</span> – TRAVEL – <span class="highlight-debit">$6.60</span></div>
+  </li>
+
+  <!-- Apr Statement -->
+  <li class="statement-header">Apr 2025 Statement:</li>
+
+  <li>
+    <div class="date-header">May 07, 2025 (1)</div>
+    <div>CARD-PAYMENT-7295 – <span class="highlight-credit">-$40.00</span></div>
+  </li>
+  <li>
+    <div class="date-header">Apr 29, 2025 (1)</div>
+    <div>CARD-PAYMENT-7295 – <span class="highlight-credit">-$48.60</span></div>
+  </li>
+  <li>
+    <div class="date-header">Apr 26, 2025 (1)</div>
+    <div>CHASE TRVL* SINGAPORE AIRLINES (GRA-TKO) – <span class="highlight-debit">$1,162.92</span> – TRAVEL – <span class="highlight-debit">$11.62</span></div>
+  </li>
+  <li>
+    <div class="date-header">Apr 24, 2025 (2)</div>
+    <div>CHASE TRVL (PER-LCA-GRA) – <span class="highlight-debit">$1,034.36</span> – TRAVEL – <span class="highlight-debit">$10.34</span></div>
+    <div>CHASE TRVL (TKO-SAU-GRI) – <span class="highlight-debit">$2,327.31</span> – TRAVEL – <span class="highlight-debit">$23.27</span></div>
+  </li>
+  <li>
+    <div class="date-header">Apr 23, 2025 (1)</div>
+    <div>AMERICAN AIRLINES (IZO-GRA) – <span class="highlight-debit">$147.32</span> – TRAVEL – <span class="highlight-debit">$1.47</span></div>
+  </li>
+  <li>
+    <div class="date-header">Apr 14, 2025 (1)</div>
+    <div>AMAZON MKTPLACE PMTS – <span class="highlight-credit">-$27.74 refunded</span></div>
+  </li>
+  <li>
+    <div class="date-header">Apr 13, 2025 (1)</div>
+    <div>APPLE.COM/BILL – <span class="highlight-debit">$11.73</span></div>
+  </li>
+  <li>
+    <div class="date-header">Apr 12, 2025 (1)</div>
+    <div>Printify, Inc – <span class="highlight-debit">$12.28</span></div>
+  </li>
+  <li>
+    <div class="date-header">Apr 11, 2025 (3)</div>
+    <div>GOOGLE *YT Primetime – <span class="highlight-debit">$13.87</span></div>
+    <div>APPLE.COM/BILL – <span class="highlight-debit">$21.31</span></div>
+    <div>Amazon.com – <span class="highlight-debit">$15.81</span></div>
+  </li>
+  <li>
+    <div class="date-header">Apr 10, 2025 (3)</div>
+    <div>AMAZON MKTPLACE PMTS – <span class="highlight-debit">$27.74</span></div>
+    <div>AMAZON MKTPLACE PMTS – <span class="highlight-debit">$12.27</span></div>
+    <div>Printify, Inc – <span class="highlight-debit">$19.92</span></div>
+  </li>
+  <li>
+    <div class="date-header">Apr 08, 2025 (4)</div>
+    <div>AFFIRM.COM PAYMENTS – <span class="highlight-debit">$25.00</span></div>
+    <div>DISCORD* GIFT-NITRO-MO – <span class="highlight-debit">$10.66</span></div>
+    <div>APPLE.COM/BILL – <span class="highlight-debit">$16.04</span></div>
+    <div>SP BACONS DESIGNS – <span class="highlight-debit">$31.00</span></div>
+  </li>
+  <li>
+    <div class="date-header">Apr 07, 2025 (2)</div>
+    <div>DISCORD* GIFT-NITRO-MO – <span class="highlight-debit">$10.66</span></div>
+    <div>DISCORD* GIFT-NITRO-MO – <span class="highlight-debit">$10.66</span></div>
+  </li>
+    </ul>
+  </div>
+
+  <!-- === Pay Card Modal === -->
+  <div id="pay-modal" class="modal" style="width: 360px;">
+    <button id="close-pay" class="close-btn">×</button>
+    <h3>Pay Card</h3>
+    <div class="details-box" style="margin:0;">
+      <p><strong>Current balance:</strong> <span class="highlight-debit">$12.46</span></p>
+      <p><strong>Remaining statement balance:</strong> $0.00</p>
+      <p><strong>Minimum payment due:</strong> <span class="highlight-debit">$12.46</span></p>
+    </div>
+  </div>
+
+  <script>
+    const overlay   = document.getElementById('overlay'),
+          transModal = document.getElementById('trans-modal'),
+          payModal   = document.getElementById('pay-modal');
+
+    // Open Recent Transactions
+    document.getElementById('show-trans').addEventListener('click', () => {
+      overlay.classList.add('visible');
+      transModal.classList.add('visible');
+    });
+    // Close Recent Transactions
+    document.getElementById('close-trans').addEventListener('click', () => {
+      transModal.classList.remove('visible');
+      overlay.classList.remove('visible');
+    });
+
+    // Open Pay Card
+    document.getElementById('pay-card').addEventListener('click', () => {
+      overlay.classList.add('visible');
+      payModal.classList.add('visible');
+    });
+    // Close Pay Card
+    document.getElementById('close-pay').addEventListener('click', () => {
+      payModal.classList.remove('visible');
+      overlay.classList.remove('visible');
+    });
+  </script>
+
+  <script>
+    const loginScreen = document.getElementById('login-screen');
+    const dashboard   = document.getElementById('dashboard');
+    const errMsg      = document.getElementById('login-error');
+    const btn         = document.getElementById('login-btn');
+
+    btn.addEventListener('click', () => {
+      const u = document.getElementById('username').value.trim();
+      const p = document.getElementById('password').value;
+      if (u === 'shloak' && p === 'Sac') {
+        // fade out login
+        loginScreen.classList.remove('visible');
+        loginScreen.classList.add('hidden');
+        // fade in dashboard
+        setTimeout(() => {
+          dashboard.classList.remove('hidden');
+          dashboard.classList.add('visible');
+        }, 400);
+      } else {
+        errMsg.style.opacity = '1';
+        setTimeout(() => errMsg.style.opacity = '0', 2000);
+      }
+    });
+
+    // allow Enter key
+    ['username','password'].forEach(id => {
+      document.getElementById(id)
+        .addEventListener('keydown', e => {
+          if (e.key === 'Enter') btn.click();
+        });
+    });
+  </script>
+
+</body>
+</html>
