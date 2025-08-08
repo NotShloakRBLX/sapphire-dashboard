@@ -352,7 +352,7 @@
           <div class="card balance-panel">
             <div>
               <h4>Current Balance</h4>
-              <div class="stat stat-gradient">$0.00</div>
+              <div class="stat stat-gradient">$14.13</div>
               <div class="actions">
                 <button id="show-trans" class="action-btn" title="See recent activity">
                   <svg viewBox="0 0 24 24"><path fill="#a78bfa" d="M4 4h16a1 1 0 0 1 1 1v3H3V5a1 1 0 0 1 1-1zm-1 7h18v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-7zm4 2v2h2v-2H7zm4 0v2h6v-2h-6z"/></svg>
@@ -404,16 +404,16 @@
 
           <div class="card">
             <h4>Upcoming</h4>
-            <div class="kv"><span class="muted">Next payment date</span><strong>08/07/2025</strong></div>
-            <div class="kv"><span class="muted">Statement close</span><strong>08/08/2025</strong></div>
-            <div class="kv"><span class="muted">Minimum due</span><strong>$0.00</strong></div>
+            <div class="kv"><span class="muted">Next payment date</span><strong>09/07/2025</strong></div>
+            <div class="kv"><span class="muted">Statement close</span><strong>09/08/2025</strong></div>
+            <div class="kv"><span class="muted">Minimum due</span><strong>$14.13</strong></div>
             <div class="kv"><span class="muted">APR (as of 08/06/25)</span><strong>20.22%</strong></div>
           </div>
 
           <div class="card facts">
             <h4>Account Snapshot</h4>
-            <div class="kv"><span class="muted">Available balance</span><strong>$325.00</strong></div>
-            <div class="kv"><span class="muted">Current balance</span><strong>$0.00</strong></div>
+            <div class="kv"><span class="muted">Available balance</span><strong>$310.87</strong></div>
+            <div class="kv"><span class="muted">Current balance</span><strong>$14.13</strong></div>
             <div class="kv"><span class="muted">Remaining statement</span><strong>$0.00</strong></div>
           </div>
         </div>
@@ -437,7 +437,7 @@
 </div>
 
     <div class="date-header" style="color:var(--muted);">Pending (0)</div>
-    <div style="margin-bottom:8px;color:var(--muted);">No pending transactions</div>
+    <div style="margin-bottom:8px;color:var(--muted);">1 pending transaction</div>
     <ul id="tx-list" class="transactions-list"></ul>
   </div>
 
@@ -455,9 +455,9 @@
   <div id="pay-modal" class="modal" style="width:min(420px,92vw);">
     <button id="close-pay" class="close-btn">×</button>
     <h3>Pay Card</h3>
-    <div class="kv"><span class="muted">Current balance</span><strong>$0.00</strong></div>
+    <div class="kv"><span class="muted">Current balance</span><strong>$14.13</strong></div>
     <div class="kv"><span class="muted">Remaining statement balance</span><strong>$0.00</strong></div>
-    <div class="kv"><span class="muted">Minimum payment due</span><strong>$0.00</strong></div>
+    <div class="kv"><span class="muted">Minimum payment due</span><strong>$14.13</strong></div>
   </div>
 
   <script>
@@ -472,7 +472,8 @@
 
     /* ========= DATA STORE ========= */
     const transactions = [      
-      { id:'t-2025-08-07-1', date:'Aug 07, 2025', merchant:'CARD-PAYMENT-7295',               amount:'-$12.46',  points:0,        category:'Payment',          cardEnding:'****7295', status:'Posted' },
+{ id:'t-2025-08-08-1', date:'Aug 08, 2025', merchant:'DD* DOORDASH FOODLIO',               amount:'$14.13',  points:14.13,        category:'Food & Drinks',          cardEnding:'****7295', status:'Pending' },      
+{ id:'t-2025-08-07-1', date:'Aug 07, 2025', merchant:'CARD-PAYMENT-7295',               amount:'-$12.46',  points:0,        category:'Payment',          cardEnding:'****7295', status:'Posted' },
       { id:'t-2025-08-06-1', date:'Aug 06, 2025', merchant:'DD* DOORDASH',                    amount:'$12.46',   points:12.46,    category:'Food & Drink',     cardEnding:'****7295', status:'Posted' },
 
       { id:'t-2025-07-24-1', date:'Jul 24, 2025', merchant:'CARD-PAYMENT-7295',               amount:'-$41.77',  points:0,        category:'Payment',          cardEnding:'****7295', status:'Posted' },
@@ -665,7 +666,7 @@ function setCreditUsed(used, limit) {
 
 // example
 // setCreditUsed(usedDollars, totalLimitDollars);
-setCreditUsed(0, 325);
+setCreditUsed(14.13, 325);
 
 
   });
