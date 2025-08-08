@@ -1,320 +1,248 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Chase Sapphire Reserve</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    /* ===== Reset & Base ===== */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body {
-      height: 100%;
-      overflow: auto; /* allow scrolling after login */
-      font-family: "Segoe UI", Roboto, sans-serif;
-      color: #e6e6f0;
-      background: #0a0a0f;
+    /* =========================
+       2030 NEON–GLASS DASHBOARD
+       ========================= */
+
+    :root{
+      --bg:#0a0a10;
+      --panel:#0e0f17;
+      --panel-2:#0b0c14;
+      --text:#e9e8f7;
+      --muted:#a5a3c9;
+      --grid:rgba(140,140,200,.06);
+
+      --violet:#8b5cf6;
+      --violet-2:#7c3aed;
+      --pink:#ec4899;
+      --sky:#60a5fa;
+      --mint:#34d399;
+
+      --glow-violet: 0 10px 30px rgba(139,92,246,.35);
+      --glow-pink:   0 10px 30px rgba(236,72,153,.35);
+      --glass: linear-gradient( to bottom right, rgba(18,18,30,.85), rgba(14,14,24,.85) ) padding-box,
+               linear-gradient(135deg, var(--violet), var(--pink)) border-box;
     }
 
-    /* — Fade & Visibility Utilities — */
-    .fade { transition: opacity 0.4s ease; }
-    .hidden { opacity: 0; pointer-events: none; }
-    .visible { opacity: 1; pointer-events: auto; }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0; font-family: "Segoe UI", Roboto, system-ui, -apple-system, sans-serif;
+      color:var(--text); background:var(--bg); overflow:auto;
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    }
 
-    /* ← Login overlay on top → */
-    #login-screen { z-index: 9999; }
-
-    /* ===== Pages & Transitions ===== */
-    .page {
-      position: absolute; top: 0; left: 0;
-      width: 100%; height: 100%;
+    /* ============= Global FX background ============= */
+    .fx{
+      position:fixed; inset:0; z-index:-2; pointer-events:none;
       background:
-        radial-gradient(1200px 700px at 15% -10%, rgba(124,58,237,0.20), transparent 60%),
-        radial-gradient(1000px 650px at 85% 110%, rgba(236,72,153,0.14), transparent 60%),
-        linear-gradient(180deg, #0a0a10 0%, #0c0a16 50%, #0a0a10 100%);
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.4s ease;
-      overflow-y: auto;
+        radial-gradient(900px 600px at 15% -10%, rgba(124,58,237,.22), transparent 60%),
+        radial-gradient(900px 700px at 85% 120%, rgba(236,72,153,.18), transparent 60%),
+        linear-gradient(180deg, #090911 0%, #0a0a12 60%, #090911 100%);
     }
-    .page.active { opacity: 1; pointer-events: auto; }
-
-    /* ===== Header (Neon) ===== */
-    .header {
-      position: relative;
-      padding: 84px 20px 120px;
-      text-align: center;
-      color: #fff;
+    .fx::before,
+    .fx::after{
+      content:""; position:absolute; inset:-40%;
+      background: conic-gradient(from 0turn, rgba(96,165,250,.12), rgba(124,58,237,.12), rgba(236,72,153,.12), rgba(96,165,250,.12));
+      filter: blur(60px); animation: swirl 26s linear infinite;
+    }
+    .fx::after{ animation-duration: 34s; animation-direction: reverse; opacity: .6; }
+    @keyframes swirl{ to{ transform: rotate(1turn); } }
+    /* Subtle grid */
+    .grid{
+      position:fixed; inset:0; z-index:-1; pointer-events:none;
       background:
-        radial-gradient(900px 600px at 50% -20%, rgba(168,85,247,0.25), transparent 70%),
-        linear-gradient(135deg, #0b0814, #1a1030 55%, #2a0a4c);
-      overflow: hidden;
-    }
-    .header::after{
-      content:"";
-      position:absolute; inset:0;
-      background:
-        repeating-linear-gradient(120deg, rgba(139,92,246,0.07) 0 2px, transparent 2px 8px);
-      mix-blend-mode: screen; pointer-events:none;
-    }
-    .main-title {
-      font-size: clamp(2.2rem, 4vw, 3.2rem);
-      font-weight: 700;
-      letter-spacing: .5px;
-      background: linear-gradient(90deg, #6d28d9, #60a5fa 45%, #f472b6);
-      -webkit-background-clip: text; background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 10px 30px rgba(99,102,241,0.25);
+        linear-gradient(transparent 79px, var(--grid) 80px),
+        linear-gradient(90deg, transparent 79px, var(--grid) 80px);
+      background-size:80px 80px;
+      mask: radial-gradient(60% 60% at 50% 50%, #000 68%, transparent 100%);
     }
 
-    /* ===== Content ===== */
-    .content {
-      max-width: 980px; margin: -80px auto 48px; padding: 0 20px;
-    }
+    /* ===== Visibility helpers ===== */
+    .fade{ transition:opacity .4s ease; }
+    .hidden{ opacity:0; pointer-events:none; }
+    .visible{ opacity:1; pointer-events:auto; }
 
-    /* ===== Balance headline ===== */
-    .balance-line {
-      font-size: clamp(1.6rem, 3vw, 2.2rem);
-      margin-bottom: 18px;
-      display:flex; align-items:baseline; gap:.5ch;
+    /* ===================== LOGIN (black + purple) ===================== */
+    #login-screen{
+      position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+      padding:24px; color:#fff; z-index:9999; /* keep on top */
     }
-    .balance-line strong{
-      color:#c7c9ff; font-weight:600;
-      text-shadow: 0 4px 16px rgba(99,102,241,.15);
+    .login-shell{
+      width:min(440px, 94vw); border-radius:22px; padding:3px; background:
+        linear-gradient(120deg, #7c3aed, #a855f7, #ec4899, #7c3aed);
+      box-shadow: 0 26px 80px rgba(0,0,0,.65), 0 0 120px rgba(124,58,237,.35);
     }
-    .highlight-debit {
-      background: linear-gradient(90deg,#60a5fa,#a78bfa,#f472b6);
+    #login-box{
+      border-radius:20px; padding:36px 30px 28px; text-align:center; color:#e8e7ef;
+      background:#0b0b10; box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
+    }
+    .login-title{
+      font-size: clamp(1.8rem, 3.6vw, 2.2rem); font-weight:700; letter-spacing:.3px;
+      background: linear-gradient(90deg, #c084fc, #60a5fa 45%, #f472b6);
       -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
-      font-weight: 800;
+      margin-bottom:22px;
     }
-    .highlight-credit { color: #fb7185; font-weight: 700; }
-    .highlight-usage  { color: #34d399; font-weight: 700; }
-
-    /* ===== Glass Card with Gradient Border ===== */
-    .details-box {
-      border: 2px solid transparent;
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 28px;
-      background:
-        linear-gradient( to bottom right, rgba(16,16,28,.75), rgba(14,14,22,.75) ) padding-box,
-        linear-gradient(135deg,#7c3aed, #a855f7, #ec4899) border-box;
-      box-shadow:
-        0 20px 60px rgba(0,0,0,.55),
-        inset 0 0 0 1px rgba(255,255,255,.04);
-      backdrop-filter: blur(8px);
-      color:#dfe2ff;
+    #login-error{ height:1.2em; margin-bottom:12px; color:#ff6b6b; opacity:0; transition:opacity .3s; }
+    .input-group{ position:relative; margin:14px 0; }
+    .input{
+      width:100%; padding:14px 14px 14px 50px; border-radius:14px;
+      background:#111223; border:1px solid #26263a; color:#e5e7eb; font-size:1rem;
+      transition: border-color .2s, box-shadow .2s, background .2s;
     }
-    .details-box p { margin-bottom: 10px; line-height: 1.5; }
-    .details-box p strong{ color:#cbd5ff; }
+    .input::placeholder{ color:#979bb2; }
+    .input:focus{ outline:none; border-color:var(--violet); box-shadow:0 0 0 4px rgba(139,92,246,.22), var(--glow-violet); background:#0f1020; }
+    .input-icon{ position:absolute; top:50%; left:14px; transform:translateY(-50%); width:22px; height:22px; filter: drop-shadow(0 2px 4px rgba(139,92,246,.55)); }
 
-    /* ===== Buttons (neon outline) ===== */
-    .btn {
-      display: inline-flex; align-items:center; gap:10px;
-      font-size: 1.05rem; font-weight: 600;
-      padding: 14px 18px; border: 1px solid transparent; border-radius: 12px;
-      background:
-        linear-gradient(#0c0c14,#0a0a12) padding-box,
-        linear-gradient(135deg,#7c3aed,#a855f7,#ec4899) border-box;
-      color: #ffffff; box-shadow: 0 10px 24px rgba(124,58,237,.25);
-      cursor: pointer; transition: transform .05s, box-shadow .2s, filter .2s;
-      margin-right: 12px; margin-bottom: 20px;
+    #login-btn{
+      width:100%; display:flex; align-items:center; justify-content:center; gap:10px;
+      padding:13px 16px; border-radius:14px; cursor:pointer;
+      background:#0f0f18; color:#fff; font-weight:700; border:1px solid #2a2b36;
+      transition: box-shadow .2s, border-color .2s, transform .05s, filter .2s;
     }
-    .btn svg{ width:20px;height:20px; filter: drop-shadow(0 2px 4px rgba(139,92,246,.45)); }
-    .btn:hover { box-shadow: 0 14px 34px rgba(124,58,237,.35); filter:saturate(1.2); }
-    .btn:active { transform: translateY(1px); }
+    #login-btn:hover, #login-btn:focus{ border-color:var(--violet); box-shadow:0 0 0 4px rgba(139,92,246,.18), var(--glow-violet); outline:none; filter:saturate(1.08); }
+    #login-btn:active{ transform:translateY(1px); }
+    .btn-icon{ width:20px; height:20px; filter: drop-shadow(0 2px 4px rgba(139,92,246,.45)); }
 
-    /* ===== Overlay ===== */
-    .overlay {
-      position: fixed; top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.45);
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.3s ease;
+    /* ===================== DASHBOARD ===================== */
+    .page{ position:absolute; inset:0; opacity:0; pointer-events:none; overflow:auto; }
+    .page.active{ opacity:1; pointer-events:auto; }
+
+    .topbar{
+      position:sticky; top:0; z-index:5; padding:14px 20px; backdrop-filter: blur(10px);
+      background: linear-gradient( to right, rgba(12,12,22,.72), rgba(11,11,20,.58) );
+      border-bottom:1px solid rgba(255,255,255,.06);
+      display:flex; align-items:center; justify-content:space-between;
     }
-    .overlay.visible { opacity: 1; pointer-events: auto; }
+    .brand{
+      font-weight:800; letter-spacing:.4px;
+      background: linear-gradient(90deg, var(--sky), var(--violet), var(--pink));
+      -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+      font-size: clamp(1.2rem, 2.2vw, 1.5rem);
+    }
+    .top-actions{ display:flex; gap:10px; }
+    .chip{
+      padding:8px 12px; border-radius:999px; font-size:.9rem; color:#dfe3ff;
+      background: linear-gradient(120deg, #121225, #0e0f18); border:1px solid rgba(255,255,255,.08);
+    }
 
-    /* ===== Modal (dark glass) ===== */
-    .modal {
-      position: fixed; top: 50%; left: 50%;
-      transform: translate(-50%, -50%) scale(0.94);
-      background:
-        linear-gradient( to bottom right, rgba(16,16,28,.92), rgba(14,14,22,.92) ) padding-box,
-        linear-gradient(135deg,#7c3aed,#a855f7,#ec4899) border-box;
-      border: 2px solid transparent;
-      border-radius: 14px;
-      width: 380px; max-width: 92%;
-      padding: 18px 18px 16px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,.03);
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.25s ease, transform 0.25s ease;
-      color:#e9e8f6;
+    .container{ max-width:1200px; margin:28px auto 56px; padding:0 20px; }
+
+    .kpis{ display:grid; grid-template-columns: repeat(12, 1fr); gap:16px; margin-bottom:16px; }
+    .card{
+      grid-column: span 4; border-radius:16px; padding:18px; background: var(--glass);
+      border:2px solid transparent; color:var(--text);
+      box-shadow: 0 20px 60px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.03);
       backdrop-filter: blur(10px);
+      transition: transform .06s, box-shadow .25s, filter .25s;
     }
-    .modal.visible {
-      opacity: 1; pointer-events: auto;
-      transform: translate(-50%, -50%) scale(1);
+    .card:hover{ transform: translateY(-2px); box-shadow: 0 28px 80px rgba(124,58,237,.28); filter: saturate(1.05); }
+    .card h4{ margin-bottom:10px; font-weight:700; color:#dfe2ff; }
+    .stat{ font-size: clamp(1.4rem, 2.6vw, 2rem); font-weight:800; letter-spacing:.2px; }
+    .stat-gradient{
+      background: linear-gradient(90deg, var(--sky), var(--violet), var(--pink));
+      -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
     }
-    .modal .close-btn {
-      position: absolute; top: 8px; right: 10px;
-      font-size: 1.3rem; background: none; border: none;
-      color:#a5a3c9; cursor: pointer;
-    }
-    .modal h3 { margin-bottom: 12px; font-weight:700; color:#dcdcff; }
+    .muted{ color:var(--muted); font-size:.92rem; }
 
-    /* ===== Transactions List ===== */
-    .transactions-list {
-      list-style: none; margin-top: 10px; padding: 0;
-      max-height: 340px; overflow-y: auto;
-    }
-    .transactions-list li { margin-bottom: 12px; line-height: 1.4; }
-    .transactions-list .date-header {
-      font-weight: 700; margin-bottom: 6px; color:#cbd5ff;
-    }
-    .statement-header { display:none; } /* kept but hidden (no headers used) */
-
-    /* ===== TX-Item & Detail Styles ===== */
-    .tx-item {
-      border: 1px solid transparent; border-radius: 12px;
-      padding: 12px; margin-bottom: 10px; cursor: pointer;
+    .ring{
+      --p: 0;
+      width:84px; height:84px; border-radius:50%;
       background:
-        linear-gradient(#11121b,#0f1018) padding-box,
-        linear-gradient(135deg, rgba(124,58,237,.55), rgba(236,72,153,.55)) border-box;
+        radial-gradient(farthest-side, #0f1020 72%, transparent 73%) padding-box,
+        conic-gradient(var(--mint) calc(var(--p)*1%), #1f2937 0) border-box;
+      border:8px solid transparent; position:relative;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.05), var(--glow-violet);
+    }
+    .ring span{ position:absolute; inset:0; display:grid; place-items:center; font-weight:800; color:#c7ffd7; }
+
+    .balance-panel{ grid-column: span 8; display:flex; align-items:center; gap:18px; }
+    .actions{ display:flex; flex-wrap:wrap; gap:12px; margin-top:10px; }
+    .action-btn{
+      display:inline-flex; align-items:center; gap:10px; padding:12px 14px; border-radius:12px; cursor:pointer;
+      background: linear-gradient(#0f0f18,#0a0a14) padding-box,
+                  linear-gradient(135deg, var(--violet), var(--pink)) border-box;
+      border:1px solid transparent; color:#fff; font-weight:700; box-shadow: var(--glow-violet);
       transition: transform .05s, box-shadow .2s, filter .2s;
     }
-    .tx-item .tx-summary { display: flex; justify-content: space-between; }
-    .tx-item:hover { box-shadow: 0 10px 26px rgba(124,58,237,.25); filter:saturate(1.1); }
-    .tx-item:active { transform: translateY(1px); }
+    .action-btn:hover{ box-shadow: 0 14px 34px rgba(124,58,237,.35); filter:saturate(1.1); }
+    .action-btn:active{ transform: translateY(1px); }
+    .action-btn svg{ width:20px; height:20px; }
 
-    /* — SPACE FOR BACK BUTTON — */
-    #tx-detail-modal { padding-top: 56px; } /* room above title */
-    .modal .back-btn {
-      position: absolute;
-      top: 16px; left: 16px;
-      z-index: 2;
-      font-size: 1.1rem;
-      background: none; border: none;
-      cursor: pointer; color: #a5a3c9;
-    }
-    .points { color: #a5a3c9; font-size: 0.9rem; margin-top: 4px; }
-    #tx-detail-modal .detail-rows .row {
-      border-top: 1px solid rgba(255,255,255,.08); padding: 8px 0;
-    }
-    #tx-detail-modal .detail-rows .row:first-child { border-top: none; }
-    .row-label { color: #a5a3c9; font-size: 0.9rem; }
+    .facts{ grid-column: span 4; }
+    .kv{ display:flex; justify-content:space-between; padding:10px 0; border-top:1px solid rgba(255,255,255,.07); }
+    .kv:first-child{ border-top:none; }
 
-    /* ==== MOBILE OVERRIDES ==== */
-    @media only screen and (max-width: 480px) {
-      html, body { height: auto !important; overflow-y: auto !important; }
-      .page, #login-screen { height: auto !important; }
-      #login-screen { display: block !important; overflow-y: auto !important; padding: 20px; }
-      #login-box { margin: 0 auto; width: 100% !important; max-width: 360px; }
-      input { font-size: 0.95rem !important; }
-      #login-btn { font-size: 1rem !important; padding: 12px !important; }
-      .header { padding: 60px 10px 100px !important; }
-      .content { margin: -70px auto 24px !important; padding: 0 12px !important; }
-      .modal { width: 94% !important; max-height: 80vh !important; overflow-y: auto !important; }
-      .btn { width: 100%; margin-right: 0; }
+    .overlay{
+      position:fixed; inset:0; background:rgba(0,0,0,.5);
+      opacity:0; pointer-events:none; transition:opacity .25s ease;
     }
+    .overlay.visible{ opacity:1; pointer-events:auto; }
+    .modal{
+      position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(.94);
+      width:min(420px, 92vw); border-radius:16px; padding:18px;
+      background: var(--glass); border:2px solid transparent; color:var(--text);
+      box-shadow: 0 24px 80px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.03);
+      backdrop-filter: blur(10px);
+      opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease;
+    }
+    .modal.visible{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
+    .modal h3{ margin:6px 0 10px; font-weight:800; }
+    .modal .close-btn{ position:absolute; top:8px; right:10px; font-size:1.3rem; background:none; border:none; color:var(--muted); cursor:pointer; }
+    .transactions-list{ list-style:none; margin:8px 0 0; padding:0; max-height:360px; overflow:auto; }
+    .transactions-list .date-header{ font-weight:700; color:#dfe2ff; margin-bottom:6px; }
+    .tx-item{
+      padding:12px; border-radius:12px; margin:10px 0; cursor:pointer;
+      background: linear-gradient(#121222,#0f1020) padding-box,
+                  linear-gradient(135deg, rgba(124,58,237,.55), rgba(236,72,153,.55)) border-box;
+      border:1px solid transparent; transition:filter .2s, transform .05s, box-shadow .2s;
+    }
+    .tx-item:hover{ filter:saturate(1.06); box-shadow: 0 10px 26px rgba(124,58,237,.28); }
+    .tx-summary{ display:flex; justify-content:space-between; gap:10px; }
+    .points{ color:var(--muted); font-size:.9rem; }
 
-    /* ========= NEW LOGIN THEME ========= */
-    .login-bg {
-      position: absolute; top:0; left:0; width:100%; height:100%;
-      display:flex; align-items:center; justify-content:center;
-      background:
-        radial-gradient(900px 600px at 15% -10%, rgba(168,85,247,0.25), transparent 60%),
-        radial-gradient(800px 500px at 85% 110%, rgba(236,72,153,0.18), transparent 60%),
-        linear-gradient(135deg, #05050a 0%, #0f0a1a 45%, #2a0a4c 100%);
-      color:#fff;
-      padding: 24px;
+    #tx-detail-modal{ padding-top:56px; }
+    .back-btn{ position:absolute; top:16px; left:16px; background:none; border:none; color:var(--muted); cursor:pointer; }
+    .detail-rows .row{ padding:8px 0; border-top:1px solid rgba(255,255,255,.08); }
+    .detail-rows .row:first-child{ border-top:none; }
+    .row-label{ color:var(--muted); font-size:.92rem; }
+
+    @media (max-width: 980px){
+      .card{ grid-column: span 6; }
+      .balance-panel{ grid-column: span 12; }
+      .facts{ grid-column: span 12; }
     }
-    .login-shell {
-      width: 90%;
-      max-width: 420px;
-      border-radius: 18px;
-      padding: 3px;
-      background: linear-gradient(135deg, #7c3aed, #a855f7, #ec4899, #7c3aed);
-      box-shadow: 0 20px 60px rgba(0,0,0,.6), 0 0 80px rgba(124,58,237,.25);
+    @media (max-width: 640px){
+      .card{ grid-column: span 12; }
+      .actions{ gap:10px; }
+      .action-btn{ width:100%; justify-content:center; }
     }
-    #login-box {
-      background: #0b0b0f;
-      border-radius: 16px;
-      padding: 36px 32px 28px;
-      text-align: center;
-      color: #e8e7ef;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
-      width: 100%;
-      max-width: none;
+    @media (prefers-reduced-motion: reduce){
+      .fade, .modal, #login-btn, .tx-item, .card, .action-btn{ transition:none !important; }
+      .fx::before, .fx::after{ animation:none !important; }
     }
-    .login-title {
-      margin-bottom: 26px; font-weight: 500; font-size: 1.9rem;
-      letter-spacing: .2px;
-      text-shadow: 0 1px 0 rgba(0,0,0,.4);
-    }
-    #login-error {
-      height: 1.2em; margin-bottom: 12px; color: #ff6b6b; opacity: 0;
-      transition: opacity .3s; font-size: .9rem;
-    }
-    .input-group { position: relative; margin-bottom: 16px; }
-    .input {
-      width: 100%;
-      padding: 14px 14px 14px 48px;
-      border: 1px solid #262638;
-      border-radius: 12px;
-      background: #10111a;
-      color: #e5e7eb;
-      font-size: 1rem;
-      transition: box-shadow .2s, border-color .2s, background .2s;
-    }
-    .input::placeholder { color: #9aa0b5; }
-    .input:focus {
-      outline: none;
-      border-color: #8b5cf6;
-      box-shadow: 0 0 0 4px rgba(139,92,246,0.18), 0 0 22px rgba(139,92,246,0.35);
-      background: #0f1018;
-    }
-    .input-icon {
-      position:absolute; top:50%; left:14px; transform:translateY(-50%);
-      width:22px; height:22px;
-      filter: drop-shadow(0 2px 4px rgba(124,58,237,0.45));
-    }
-    #login-btn.login-btn {
-      width: 100%;
-      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-      padding: 13px 16px;
-      background: #0e0e14;
-      color:#fff; font-size: 1.05rem; font-weight: 600;
-      border: 1px solid #2a2b36; border-radius: 12px;
-      cursor: pointer;
-      transition: box-shadow .2s, transform .05s, border-color .2s;
-    }
-    #login-btn.login-btn:hover,
-    #login-btn.login-btn:focus {
-      border-color: #8b5cf6;
-      box-shadow: 0 0 0 4px rgba(139,92,246,0.18), 0 10px 30px rgba(139,92,246,0.35);
-      outline: none;
-    }
-    #login-btn.login-btn:active { transform: translateY(1px); }
-    .btn-icon { width:20px; height:20px; filter: drop-shadow(0 2px 4px rgba(139,92,246,.4)); }
   </style>
 </head>
 <body>
+  <div class="fx"></div>
+  <div class="grid"></div>
 
-  <!-- LOGIN OVERLAY (redesigned) -->
-  <div id="login-screen" class="fade visible login-bg">
+  <!-- =================== LOGIN =================== -->
+  <div id="login-screen" class="fade visible">
     <div class="login-shell">
       <div id="login-box">
-        <h2 class="login-title">Welcome to Sapphire<br>Reserve</h2>
+        <h2 class="login-title">Welcome to Sapphire<br/>Reserve</h2>
 
         <div id="login-error">Invalid credentials</div>
 
         <div class="input-group">
-          <!-- Modern user SVG with gradient -->
           <svg class="input-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <defs>
-              <linearGradient id="gradUser" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#a78bfa"/>
-                <stop offset="100%" stop-color="#ec4899"/>
-              </linearGradient>
-            </defs>
+            <defs><linearGradient id="gradUser" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#ec4899"/></linearGradient></defs>
             <path fill="url(#gradUser)" d="M12 13.2a5.2 5.2 0 1 0 0-10.4 5.2 5.2 0 0 0 0 10.4Z"/>
             <path fill="url(#gradUser)" d="M4.2 20.6c0-3.4 3.9-6.2 7.8-6.2s7.8 2.8 7.8 6.2v.2c0 .7-.6 1.2-1.3 1.2H5.5c-.7 0-1.3-.5-1.3-1.2v-.2Z"/>
           </svg>
@@ -322,110 +250,109 @@
         </div>
 
         <div class="input-group">
-          <!-- Modern lock SVG -->
           <svg class="input-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <defs>
-              <linearGradient id="gradLock" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#8b5cf6"/>
-                <stop offset="100%" stop-color="#9333ea"/>
-              </linearGradient>
-            </defs>
+            <defs><linearGradient id="gradLock" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#9333ea"/></linearGradient></defs>
           <path fill="url(#gradLock)" d="M17 9h-1V7a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2Zm-8-2a3 3 0 1 1 6 0v2H9V7Zm4 9.7V17a1 1 0 1 0-2 0v-.3a2 2 0 1 0 2 0Z"/>
           </svg>
           <input id="password" class="input" type="password" placeholder="Password" />
         </div>
 
-        <button id="login-btn" class="login-btn">
-          <!-- Enter/arrow icon -->
+        <button id="login-btn">
           <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <defs>
-              <linearGradient id="gradBtn" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#c084fc"/>
-                <stop offset="100%" stop-color="#ec4899"/>
-              </linearGradient>
-            </defs>
+            <defs><linearGradient id="gradBtn" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#c084fc"/><stop offset="100%" stop-color="#ec4899"/></linearGradient></defs>
             <path fill="url(#gradBtn)" d="M12 3a1 1 0 0 1 1 1v5h-2V5H6v14h5v-4h2v5a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7Zm8.7 9.3-4-4-1.4 1.4 1.3 1.3H12v2h4.6l-1.3 1.3 1.4 1.4 4-4a1 1 0 0 0 0-1.4Z"/>
           </svg>
-          <span>Log In</span>
+          Log In
         </button>
       </div>
     </div>
   </div>
 
-  <!-- === DASHBOARD (modern) === -->
+  <!-- =================== DASHBOARD =================== -->
   <div id="dashboard" class="hidden fade">
     <div id="card" class="page active">
-      <div class="header">
-        <div class="main-title"><strong>Sapphire Reserve</strong></div>
+      <div class="topbar">
+        <div class="brand">Sapphire Reserve</div>
+        <div class="top-actions">
+          <div class="chip">Status: <strong>Active</strong></div>
+          <div class="chip">Card ••••7295</div>
+        </div>
       </div>
 
-      <div class="content">
-        <div class="balance-line">
-          <strong>Current Balance:</strong>
-          <span class="highlight-debit">$0.00</span>
+      <div class="container">
+        <div class="kpis" style="--credit-used:0;">
+          <div class="card balance-panel">
+            <div>
+              <h4>Current Balance</h4>
+              <div class="stat stat-gradient">$0.00</div>
+              <div class="actions">
+                <button id="show-trans" class="action-btn" title="See recent activity">
+                  <svg viewBox="0 0 24 24"><path fill="#a78bfa" d="M4 4h16a1 1 0 0 1 1 1v3H3V5a1 1 0 0 1 1-1zm-1 7h18v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-7zm4 2v2h2v-2H7zm4 0v2h6v-2h-6z"/></svg>
+                  Recent transactions
+                </button>
+                <button id="pay-card" class="action-btn" title="Make a payment">
+                  <svg viewBox="0 0 24 24"><path fill="#ec4899" d="M3 5h18a2 2 0 0 1 2 2v2H1V7a2 2 0 0 1 2-2Zm-2 7h22v5a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-5Zm4 3v2h5v-2H5Z"/></svg>
+                  Pay Card
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="display:flex; align-items:center; gap:16px;">
+            <div class="ring" style="--p: 0;"><span>0%</span></div>
+            <div>
+              <h4>Credit Used</h4>
+              <div class="muted">Total limit: <strong>$325.00</strong></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h4>Upcoming</h4>
+            <div class="kv"><span class="muted">Next payment date</span><strong>08/07/2025</strong></div>
+            <div class="kv"><span class="muted">Statement close</span><strong>08/08/2025</strong></div>
+            <div class="kv"><span class="muted">Minimum due</span><strong>$0.00</strong></div>
+            <div class="kv"><span class="muted">APR (as of 08/06/25)</span><strong>20.22%</strong></div>
+          </div>
+
+          <div class="card facts">
+            <h4>Account Snapshot</h4>
+            <div class="kv"><span class="muted">Available balance</span><strong>$325.00</strong></div>
+            <div class="kv"><span class="muted">Current balance</span><strong>$0.00</strong></div>
+            <div class="kv"><span class="muted">Remaining statement</span><strong>$0.00</strong></div>
+          </div>
         </div>
-
-        <div class="details-box">
-          <p><strong>Available balance:</strong> $325.00</p>
-          <p><strong>Current balance:</strong> $0.00</p>
-          <p><strong>Total credit limit:</strong> $325.00</p>
-          <p><strong>Credit used:</strong> <span class="highlight-usage">0%</span></p>
-          <p><strong>Remaining statement balance:</strong> $0.00</p>
-          <p><strong>Next payment date:</strong> 08/07/2025</p>
-          <p><strong>Statement closing date:</strong> 08/08/2025</p>
-          <p><strong>Minimum payment due:</strong> $0.00</p>
-          <p><strong>APR as of 08/06/25:</strong> 20.22%</p>
-        </div>
-
-        <button id="show-trans" class="btn" title="See your recent activity">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#a78bfa" d="M4 4h16a1 1 0 0 1 1 1v3H3V5a1 1 0 0 1 1-1zm-1 7h18v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-7zm4 2v2h2v-2H7zm4 0v2h6v-2h-6z"/></svg>
-          Recent transactions
-        </button>
-
-        <button id="pay-card" class="btn" title="Make a payment">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#ec4899" d="M3 5h18a2 2 0 0 1 2 2v2H1V7a2 2 0 0 1 2-2Zm-2 7h22v5a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-5Zm4 3v2h5v-2H5Z"/></svg>
-          Pay Card
-        </button>
       </div>
     </div>
   </div>
 
-  <!-- === OVERLAY === -->
+  <!-- ============ OVERLAY & MODALS ============ -->
   <div id="overlay" class="overlay"></div>
 
-  <!-- === Transactions List Modal === -->
   <div id="trans-modal" class="modal">
     <button id="close-trans" class="close-btn">×</button>
     <h3>Recent transactions</h3>
-
-    <div class="date-header">Pending (0)</div>
-    <div style="margin-bottom:8px;color:#a5a3c9;">No pending transactions</div>
-
-    <!-- Dynamic list goes here -->
+    <div class="date-header" style="color:var(--muted);">Pending (0)</div>
+    <div style="margin-bottom:8px;color:var(--muted);">No pending transactions</div>
     <ul id="tx-list" class="transactions-list"></ul>
   </div>
 
-  <!-- === Transaction Detail Modal === -->
   <div id="tx-detail-modal" class="modal">
     <button class="back-btn">← Back</button>
     <h3>Transaction Details</h3>
     <div class="detail-header">
       <h4 id="detail-merchant">Merchant</h4>
-      <div id="detail-amount" class="highlight-debit">$0.00</div>
+      <div id="detail-amount" class="stat stat-gradient" style="font-size:1.4rem">$0.00</div>
       <div id="detail-points" class="points">0 pts</div>
     </div>
-    <div class="detail-rows"><!-- JS populates rows here --></div>
+    <div class="detail-rows"></div>
   </div>
 
-  <!-- === Pay Card Modal === -->
-  <div id="pay-modal" class="modal" style="width:380px;">
+  <div id="pay-modal" class="modal" style="width:min(420px,92vw);">
     <button id="close-pay" class="close-btn">×</button>
     <h3>Pay Card</h3>
-    <div class="details-box" style="margin:0;">
-      <p><strong>Current balance:</strong> <span class="highlight-debit">$0.00</span></p>
-      <p><strong>Remaining statement balance:</strong> $0.00</p>
-      <p><strong>Minimum payment due:</strong> <span class="highlight-debit">$0.00</span></p>
-    </div>
+    <div class="kv"><span class="muted">Current balance</span><strong>$0.00</strong></div>
+    <div class="kv"><span class="muted">Remaining statement balance</span><strong>$0.00</strong></div>
+    <div class="kv"><span class="muted">Minimum payment due</span><strong>$0.00</strong></div>
   </div>
 
   <script>
@@ -436,7 +363,6 @@
     const payModal    = document.getElementById('pay-modal');
     const loginScreen = document.getElementById('login-screen');
     const dashboard   = document.getElementById('dashboard');
-    const errMsg      = document.getElementById('login-error');
     const btn         = document.getElementById('login-btn');
 
     /* ========= DATA STORE ========= */
@@ -513,7 +439,6 @@
       overlay.classList.add('visible');
     }
 
-    /* Render ONLY transaction cards — NO statement headers */
     function renderList() {
       txListEl.innerHTML = '';
       transactions.forEach(tx => {
@@ -523,7 +448,7 @@
           <div class="date-header">${tx.date}</div>
           <div class="tx-summary">
             <span>${tx.merchant}</span>
-            <span class="${tx.amount.trim().startsWith('-') ? 'highlight-credit' : 'highlight-debit'}">
+            <span class="${tx.amount.trim().startsWith('-') ? 'highlight-credit' : 'stat-gradient'}">
               ${tx.amount}
             </span>
           </div>
@@ -532,60 +457,46 @@
         txListEl.appendChild(li);
       });
     }
-
-    // Helper to add transactions dynamically
-    window.addTransaction = function addTransaction(tx, {toTop = true} = {}) {
-      (toTop ? transactions.unshift(tx) : transactions.push(tx));
-      renderList();
-    };
-
     renderList();
 
-    /* ========= Modals: open/close ========= */
-    document.getElementById('show-trans').onclick = () => {
-      overlay.classList.add('visible');
-      transModal.classList.add('visible');
-    };
-    document.getElementById('close-trans').onclick = () => {
-      transModal.classList.remove('visible');
-      overlay.classList.remove('visible');
-    };
-    document.querySelector('#tx-detail-modal .back-btn').onclick = () => {
-      detailModal.classList.remove('visible');
-      transModal.classList.add('visible');
-    };
+    const open = (m)=>{ overlay.classList.add('visible'); m.classList.add('visible'); };
+    const close= (m)=>{ m.classList.remove('visible'); overlay.classList.remove('visible'); };
 
-    document.getElementById('pay-card').onclick = () => {
-      overlay.classList.add('visible');
-      payModal.classList.add('visible');
-    };
-    document.getElementById('close-pay').onclick = () => {
-      payModal.classList.remove('visible');
-      overlay.classList.remove('visible');
-    };
+    document.getElementById('show-trans').onclick = () => open(transModal);
+    document.getElementById('close-trans').onclick = () => close(transModal);
+    document.querySelector('#tx-detail-modal .back-btn').onclick = () => { close(detailModal); open(transModal); };
 
-    /* ========= Login ========= */
-    btn.addEventListener('click', () => {
+    document.getElementById('pay-card').onclick = () => open(payModal);
+    document.getElementById('close-pay').onclick = () => close(payModal);
+
+    /* ========= Login: allow ANY non-empty credentials ========= */
+    function tryLogin(){
       const u = document.getElementById('username').value.trim();
       const p = document.getElementById('password').value;
-      if (u === 'shloak' && p === 'sac') {
+      const err = document.getElementById('login-error');
+      if (u && p){
         loginScreen.classList.remove('visible');
         loginScreen.classList.add('hidden');
         setTimeout(() => {
           dashboard.classList.remove('hidden');
           dashboard.classList.add('visible');
-        }, 400);
+        }, 300);
       } else {
-        const err = document.getElementById('login-error');
+        err.textContent = 'Enter username & password';
         err.style.opacity = '1';
-        setTimeout(() => err.style.opacity = '0', 2000);
+        setTimeout(() => err.style.opacity = '0', 1800);
       }
+    }
+    btn.addEventListener('click', tryLogin);
+    ['username','password'].forEach(id=>{
+      document.getElementById(id).addEventListener('keydown', e => { if(e.key==='Enter') tryLogin(); });
     });
-    ['username','password'].forEach(id => {
-      document.getElementById(id).addEventListener('keydown', e => {
-        if (e.key === 'Enter') btn.click();
-      });
-    });
+
+    /* Public helper to add transactions dynamically */
+    window.addTransaction = function addTransaction(tx, {toTop = true} = {}) {
+      (toTop ? transactions.unshift(tx) : transactions.push(tx));
+      renderList();
+    };
   });
   </script>
 </body>
