@@ -11,7 +11,8 @@
       height: 100%;
       overflow: auto; /* allow scrolling after login */
       font-family: "Segoe UI", Roboto, sans-serif;
-      color: #333;
+      color: #e6e6f0;
+      background: #0a0a0f;
     }
 
     /* — Fade & Visibility Utilities — */
@@ -26,107 +27,162 @@
     .page {
       position: absolute; top: 0; left: 0;
       width: 100%; height: 100%;
-      background: #fff;
+      background:
+        radial-gradient(1200px 700px at 15% -10%, rgba(124,58,237,0.20), transparent 60%),
+        radial-gradient(1000px 650px at 85% 110%, rgba(236,72,153,0.14), transparent 60%),
+        linear-gradient(180deg, #0a0a10 0%, #0c0a16 50%, #0a0a10 100%);
       opacity: 0; pointer-events: none;
       transition: opacity 0.4s ease;
       overflow-y: auto;
     }
     .page.active { opacity: 1; pointer-events: auto; }
 
-    /* ===== Header ===== */
+    /* ===== Header (Neon) ===== */
     .header {
-      background: linear-gradient(135deg, #2C3E50 0%, #4CA1AF 100%);
-      padding: 80px 20px 100px;
-      text-align: center; color: #fff;
+      position: relative;
+      padding: 84px 20px 120px;
+      text-align: center;
+      color: #fff;
+      background:
+        radial-gradient(900px 600px at 50% -20%, rgba(168,85,247,0.25), transparent 70%),
+        linear-gradient(135deg, #0b0814, #1a1030 55%, #2a0a4c);
+      overflow: hidden;
+    }
+    .header::after{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        repeating-linear-gradient(120deg, rgba(139,92,246,0.07) 0 2px, transparent 2px 8px);
+      mix-blend-mode: screen; pointer-events:none;
     }
     .main-title {
-      font-size: 3rem; font-weight: 500;
-      color: #4285F4; margin-bottom: 10px;
+      font-size: clamp(2.2rem, 4vw, 3.2rem);
+      font-weight: 700;
+      letter-spacing: .5px;
+      background: linear-gradient(90deg, #6d28d9, #60a5fa 45%, #f472b6);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 10px 30px rgba(99,102,241,0.25);
     }
 
     /* ===== Content ===== */
     .content {
-      max-width: 600px; margin: 20px auto 40px; padding: 0 20px;
+      max-width: 980px; margin: -80px auto 48px; padding: 0 20px;
     }
-    .balance-line { font-size: 1.8rem; margin-bottom: 16px; }
 
-    /* ===== Details Box ===== */
+    /* ===== Balance headline ===== */
+    .balance-line {
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      margin-bottom: 18px;
+      display:flex; align-items:baseline; gap:.5ch;
+    }
+    .balance-line strong{
+      color:#c7c9ff; font-weight:600;
+      text-shadow: 0 4px 16px rgba(99,102,241,.15);
+    }
+    .highlight-debit {
+      background: linear-gradient(90deg,#60a5fa,#a78bfa,#f472b6);
+      -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+      font-weight: 800;
+    }
+    .highlight-credit { color: #fb7185; font-weight: 700; }
+    .highlight-usage  { color: #34d399; font-weight: 700; }
+
+    /* ===== Glass Card with Gradient Border ===== */
     .details-box {
-      border: 1px solid #ddd; border-radius: 6px;
-      background: #fafafa; padding: 20px; margin-bottom: 30px;
+      border: 2px solid transparent;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 28px;
+      background:
+        linear-gradient( to bottom right, rgba(16,16,28,.75), rgba(14,14,22,.75) ) padding-box,
+        linear-gradient(135deg,#7c3aed, #a855f7, #ec4899) border-box;
+      box-shadow:
+        0 20px 60px rgba(0,0,0,.55),
+        inset 0 0 0 1px rgba(255,255,255,.04);
+      backdrop-filter: blur(8px);
+      color:#dfe2ff;
     }
-    .details-box p { margin-bottom: 12px; line-height: 1.5; }
-    .details-box p:last-child { margin-bottom: 0; }
+    .details-box p { margin-bottom: 10px; line-height: 1.5; }
+    .details-box p strong{ color:#cbd5ff; }
 
-    /* ===== Highlights ===== */
-    .highlight-credit { color: #ff5e5e; font-weight: bold; }
-    .highlight-usage  { color: #1e8e3e; font-weight: bold; }
-    .highlight-debit  { color: #5196ff; font-weight: bold; }
-
-    /* ===== Buttons ===== */
+    /* ===== Buttons (neon outline) ===== */
     .btn {
-      display: block; width: 100%;
-      font-size: 1.1rem; font-weight: 500;
-      padding: 14px 20px; border: none; border-radius: 8px;
-      background: linear-gradient(90deg, #0c2a4e, #123b61);
-      color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      cursor: pointer; transition: background 0.2s, box-shadow 0.2s;
-      margin-bottom: 20px;
+      display: inline-flex; align-items:center; gap:10px;
+      font-size: 1.05rem; font-weight: 600;
+      padding: 14px 18px; border: 1px solid transparent; border-radius: 12px;
+      background:
+        linear-gradient(#0c0c14,#0a0a12) padding-box,
+        linear-gradient(135deg,#7c3aed,#a855f7,#ec4899) border-box;
+      color: #ffffff; box-shadow: 0 10px 24px rgba(124,58,237,.25);
+      cursor: pointer; transition: transform .05s, box-shadow .2s, filter .2s;
+      margin-right: 12px; margin-bottom: 20px;
     }
-    .btn:hover {
-      background: linear-gradient(90deg, #0a2340, #0f2f4d);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.3);
-    }
+    .btn svg{ width:20px;height:20px; filter: drop-shadow(0 2px 4px rgba(139,92,246,.45)); }
+    .btn:hover { box-shadow: 0 14px 34px rgba(124,58,237,.35); filter:saturate(1.2); }
+    .btn:active { transform: translateY(1px); }
 
     /* ===== Overlay ===== */
     .overlay {
       position: fixed; top: 0; left: 0;
       width: 100%; height: 100%;
-      background: rgba(0,0,0,0.4);
+      background: rgba(0,0,0,0.45);
       opacity: 0; pointer-events: none;
       transition: opacity 0.3s ease;
     }
     .overlay.visible { opacity: 1; pointer-events: auto; }
 
-    /* ===== Modal ===== */
+    /* ===== Modal (dark glass) ===== */
     .modal {
       position: fixed; top: 50%; left: 50%;
-      transform: translate(-50%, -50%) scale(0.9);
-      background: #fff; border-radius: 8px;
-      width: 340px; max-width: 90%;
-      padding: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      transform: translate(-50%, -50%) scale(0.94);
+      background:
+        linear-gradient( to bottom right, rgba(16,16,28,.92), rgba(14,14,22,.92) ) padding-box,
+        linear-gradient(135deg,#7c3aed,#a855f7,#ec4899) border-box;
+      border: 2px solid transparent;
+      border-radius: 14px;
+      width: 380px; max-width: 92%;
+      padding: 18px 18px 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,.03);
       opacity: 0; pointer-events: none;
-      transition: opacity 0.3s ease, transform 0.3s ease;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      color:#e9e8f6;
+      backdrop-filter: blur(10px);
     }
     .modal.visible {
       opacity: 1; pointer-events: auto;
       transform: translate(-50%, -50%) scale(1);
     }
     .modal .close-btn {
-      position: absolute; top: 8px; right: 8px;
-      font-size: 1.2rem; background: none; border: none;
-      cursor: pointer;
+      position: absolute; top: 8px; right: 10px;
+      font-size: 1.3rem; background: none; border: none;
+      color:#a5a3c9; cursor: pointer;
     }
-    .modal h3 { margin-bottom: 20px; }
+    .modal h3 { margin-bottom: 12px; font-weight:700; color:#dcdcff; }
 
     /* ===== Transactions List ===== */
     .transactions-list {
-      list-style: none; margin-top: 16px; padding: 0;
-      max-height: 300px; overflow-y: auto;
+      list-style: none; margin-top: 10px; padding: 0;
+      max-height: 340px; overflow-y: auto;
     }
     .transactions-list li { margin-bottom: 12px; line-height: 1.4; }
-    .transactions-list .date-header { font-weight: bold; margin-bottom: 6px; }
+    .transactions-list .date-header {
+      font-weight: 700; margin-bottom: 6px; color:#cbd5ff;
+    }
     .statement-header { display:none; } /* kept but hidden (no headers used) */
 
     /* ===== TX-Item & Detail Styles ===== */
     .tx-item {
-      border: 1px solid #ddd; border-radius: 6px;
-      padding: 12px; margin-bottom: 12px;
-      cursor: pointer; transition: background 0.2s;
-      background: #fff;
+      border: 1px solid transparent; border-radius: 12px;
+      padding: 12px; margin-bottom: 10px; cursor: pointer;
+      background:
+        linear-gradient(#11121b,#0f1018) padding-box,
+        linear-gradient(135deg, rgba(124,58,237,.55), rgba(236,72,153,.55)) border-box;
+      transition: transform .05s, box-shadow .2s, filter .2s;
     }
-    .tx-item:hover { background: #f5f5f5; }
     .tx-item .tx-summary { display: flex; justify-content: space-between; }
+    .tx-item:hover { box-shadow: 0 10px 26px rgba(124,58,237,.25); filter:saturate(1.1); }
+    .tx-item:active { transform: translateY(1px); }
 
     /* — SPACE FOR BACK BUTTON — */
     #tx-detail-modal { padding-top: 56px; } /* room above title */
@@ -134,17 +190,16 @@
       position: absolute;
       top: 16px; left: 16px;
       z-index: 2;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       background: none; border: none;
-      cursor: pointer; color: #555;
+      cursor: pointer; color: #a5a3c9;
     }
-
-    .points { color: #777; font-size: 0.9rem; margin-top: 4px; }
+    .points { color: #a5a3c9; font-size: 0.9rem; margin-top: 4px; }
     #tx-detail-modal .detail-rows .row {
-      border-top: 1px solid #eee; padding: 8px 0;
+      border-top: 1px solid rgba(255,255,255,.08); padding: 8px 0;
     }
     #tx-detail-modal .detail-rows .row:first-child { border-top: none; }
-    .row-label { color: #777; font-size: 0.9rem; }
+    .row-label { color: #a5a3c9; font-size: 0.9rem; }
 
     /* ==== MOBILE OVERRIDES ==== */
     @media only screen and (max-width: 480px) {
@@ -152,81 +207,164 @@
       .page, #login-screen { height: auto !important; }
       #login-screen { display: block !important; overflow-y: auto !important; padding: 20px; }
       #login-box { margin: 0 auto; width: 100% !important; max-width: 360px; }
-      input { font-size: 0.9rem !important; }
-      #login-btn { font-size: 1rem !important; padding: 10px !important; }
-      .header { padding: 40px 10px 60px !important; }
-      .main-title { font-size: 2rem !important; }
-      .content { margin: 10px auto 20px !important; padding: 0 10px !important; }
-      .balance-line { font-size: 1.5rem !important; }
-      .details-box { padding: 16px !important; }
-      .btn { font-size: 1rem !important; padding: 12px !important; }
-      .modal { width: 90% !important; max-height: 80vh !important; overflow-y: auto !important; }
+      input { font-size: 0.95rem !important; }
+      #login-btn { font-size: 1rem !important; padding: 12px !important; }
+      .header { padding: 60px 10px 100px !important; }
+      .content { margin: -70px auto 24px !important; padding: 0 12px !important; }
+      .modal { width: 94% !important; max-height: 80vh !important; overflow-y: auto !important; }
+      .btn { width: 100%; margin-right: 0; }
     }
+
+    /* ========= NEW LOGIN THEME ========= */
+    .login-bg {
+      position: absolute; top:0; left:0; width:100%; height:100%;
+      display:flex; align-items:center; justify-content:center;
+      background:
+        radial-gradient(900px 600px at 15% -10%, rgba(168,85,247,0.25), transparent 60%),
+        radial-gradient(800px 500px at 85% 110%, rgba(236,72,153,0.18), transparent 60%),
+        linear-gradient(135deg, #05050a 0%, #0f0a1a 45%, #2a0a4c 100%);
+      color:#fff;
+      padding: 24px;
+    }
+    .login-shell {
+      width: 90%;
+      max-width: 420px;
+      border-radius: 18px;
+      padding: 3px;
+      background: linear-gradient(135deg, #7c3aed, #a855f7, #ec4899, #7c3aed);
+      box-shadow: 0 20px 60px rgba(0,0,0,.6), 0 0 80px rgba(124,58,237,.25);
+    }
+    #login-box {
+      background: #0b0b0f;
+      border-radius: 16px;
+      padding: 36px 32px 28px;
+      text-align: center;
+      color: #e8e7ef;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+      width: 100%;
+      max-width: none;
+    }
+    .login-title {
+      margin-bottom: 26px; font-weight: 500; font-size: 1.9rem;
+      letter-spacing: .2px;
+      text-shadow: 0 1px 0 rgba(0,0,0,.4);
+    }
+    #login-error {
+      height: 1.2em; margin-bottom: 12px; color: #ff6b6b; opacity: 0;
+      transition: opacity .3s; font-size: .9rem;
+    }
+    .input-group { position: relative; margin-bottom: 16px; }
+    .input {
+      width: 100%;
+      padding: 14px 14px 14px 48px;
+      border: 1px solid #262638;
+      border-radius: 12px;
+      background: #10111a;
+      color: #e5e7eb;
+      font-size: 1rem;
+      transition: box-shadow .2s, border-color .2s, background .2s;
+    }
+    .input::placeholder { color: #9aa0b5; }
+    .input:focus {
+      outline: none;
+      border-color: #8b5cf6;
+      box-shadow: 0 0 0 4px rgba(139,92,246,0.18), 0 0 22px rgba(139,92,246,0.35);
+      background: #0f1018;
+    }
+    .input-icon {
+      position:absolute; top:50%; left:14px; transform:translateY(-50%);
+      width:22px; height:22px;
+      filter: drop-shadow(0 2px 4px rgba(124,58,237,0.45));
+    }
+    #login-btn.login-btn {
+      width: 100%;
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 13px 16px;
+      background: #0e0e14;
+      color:#fff; font-size: 1.05rem; font-weight: 600;
+      border: 1px solid #2a2b36; border-radius: 12px;
+      cursor: pointer;
+      transition: box-shadow .2s, transform .05s, border-color .2s;
+    }
+    #login-btn.login-btn:hover,
+    #login-btn.login-btn:focus {
+      border-color: #8b5cf6;
+      box-shadow: 0 0 0 4px rgba(139,92,246,0.18), 0 10px 30px rgba(139,92,246,0.35);
+      outline: none;
+    }
+    #login-btn.login-btn:active { transform: translateY(1px); }
+    .btn-icon { width:20px; height:20px; filter: drop-shadow(0 2px 4px rgba(139,92,246,.4)); }
   </style>
 </head>
 <body>
 
-  <!-- LOGIN OVERLAY -->
-  <div id="login-screen" class="fade visible"
-       style="position:absolute;top:0;left:0;width:100%;height:100%;
-              display:flex;align-items:center;justify-content:center;
-              background:linear-gradient(135deg,#2C3E50,#4CA1AF);
-              color:#fff;">
-    <div id="login-box"
-         style="background:rgba(255,255,255,0.1);padding:40px;border-radius:12px;
-                width:90%;max-width:360px;text-align:center;
-                box-shadow:0 8px 24px rgba(0,0,0,0.3);">
-      <h2 style="margin-bottom:24px;font-weight:300;font-size:1.8rem;">
-        Welcome to Sapphire Reserve
-      </h2>
-      <div id="login-error"
-           style="height:1.2em;margin-bottom:12px;color:#ff5e5e;opacity:0;
-                  transition:opacity .3s;font-size:.9rem;">
-        Invalid credentials
+  <!-- LOGIN OVERLAY (redesigned) -->
+  <div id="login-screen" class="fade visible login-bg">
+    <div class="login-shell">
+      <div id="login-box">
+        <h2 class="login-title">Welcome to Sapphire<br>Reserve</h2>
+
+        <div id="login-error">Invalid credentials</div>
+
+        <div class="input-group">
+          <!-- Modern user SVG with gradient -->
+          <svg class="input-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <defs>
+              <linearGradient id="gradUser" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#a78bfa"/>
+                <stop offset="100%" stop-color="#ec4899"/>
+              </linearGradient>
+            </defs>
+            <path fill="url(#gradUser)" d="M12 13.2a5.2 5.2 0 1 0 0-10.4 5.2 5.2 0 0 0 0 10.4Z"/>
+            <path fill="url(#gradUser)" d="M4.2 20.6c0-3.4 3.9-6.2 7.8-6.2s7.8 2.8 7.8 6.2v.2c0 .7-.6 1.2-1.3 1.2H5.5c-.7 0-1.3-.5-1.3-1.2v-.2Z"/>
+          </svg>
+          <input id="username" class="input" type="text" placeholder="Username" />
+        </div>
+
+        <div class="input-group">
+          <!-- Modern lock SVG -->
+          <svg class="input-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <defs>
+              <linearGradient id="gradLock" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#8b5cf6"/>
+                <stop offset="100%" stop-color="#9333ea"/>
+              </linearGradient>
+            </defs>
+          <path fill="url(#gradLock)" d="M17 9h-1V7a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2Zm-8-2a3 3 0 1 1 6 0v2H9V7Zm4 9.7V17a1 1 0 1 0-2 0v-.3a2 2 0 1 0 2 0Z"/>
+          </svg>
+          <input id="password" class="input" type="password" placeholder="Password" />
+        </div>
+
+        <button id="login-btn" class="login-btn">
+          <!-- Enter/arrow icon -->
+          <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <defs>
+              <linearGradient id="gradBtn" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#c084fc"/>
+                <stop offset="100%" stop-color="#ec4899"/>
+              </linearGradient>
+            </defs>
+            <path fill="url(#gradBtn)" d="M12 3a1 1 0 0 1 1 1v5h-2V5H6v14h5v-4h2v5a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7Zm8.7 9.3-4-4-1.4 1.4 1.3 1.3H12v2h4.6l-1.3 1.3 1.4 1.4 4-4a1 1 0 0 0 0-1.4Z"/>
+          </svg>
+          <span>Log In</span>
+        </button>
       </div>
-      <div style="position:relative;margin-bottom:20px;">
-        <!-- user icon -->
-        <svg viewBox="0 0 24 24"
-             style="position:absolute;top:50%;left:12px;transform:translateY(-50%);
-                    width:20px;height:20px;fill:rgba(255,255,255,0.8);">
-          <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5 0-10 2.5-10 5v3h20v-3c0-2.5-5-5-10-5z"/>
-        </svg>
-        <input id="username" type="text" placeholder="Username"
-               style="width:100%;padding:12px 12px 12px 44px;border:none;
-                      border-radius:6px;background:rgba(255,255,255,0.2);
-                      color:#fff;font-size:1rem;" />
-      </div>
-      <div style="position:relative;margin-bottom:20px;">
-        <!-- lock icon -->
-        <svg viewBox="0 0 24 24"
-             style="position:absolute;top:50%;left:12px;transform:translateY(-50%);
-                    width:20px;height:20px;fill:rgba(255,255,255,0.8);">
-          <path d="M17 8V6a5 5 0 0 0-10 0v2H5v14h14V8h-2zM9 6a3 3 0 0 1 6 0v2H9V6z"/>
-        </svg>
-        <input id="password" type="password" placeholder="Password"
-               style="width:100%;padding:12px 12px 12px 44px;border:none;
-                      border-radius:6px;background:rgba(255,255,255,0.2);
-                      color:#fff;font-size:1rem;" />
-      </div>
-      <button id="login-btn"
-              style="width:100%;padding:12px;background:#1e8e3e;border:none;
-                     border-radius:6px;color:#fff;font-size:1.1rem;
-                     font-weight:500;cursor:pointer;transition:background .2s;">
-        Log In
-      </button>
     </div>
   </div>
 
-  <!-- === DASHBOARD === -->
+  <!-- === DASHBOARD (modern) === -->
   <div id="dashboard" class="hidden fade">
     <div id="card" class="page active">
       <div class="header">
         <div class="main-title"><strong>Sapphire Reserve</strong></div>
       </div>
+
       <div class="content">
         <div class="balance-line">
-          <strong>Current Balance:</strong> <span class="highlight-debit">$0.00</span>
+          <strong>Current Balance:</strong>
+          <span class="highlight-debit">$0.00</span>
         </div>
+
         <div class="details-box">
           <p><strong>Available balance:</strong> $325.00</p>
           <p><strong>Current balance:</strong> $0.00</p>
@@ -238,8 +376,16 @@
           <p><strong>Minimum payment due:</strong> $0.00</p>
           <p><strong>APR as of 08/06/25:</strong> 20.22%</p>
         </div>
-        <button id="show-trans" class="btn">Recent transactions</button>
-        <button id="pay-card" class="btn">Pay Card</button>
+
+        <button id="show-trans" class="btn" title="See your recent activity">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#a78bfa" d="M4 4h16a1 1 0 0 1 1 1v3H3V5a1 1 0 0 1 1-1zm-1 7h18v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-7zm4 2v2h2v-2H7zm4 0v2h6v-2h-6z"/></svg>
+          Recent transactions
+        </button>
+
+        <button id="pay-card" class="btn" title="Make a payment">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#ec4899" d="M3 5h18a2 2 0 0 1 2 2v2H1V7a2 2 0 0 1 2-2Zm-2 7h22v5a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-5Zm4 3v2h5v-2H5Z"/></svg>
+          Pay Card
+        </button>
       </div>
     </div>
   </div>
@@ -253,7 +399,7 @@
     <h3>Recent transactions</h3>
 
     <div class="date-header">Pending (0)</div>
-    <div style="margin-bottom:8px;color:#666;">No pending transactions</div>
+    <div style="margin-bottom:8px;color:#a5a3c9;">No pending transactions</div>
 
     <!-- Dynamic list goes here -->
     <ul id="tx-list" class="transactions-list"></ul>
@@ -272,7 +418,7 @@
   </div>
 
   <!-- === Pay Card Modal === -->
-  <div id="pay-modal" class="modal" style="width:360px;">
+  <div id="pay-modal" class="modal" style="width:380px;">
     <button id="close-pay" class="close-btn">×</button>
     <h3>Pay Card</h3>
     <div class="details-box" style="margin:0;">
@@ -342,7 +488,6 @@
 
       { id:'t-2025-04-07-1', date:'Apr 07, 2025', merchant:'DISCORD* GIFT-NITRO-MO',          amount:'$10.66',   points:31.98,    category:'Chatting',         cardEnding:'****7295', status:'Posted' },
       { id:'t-2025-04-07-2', date:'Apr 07, 2025', merchant:'DISCORD* GIFT-NITRO-MO',          amount:'$10.66',   points:31.98,    category:'Chatting',         cardEnding:'****7295', status:'Posted' }
-      // Add more objects here whenever you want
     ];
 
     const txListEl = document.getElementById('tx-list');
@@ -431,8 +576,9 @@
           dashboard.classList.add('visible');
         }, 400);
       } else {
-        errMsg.style.opacity = '1';
-        setTimeout(() => errMsg.style.opacity = '0', 2000);
+        const err = document.getElementById('login-error');
+        err.style.opacity = '1';
+        setTimeout(() => err.style.opacity = '0', 2000);
       }
     });
     ['username','password'].forEach(id => {
@@ -440,19 +586,6 @@
         if (e.key === 'Enter') btn.click();
       });
     });
-
-    /* Example to add a tx:
-    addTransaction({
-      id: 't-2025-08-09-1',
-      date: 'Aug 09, 2025',
-      merchant: 'Amazon',
-      amount: '$32.15',
-      points: 96.45,
-      category: 'Online Shopping',
-      cardEnding: '****7295',
-      status: 'Posted'
-    });
-    */
   });
   </script>
 </body>
