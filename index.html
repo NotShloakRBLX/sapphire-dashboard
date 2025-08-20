@@ -45,7 +45,8 @@
 
   .stack{padding:10px 12px 26px}
   .pass{
-    position:relative;height:212px;border-radius:var(--radiusCard);overflow:hidden;box-shadow:var(--shadow);
+    position:relative;height:212px;border-radius:18px; /* refined corners */
+    overflow:hidden;box-shadow:var(--shadow);
     cursor:pointer;transition:transform var(--t),filter var(--t)
   }
   .pass::after, .bigCard::after{
@@ -56,7 +57,6 @@
   .pass + .pass{margin-top:-126px}
   .pass:active{transform:scale(.99)}
 
-  /* Card gradients (purple/blue) */
   .grad1{
     background:
       radial-gradient(120% 120% at 20% 10%, rgba(173,104,255,.45) 0%, transparent 60%),
@@ -75,33 +75,17 @@
   .hint{color:var(--muted);text-align:center;margin:18px 0 8px;font-size:13px}
 
   .content{padding:6px 12px 28px}
-
-  /* Top display card with refined corners */
-  .bigCard{
-    height:212px;border-radius:18px;overflow:hidden;box-shadow:var(--shadow);position:relative
-  }
+  .bigCard{height:212px;border-radius:18px;overflow:hidden;box-shadow:var(--shadow);position:relative}
   .bigCard .visa{right:22px;bottom:18px}
 
-  /* ---------- GRID LAYOUT FIX ---------- */
+  /* ------- GRID LAYOUT ------- */
   .grid{
     margin-top:16px;
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:12px;
-    align-items:start;                   /* do not stretch rows */
+    display:grid;grid-template-columns:1fr 1fr;gap:12px;
+    align-items:start;
   }
-  /* Left column spans two rows; inside uses flex to stack */
-  .leftCol{
-    grid-column:1;
-    grid-row:1 / span 2;
-    display:flex; flex-direction:column; gap:12px;
-    height:100%;
-  }
-  /* Right tile spans two rows */
-  .dueTall{
-    grid-column:2;
-    grid-row:1 / span 2;
-  }
+  .leftCol{grid-column:1;grid-row:1 / span 2;display:flex;flex-direction:column;gap:12px}
+  .dueTall{grid-column:2;grid-row:1 / span 2} /* original position/height */
 
   .tile{
     background:var(--tile);border:1px solid var(--tileBorder);
@@ -111,14 +95,12 @@
   .val{font-size:26px;font-weight:800;margin:0}
   .micro{font-size:12px;color:var(--muted);margin-top:4px}
 
-  /* compact trims bottom padding to remove extra space */
+  /* Card balance – remove extra space */
   .compact{padding:12px 14px 8px}
+
   .full{grid-column:1/-1}
 
-  .bars{display:flex;gap:6px;margin-top:6px;align-items:flex-end}
-  .bars i{flex:1;height:20px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.8),rgba(255,255,255,.45));opacity:.26}
-
-  /* Payment Due tile (tall) */
+  /* Payment Due (unchanged/original) */
   .dueTile{padding:12px 16px 16px}
   .dueHeader{margin:0 0 4px;color:var(--muted);font-size:13px}
   .dueVal{line-height:1}
@@ -127,44 +109,20 @@
 
   /* Pay bubbles */
   .payBubble{
-    position:absolute;right:14px;bottom:14px;
+    position:absolute;right:14px;bottom:14px;   /* stick to bottom-right */
     width:70px;height:70px;border-radius:50%;
     background:#000;color:#fff;display:grid;place-items:center;
     font-weight:900;letter-spacing:.2px;border:3px solid #fff;
     box-shadow:0 12px 30px rgba(0,0,0,.55);transition:transform var(--t),opacity var(--t)
   }
-  .payBubble.sm{width:58px;height:58px}  /* smaller for Statement */
-  .payBubble:active{transform:scale(.95)}
+  /* Smaller for Statement tile (so it won't overlap) */
+  .payBubble.sm{width:52px;height:52px}
 
-  /* Make Statement tile fill the leftover height in the left column */
-  #statementTile{flex:1; padding-bottom:16px;}
+  /* Make Statement tile fill leftover height of left column */
+  #statementTile{flex:1;padding-bottom:16px}
+  #statementTile .payBubble{right:14px;bottom:14px}
 
-  .listItem{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:12px}
-  .avatar{display:none}
-
-  /* -------- Transaction details (page 3) -------- */
-  .pos-0 .views{transform:translateX(0%)}
-  .pos-1 .views{transform:translateX(-33.3333%)}
-  .pos-2 .views{transform:translateX(-66.6667%)}
-
-  .txnHeader{padding:28px 18px 10px;text-align:center}
-  .txnAmount{font-size:60px;font-weight:900;letter-spacing:-.5px}
-  .txnMerchant{color:var(--muted);font-size:22px;font-weight:700;margin-top:6px}
-  .txnDate{color:var(--muted);font-size:16px;margin-top:4px}
-
-  .block{ margin:14px 12px; }
-  .row{
-    margin:14px 12px;
-    display:flex; justify-content:space-between; align-items:center;
-    padding:16px;
-    background:var(--tile); border:1px solid var(--tileBorder);
-    border-radius:var(--radiusTile);
-  }
-  .row h3{ margin:0; font-size:18px; }
-  .row .right{ font-weight:900; font-size:18px; }
-  .statusLine{ font-size:18px; margin-bottom:4px; }
-
-  /* Txn list rows */
+  /* Transactions */
   .txnRow{
     display:flex;gap:12px;align-items:center;
     background:rgba(255,255,255,.04);
@@ -177,6 +135,24 @@
   .txnTitle .sep{opacity:.6}
   .txnSub{color:var(--muted);font-size:12px}
   .txnAmt{font-weight:800}
+
+  /* Transaction details page */
+  .pos-0 .views{transform:translateX(0%)}
+  .pos-1 .views{transform:translateX(-33.3333%)}
+  .pos-2 .views{transform:translateX(-66.6667%)}
+
+  .txnHeader{padding:28px 18px 10px;text-align:center}
+  .txnAmount{font-size:60px;font-weight:900;letter-spacing:-.5px}
+  .txnMerchant{color:var(--muted);font-size:22px;font-weight:700;margin-top:6px}
+  .txnDate{color:var(--muted);font-size:16px;margin-top:4px}
+  .block{ margin:14px 12px; }
+  .row{
+    margin:14px 12px;display:flex;justify-content:space-between;align-items:center;
+    padding:16px;background:var(--tile);border:1px solid var(--tileBorder);border-radius:var(--radiusTile);
+  }
+  .row h3{margin:0;font-size:18px}
+  .row .right{font-weight:900;font-size:18px}
+  .statusLine{font-size:18px;margin-bottom:4px}
 </style>
 </head>
 <body>
@@ -241,7 +217,7 @@
         </div>
 
         <div class="grid">
-          <!-- LEFT COLUMN (spans two rows) -->
+          <!-- LEFT COLUMN -->
           <div class="leftCol">
             <div class="tile compact">
               <div class="kb">Card Balance</div>
@@ -256,7 +232,7 @@
             </div>
           </div>
 
-          <!-- RIGHT COLUMN (tall) -->
+          <!-- RIGHT COLUMN (original tall Payment Due) -->
           <div class="tile dueTile dueTall" id="dueTile">
             <p class="dueHeader">Payment Due In</p>
             <div class="dueVal">
@@ -266,13 +242,11 @@
             <button class="payBubble" id="openPay">Pay</button>
           </div>
 
-          <!-- Savings -->
           <div class="tile full">
             <div class="kb">Savings Account</div>
             <div class="val">$70.19</div>
           </div>
 
-          <!-- Transactions -->
           <div class="tile full" id="txnsTile">
             <div class="kb" style="margin-bottom:8px">Latest Card Transactions</div>
             <div id="txnList"></div>
@@ -281,7 +255,7 @@
       </div>
     </section>
 
-    <!-- Transaction details view -->
+    <!-- Transaction details -->
     <section class="view" id="txnView">
       <div class="nav">
         <button class="pill" id="backTxn">Back</button>
@@ -306,7 +280,7 @@
     </section>
   </div>
 
-  <!-- Payment sheet (existing) -->
+  <!-- Payment sheet (unchanged content/behavior) -->
   <div class="sheet" id="sheet">
     <div class="dim" id="dim"></div>
     <div class="panel">
@@ -450,23 +424,13 @@
 
   updateByFraction(0,false);
 
-  // --------- Transactions: data + list + click to details ---------
+  /* -------- Transactions -------- */
   const txnListEl = document.getElementById('txnList');
-
   function uid(){ return 't_'+Math.random().toString(36).slice(2,9) }
 
-  // NOTE: amounts are stored as positive numbers.
-  // Show rule: purchases -> "$xx.xx"; refunds & payments -> "- $xx.xx"
+  // amounts stored positive; purchases show "$", refunds/payments show "- $"
   const transactions = [
-    {
-      id: uid(),
-      merchant: 'Apple Store',
-      amount: 40.35,
-      kind: 'refund',                 // 'purchase' | 'refund' | 'payment'
-      status: 'Refunded',
-      card: 'Apple Card',
-      iso: '2023-07-14T16:32:00'
-    }
+    { id: uid(), merchant: 'Apple Store', amount: 40.35, kind: 'refund', status: 'Refunded', card: 'Apple Card', iso: '2023-07-14T16:32:00' }
   ];
 
   function shortDate(iso){
@@ -478,27 +442,23 @@
     return d.toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit'}) + ', ' +
            d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
   }
-  function amountListText(t){
-    return (t.kind==='purchase' ? '$' : '- $') + t.amount.toFixed(2);
-  }
+  function listAmount(t){ return (t.kind==='purchase' ? '$' : '- $') + t.amount.toFixed(2) }
 
   function renderTransactions(){
     transactions.sort((a,b)=> new Date(b.iso) - new Date(a.iso));
-    txnListEl.innerHTML = transactions.map(t => `
+    txnListEl.innerHTML = transactions.map(t=>`
       <div class="txnRow" data-id="${t.id}" tabindex="0" role="button" aria-label="Open ${t.merchant} transaction">
         <div class="txnMain">
           <div class="txnTitle">${t.merchant} <span class="sep">• ${t.status}</span></div>
           <div class="txnSub">${shortDate(t.iso)}</div>
         </div>
-        <div class="txnAmt">${amountListText(t)}</div>
+        <div class="txnAmt">${listAmount(t)}</div>
       </div>
     `).join('');
   }
 
   function openTxnDetails(id){
-    const t = transactions.find(x=>x.id===id);
-    if(!t) return;
-    // Amount shown as absolute in details
+    const t = transactions.find(x=>x.id===id); if(!t) return;
     document.getElementById('txnAmount').textContent = '$' + t.amount.toFixed(2);
     document.getElementById('txnMerchant').textContent = t.merchant;
     document.getElementById('txnDate').textContent = fullDateTime(t.iso);
@@ -509,14 +469,12 @@
   }
 
   txnListEl.addEventListener('click', e=>{
-    const row = e.target.closest('.txnRow');
-    if(!row) return;
+    const row = e.target.closest('.txnRow'); if(!row) return;
     openTxnDetails(row.dataset.id);
   });
   txnListEl.addEventListener('keydown', e=>{
     if(e.key!=='Enter') return;
-    const row = e.target.closest('.txnRow');
-    if(!row) return;
+    const row = e.target.closest('.txnRow'); if(!row) return;
     openTxnDetails(row.dataset.id);
   });
 
