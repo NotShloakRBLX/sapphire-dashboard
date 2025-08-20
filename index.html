@@ -90,7 +90,7 @@
   .val{font-size:26px;font-weight:800;margin:0}
   .micro{font-size:12px;color:var(--muted);margin-top:4px}
 
-  /* Card Balance tile — tighter bottom padding to remove extra space */
+  /* Card Balance tile — tightened bottom padding to remove extra space */
   .compact{padding:12px 14px 8px}
   .compact .kb{margin-bottom:2px}
   .compact .val{font-size:25px}
@@ -98,14 +98,15 @@
 
   .full{grid-column:1/-1}
 
-  /* Payment Due + Statement tiles */
+  /* Payment Due */
   .dueTile{padding:12px 16px 16px}
   .dueHeader{margin:0 0 4px;color:var(--muted);font-size:13px}
   .dueVal{line-height:1}
   .dueVal .num{display:block;font-size:40px;font-weight:900;letter-spacing:-.3px}
   .dueVal .unit{display:block;font-size:26px;font-weight:900;margin-top:2px;letter-spacing:-.2px}
+  .dueTall{grid-row:span 2;min-height:260px;} /* spans two rows */
 
-  /* Bubbles positioned bottom-right inside tiles */
+  /* Pay bubble bottom-right */
   .payBubble{
     position:absolute;right:14px;bottom:14px;
     width:70px;height:70px;border-radius:50%;
@@ -116,9 +117,11 @@
   }
   .payBubble:active{transform:scale(.95)}
 
-  /* make BOTH tiles taller */
-  .dueTall{grid-row:span 2;min-height:260px;}
-  #statementTile{grid-row:span 2;min-height:260px;}
+  /* Statement Balance — single row so its bottom aligns with Payment Due */
+  #statementTile{ /* no grid-row span; let the grid split the tall tile evenly */
+    padding:12px 16px 16px;
+    min-height:auto; /* rely on the row height set by the spanning tile */
+  }
 
   .listItem{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:12px}
   .avatar{display:none}
@@ -217,7 +220,7 @@
             <p class="micro" id="availableCredit">$11,497.27 Available</p>
           </div>
 
-          <!-- Payment Due (taller) -->
+          <!-- Payment Due (taller, spans 2 rows) -->
           <div class="tile dueTile dueTall" id="dueTile">
             <p class="dueHeader">Payment Due In</p>
             <div class="dueVal">
@@ -227,14 +230,14 @@
             <button class="payBubble" id="openPay">Pay</button>
           </div>
 
-          <!-- Statement Balance (taller + bubble bottom-right) -->
+          <!-- Statement Balance (single row; aligns bottom with Payment Due) -->
           <div class="tile compact" id="statementTile">
             <div class="kb">Statement Balance</div>
             <p class="val" id="statementBalance">$0.00</p>
             <button class="payBubble" id="openPayStatement">Pay</button>
           </div>
 
-          <!-- Savings Account -->
+          <!-- Savings Account (back to original spot) -->
           <div class="tile full">
             <div class="kb">Savings Account</div>
             <div class="val">$70.19</div>
