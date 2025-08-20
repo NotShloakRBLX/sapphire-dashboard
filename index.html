@@ -13,7 +13,7 @@
     --muted:rgba(255,255,255,.62);
     --shadow:0 14px 40px rgba(0,0,0,.40);
     --t:.35s cubic-bezier(.2,.8,.2,1);
-    --radiusCard:16px;           /* refined corners */
+    --radiusCard:16px;
     --radiusTile:20px;
   }
   *{box-sizing:border-box}
@@ -56,7 +56,6 @@
   .pass + .pass{margin-top:-126px}
   .pass:active{transform:scale(.99)}
 
-  /* Card gradients (purple/blue) */
   .grad1{
     background:
       radial-gradient(120% 120% at 20% 10%, rgba(173,104,255,.45) 0%, transparent 60%),
@@ -91,21 +90,22 @@
   .val{font-size:26px;font-weight:800;margin:0}
   .micro{font-size:12px;color:var(--muted);margin-top:4px}
 
-  /* tighter Card Balance tile to remove extra interior space */
-  .compact{padding:12px 14px 10px}
+  /* Card Balance tile — tighter bottom padding to remove extra space */
+  .compact{padding:12px 14px 8px}
   .compact .kb{margin-bottom:2px}
   .compact .val{font-size:25px}
   .compact .micro{margin-top:0}
 
   .full{grid-column:1/-1}
 
-  /* >>> Expanded Payment Due tile <<< */
+  /* Payment Due + Statement tiles */
   .dueTile{padding:12px 16px 16px}
-  .dueTall{grid-row:span 2;}
   .dueHeader{margin:0 0 4px;color:var(--muted);font-size:13px}
   .dueVal{line-height:1}
   .dueVal .num{display:block;font-size:40px;font-weight:900;letter-spacing:-.3px}
   .dueVal .unit{display:block;font-size:26px;font-weight:900;margin-top:2px;letter-spacing:-.2px}
+
+  /* Bubbles positioned bottom-right inside tiles */
   .payBubble{
     position:absolute;right:14px;bottom:14px;
     width:70px;height:70px;border-radius:50%;
@@ -115,11 +115,13 @@
     transition:transform var(--t),opacity var(--t)
   }
   .payBubble:active{transform:scale(.95)}
-  /* small bubble for Statement Balance */
-  .payBubble.small{width:54px;height:54px;bottom:10px;right:12px;font-size:13px}
+
+  /* make BOTH tiles taller */
+  .dueTall{grid-row:span 2;min-height:260px;}
+  #statementTile{grid-row:span 2;min-height:260px;}
 
   .listItem{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:12px}
-  .avatar{display:none} /* no image box */
+  .avatar{display:none}
 
   /* Payment sheet */
   .sheet{position:fixed;inset:0;display:grid;place-items:end center;pointer-events:none;z-index:9}
@@ -155,7 +157,7 @@
         <h1>Wallet</h1>
         <div class="iconrow">
           <div class="iconbtn" aria-label="Search"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
-          <div class="iconbtn" aria-label="List"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M4 5h16v2H4zm0 5h16v2H4zm0 5h11v2H4z"/></svg></div>
+          <div class="iconbtn" aria-label="List"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M4 4h16v2H4zM4 9h16v2H4zM4 14h11v2H4zM4 19h11v2H4z"/></svg></div>
           <div class="iconbtn" aria-label="More"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></div>
         </div>
       </div>
@@ -165,7 +167,6 @@
         <article class="pass grad1 openCard" tabindex="0">
           <div class="label">Visa Card</div>
           <div class="visa">
-            <!-- VISA logo -->
             <svg viewBox="0 0 512 170" xmlns="http://www.w3.org/2000/svg">
               <defs><linearGradient id="visaG1" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#e7ecf5"/></linearGradient></defs>
               <path fill="url(#visaG1)" d="M226.8 168.1l27.1-165.6h43.4l-27.1 165.6h-43.4zm197.6-161.7c-8.6-3.2-22.2-6.7-39-6.7-43 0-73.3 21.6-73.5 52.5-.3 22.8 21.6 35.6 38.1 43.1 16.9 7.7 22.6 12.7 22.6 19.6-.1 10.6-13.6 15.4-26.2 15.4-17.5 0-26.8-2.4-41.2-8.2l-5.6-2.5-6.1 37.9c10.2 4.3 29 8 48.6 8.2 45.8 0 75.6-21.3 75.9-54.3.2-18.1-11.5-31.8-36.8-43.2-15.3-7.4-24.7-12.3-24.6-19.8.1-6.6 7.9-13.7 25.1-13.7 14.2-.2 24.7 2.9 32.7 6.1l3.9 1.9 5.9-36.3zm70.9 2.7h-33.9c-10.5 0-18.3 3-22.9 14.2l-65.3 149.1h46.3l9.2-25.4h56.6c1.3 5.9 5.4 25.4 5.4 25.4h40.9l-36.3-163.3zm-55.1 105.9c3.6-9.1 17.2-44.1 17.2-44.1-.3.5 3.6-9.2 5.9-15.1l3 13.7 9.9 45.5h-36zM168.4 2.6L125 109.5l-4.6-23.6C113.1 63.3 94.7 41 74.5 31.8l38.5 135.9h45.4l67.4-165H168.4zM70.4 2.5H1.2L0 8.6C57.7 23 95 58.9 110.7 109.5L94.4 21.1C91.4 10.9 82.9 3.9 70.4 2.5z"/>
@@ -209,14 +210,14 @@
         </div>
 
         <div class="grid">
-          <!-- Card Balance (tighter padding) -->
+          <!-- Card Balance -->
           <div class="tile compact">
             <div class="kb">Card Balance</div>
             <p class="val" id="cardBalance">$181.43</p>
             <p class="micro" id="availableCredit">$11,497.27 Available</p>
           </div>
 
-          <!-- EXPANDED Payment Due tile -->
+          <!-- Payment Due (taller) -->
           <div class="tile dueTile dueTall" id="dueTile">
             <p class="dueHeader">Payment Due In</p>
             <div class="dueVal">
@@ -226,11 +227,11 @@
             <button class="payBubble" id="openPay">Pay</button>
           </div>
 
-          <!-- Statement Balance tile (replaces Weekly Activity) -->
+          <!-- Statement Balance (taller + bubble bottom-right) -->
           <div class="tile compact" id="statementTile">
             <div class="kb">Statement Balance</div>
             <p class="val" id="statementBalance">$0.00</p>
-            <button class="payBubble small" id="openPayStatement">Pay</button>
+            <button class="payBubble" id="openPayStatement">Pay</button>
           </div>
 
           <!-- Savings Account -->
@@ -284,8 +285,8 @@
       </div>
 
       <div class="info" id="payInfo">
-        Pay Balance
-        <small>Choose how much you want to pay.</small>
+        Pay June Balance
+        <small>Paying your monthly balance is recommended to help keep you financially healthy and avoid interest charges.</small>
       </div>
 
       <div class="actions">
@@ -308,15 +309,23 @@
   /* Sheet open/close */
   const sheet=document.getElementById('sheet');
   const dim=document.getElementById('dim');
-  const openPay=document.getElementById('openPay');               // Payment Due tile
-  const openPayStatement=document.getElementById('openPayStatement'); // Statement Balance tile
+  const openPay=document.getElementById('openPay');
+  const openPayStatement=document.getElementById('openPayStatement');
   const closeSheet=()=>sheet.classList.remove('active');
+  openPay.addEventListener('click',()=>{
+    document.getElementById('sheetTitle').textContent='Choose Amount';
+    sheet.classList.add('active');
+  });
+  openPayStatement.addEventListener('click',()=>{
+    document.getElementById('sheetTitle').textContent='Pay Statement Balance';
+    sheet.classList.add('active');
+  });
   dim.addEventListener('click',closeSheet);
   document.getElementById('closeSheet').addEventListener('click',closeSheet);
   document.addEventListener('keydown',e=>{if(e.key==='Escape') closeSheet()});
 
-  /* Slider values (mutable) */
-  let MIN=0.00, THRESH=149.36, MAX=181.43;
+  /* Slider values */
+  const MIN=0.00, THRESH=149.36, MAX=181.43;
 
   const ringWrap=document.getElementById('ringWrap');
   const ringSvg=document.getElementById('ringSvg');
@@ -325,7 +334,6 @@
   const amountLabel=document.getElementById('amountLabel');
   const payBtn=document.getElementById('payNowBtn');
   const info=document.getElementById('payInfo');
-  const sheetTitle=document.getElementById('sheetTitle');
 
   const R=120;
   const C=2*Math.PI*R;
@@ -338,10 +346,13 @@
   function setUI(v){
     if(Math.abs(v-MAX)<0.01){
       progress.setAttribute('stroke','url(#gradBlue)');
+      info.innerHTML='Pay Card Balance<small>Paying the total amount you’ve spent is a great way to clear your balance and stay ahead on your finances.</small>';
     }else if(v>THRESH){
       progress.setAttribute('stroke','url(#gradGreen)');
+      info.innerHTML='Pay More Toward Your Balance<small>Paying more of your card balance helps free up available credit and reduces the amount to pay next month.</small>';
     }else{
       progress.setAttribute('stroke','url(#gradGray)');
+      info.innerHTML='Pay June Balance<small>Paying your monthly balance is recommended to help keep you financially healthy and avoid interest charges.</small>';
     }
   }
 
@@ -398,32 +409,6 @@
   });
   payBtn.addEventListener('click',()=>{alert('Paid $'+amount.toFixed(2)+' (demo).'); sheet.classList.remove('active');});
 
-  // Helpers to parse currency text like "$181.43"
-  const numFromCurrency = txt => parseFloat(String(txt).replace(/[^\d.]/g,''));
-
-  // Open sheet in "card balance" mode (Payment Due tile)
-  openPay.addEventListener('click',()=>{
-    const curr = numFromCurrency(document.getElementById('cardBalance').textContent);
-    MAX = isFinite(curr) ? curr : 0;
-    THRESH = Math.max(0, MAX * 0.82); // visual mid stage
-    sheetTitle.textContent = 'Pay Balance';
-    info.innerHTML = 'Pay Card Balance<small>Paying the total amount you’ve spent is a great way to clear your balance.</small>';
-    updateByFraction(0,false);
-    sheet.classList.add('active');
-  });
-
-  // Open sheet in "statement balance" mode (Statement Balance tile)
-  openPayStatement.addEventListener('click',()=>{
-    const stat = numFromCurrency(document.getElementById('statementBalance').textContent);
-    MAX = isFinite(stat) ? stat : 0;
-    THRESH = Math.max(0, MAX * 0.82);
-    sheetTitle.textContent = 'Pay Statement';
-    info.innerHTML = 'Pay Statement Balance<small>Choose how much of your statement to pay.</small>';
-    updateByFraction(0,false);
-    sheet.classList.add('active');
-  });
-
-  // initial ring paint
   updateByFraction(0,false);
 })();
 </script>
