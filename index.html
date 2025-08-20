@@ -2,684 +2,672 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Wallet</title>
 <style>
-/* -------------------------------------------------
-   APPLE-WALLET STYLE • Mobile-first (iPhone 15 Pro)
-   ------------------------------------------------- */
+/* ========= iOS look (light mode) ========= */
 :root{
-  --bg:#0a0a0a;
-  --card:#111214;
-  --box:#0f1114;
-  --text:#f5f5f7;
-  --sub:#b9bcc6;
-  --muted:#8c8f98;
-  --line:rgba(255,255,255,.08);
-  --blur-bg:rgba(0,0,0,.5);
-  --blue:#0a84ff;
-  --green:#30d158;
-  --red:#ff453a;
-  --shadow:0 18px 38px rgba(0,0,0,.55);
-  --radius:18px;
-  --ease:cubic-bezier(.22,.61,.36,1);
+  --bg:#F2F2F7;           /* iOS grouped bg */
+  --card:#FFFFFF;
+  --label:#1C1C1E;
+  --muted:#6E6E73;
+  --hair:#E5E5EA;
+  --tint:#007AFF;         /* iOS blue */
+  --good:#34C759;
+  --shadow:0 8px 30px rgba(0,0,0,.10);
+  --ring-track:#E9E9ED;
+  --ring-blue1:#6EC5FF;
+  --ring-blue2:#0A84FF;
+  --ring-green1:#9FE8B5;
+  --ring-green2:#34C759;
 }
-
-/* Global reset */
-*{box-sizing:border-box}
-html,body{height:100%}
+*{box-sizing:border-box;}
+html,body{height:100%;}
 body{
-  margin:0;
-  background:#000;
-  font:16px/1.3 -apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-  color:var(--text);
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-  overflow-x:hidden;
+  margin:0; background:var(--bg); color:var(--label);
+  font: 16px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+/* Lock to iPhone 15 Pro width for perfect composition (still responsive) */
+.app{
+  width:min(393px, 100vw);
+  min-height:100dvh;
+  margin:0 auto;
+  background:var(--bg);
+  position:relative;
+  overflow:hidden;
 }
 
-/* Smoothness everywhere */
-.fade{opacity:0;transform:translateY(6px);transition:opacity .28s var(--ease),transform .28s var(--ease)}
-.fade.show{opacity:1;transform:none}
-
-/* Pages */
-.page{position:fixed;inset:0;overflow:auto;display:none;background:linear-gradient(180deg,#000 0%,#050506 100%)}
-.page.active{display:block}
-
-/* Header */
-.header{
-  position:sticky;top:0;z-index:10;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:14px 16px calc(14px + env(safe-area-inset-top));
-  background:linear-gradient(180deg,rgba(0,0,0,.9),rgba(0,0,0,.6));
-  backdrop-filter:saturate(140%) blur(16px);
-  border-bottom:1px solid var(--line);
+/* ====== Page transitions ====== */
+.page{
+  position:absolute; inset:0;
+  overflow:auto; -webkit-overflow-scrolling:touch;
+  background:var(--bg);
+  opacity:0; transform:translateX(40px);
+  transition:opacity .25s ease, transform .25s ease;
+  will-change:opacity,transform;
 }
-.title{font-weight:800;font-size:34px;letter-spacing:.2px}
+.page.active{ opacity:1; transform:none; }
 
-/* Wallet list */
-.container{padding:14px 14px calc(24px + env(safe-area-inset-bottom))}
-.stack{display:flex;flex-direction:column;gap:14px}
-
-/* Wallet card (collapsed) */
-.wallet-card{
-  position:relative;border-radius:22px;overflow:hidden;min-height:140px;
-  box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.1);
-  background:#111;isolation:isolate;
-  transform:translateZ(0); /* gpu */
+/* ====== Nav bars ====== */
+.nav{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 18px 8px; position:sticky; top:0; z-index:5;
+  background:color-mix(in oklab, var(--bg) 88%, white);
+  backdrop-filter:saturate(180%) blur(20px);
 }
-.wallet-card::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 100% at 85% -10%,rgba(255,255,255,.18),transparent 50%);mix-blend-mode:overlay;pointer-events:none}
-.card-pad{padding:16px}
-.card-row{display:flex;align-items:center;justify-content:space-between}
-.card-name{font-weight:800;letter-spacing:.3px;font-size:17px}
-.card-last{color:#d7d9e2;opacity:.9;font-variant-numeric:tabular-nums}
-.card-bal{margin-top:28px;font-weight:900;font-size:28px;letter-spacing:.2px}
-.card-sub{color:var(--sub);font-size:13px;margin-top:2px}
-
-/* Distinct gradients */
-.grad-sapphire{
-  background:
-    radial-gradient(120% 140% at 10% 0%,rgba(80,150,255,.25),transparent 60%),
-    radial-gradient(120% 140% at 110% 60%,rgba(0,205,255,.18),transparent 60%),
-    linear-gradient(135deg,#0d1f3c,#0a2a5a 40%,#0a4c9b 95%);
+.nav h1{
+  margin:0; font-size:34px; font-weight:800; letter-spacing:-.02em;
 }
-.grad-aadv{
-  background:
-    radial-gradient(120% 140% at 10% 0%,rgba(255,140,230,.25),transparent 60%),
-    radial-gradient(120% 140% at 110% 60%,rgba(90,120,255,.22),transparent 60%),
-    linear-gradient(135deg,#2a133e,#463b86 40%,#7b39b5 95%);
+.nav .btn{
+  appearance:none; border:0; background:transparent; color:var(--tint);
+  font-size:17px; padding:8px 0; border-radius:10px;
 }
 
-/* VISA mark */
-.visa{font-weight:900;letter-spacing:.06em;font-size:22px}
-.visa::before{content:"VISA";}
-
-/* Full card view */
-.card-view{padding:14px 14px 24px}
-.big-card{
-  border-radius:22px;min-height:208px;box-shadow:var(--shadow);
-  border:1px solid rgba(255,255,255,.1);overflow:hidden;position:relative;
+/* ====== Wallet stack ====== */
+.stack{ padding:6px 14px 18px; }
+.card-btn{
+  width:100%; border:0; background:transparent; padding:0; display:block;
+  transform:translateY(0); transition:transform .25s ease, filter .25s ease;
+  will-change:transform,filter; filter:drop-shadow(var(--shadow));
 }
-.big-card .badge{position:absolute;top:14px;left:14px;background:rgba(0,0,0,.45);backdrop-filter:blur(10px);padding:6px 10px;border-radius:999px;font-size:12px;border:1px solid rgba(255,255,255,.12)}
-.big-card .visa{position:absolute;right:16px;bottom:12px;font-size:28px;text-shadow:0 6px 18px rgba(0,0,0,.45)}
-.big-card .digits{position:absolute;left:16px;bottom:52px;font-weight:800;letter-spacing:.14em;font-size:18px}
-.big-card .holder{position:absolute;left:16px;bottom:16px;font-weight:700;font-size:14px;color:#eef1ff}
-
-/* card info box */
-.info-box{
-  background:var(--box);border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:12px;
+.card-btn + .card-btn{ margin-top:-82px; }       /* stack overlap */
+.card-visual{
+  height:204px; border-radius:18px; overflow:hidden; position:relative;
 }
-.info-row{display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
-.info-row:first-child{border-top:none}
-.label{color:var(--muted)}
-.val{font-weight:700}
-
-/* status strip */
-.strip{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:14px}
-.chip{background:#0c0d10;border:1px solid var(--line);padding:10px 12px;border-radius:999px;font-size:13px;color:#e7eaf5}
-.pay-btn{background:#fff;color:#000;border:none;border-radius:999px;padding:10px 16px;font-weight:700;box-shadow:0 8px 22px rgba(0,0,0,.25);}
-
-/* transactions */
-.section-title{margin:18px 6px 8px;font-weight:800;font-size:18px}
-.list{background:var(--box);border:1px solid var(--line);border-radius:16px;overflow:hidden}
-.row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-top:1px solid var(--line)}
-.row:first-child{border-top:none}
-.merchant{font-weight:600}
-.meta{color:var(--muted);font-size:12px;margin-top:2px}
-.amount{font-weight:800}
-.amt-neg{color:#2ee66b}
-.amt-pos{color:#e85b57} /* charge shows as positive outflow on cards */
-.amt-ref{color:#9dd6ff}
-
-/* Back button */
-.btn-back{background:none;border:none;color:#9ed0ff;font-weight:600;font-size:16px}
-
-/* Loader overlay */
-.loader{
-  position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:1000;
-  background:var(--blur-bg);backdrop-filter:saturate(140%) blur(16px);
-  transition:opacity .25s var(--ease);opacity:0;
+.visa{ position:absolute; right:18px; bottom:14px; font-weight:900; font-size:22px; color:#fff; opacity:.95; letter-spacing:.06em; }
+.grad-1{ background: radial-gradient(120% 120% at 10% 0%, #7AA7FF 0%, #4C5CFF 35%, #101A6B 100%); }
+.grad-2{ background: radial-gradient(120% 120% at 0% 0%, #FFB5EC 0%, #FF7AA9 30%, #FF9A3C 70%, #FBD65E 100%); }
+.card-caption{
+  height:68px; margin:8px 10px 0; border-radius:16px;
+  background:var(--card); border:1px solid var(--hair); padding:10px 12px;
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
 }
-.loader.show{display:flex;opacity:1}
-.spinner{
-  width:34px;height:34px;border-radius:50%;
-  border:3px solid rgba(255,255,255,.2);border-top-color:#fff;animation:spin .9s linear infinite;margin:0 auto 12px;
-}
-@keyframes spin{to{transform:rotate(1turn)}}
+.caption-title{ font-weight:700; }
+.caption-sub{ color:var(--muted); font-size:13px; }
 
-/* Bottom sheet (Apple-style) */
+/* ====== Card detail ====== */
+.section{ background:var(--card); border:1px solid var(--hair); border-radius:16px; margin:10px 16px; padding:12px; }
+.big-card{ margin:10px 16px 8px; height:210px; border-radius:18px; position:relative; overflow:hidden; box-shadow:var(--shadow); }
+.tiles{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 16px; }
+.tile{ background:var(--card); border:1px solid var(--hair); border-radius:16px; padding:12px; min-height:86px; display:flex; flex-direction:column; justify-content:space-between; }
+.tile .label{ color:var(--muted); font-size:13px; }
+.tile .value{ font-size:28px; font-weight:800; letter-spacing:-.02em; }
+.pay-dot{ width:54px; height:54px; border-radius:27px; background:#000; color:#fff; display:grid; place-items:center; font-weight:700; align-self:flex-end; }
+
+/* ====== Transactions ====== */
+.list{ margin:10px 0 24px; }
+.item{ display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-top:1px solid var(--hair); background:var(--card); }
+.item:first-child{ border-top:0; border-top-left-radius:16px; border-top-right-radius:16px; }
+.item:last-child{ border-bottom-left-radius:16px; border-bottom-right-radius:16px; }
+.item .left{ display:flex; gap:12px; align-items:center; }
+.icon{ width:28px; height:28px; border-radius:7px; background:#EDEEF2; display:grid; place-items:center; font-weight:800; }
+.merch{ font-weight:600; }
+.sub{ color:var(--muted); font-size:12px; margin-top:2px; }
+.amt-pos{ color:#111; font-weight:700; }
+.amt-neg{ color:#FF3B30; font-weight:700; }
+
+/* ====== Fullscreen modal (Choose Amount) ====== */
 .sheet{
-  position:fixed;left:0;right:0;bottom:0;z-index:999;
-  transform:translateY(100%);opacity:0;transition:transform .35s var(--ease),opacity .35s var(--ease);
+  position:absolute; inset:0; background:#fff;
+  opacity:0; transform:translateY(100px);
+  transition:opacity .25s ease, transform .25s ease;
+  display:none; z-index:30;
 }
-.sheet.show{transform:translateY(0);opacity:1}
-.sheet .surface{
-  background:#0b0c0f;border-top-left-radius:22px;border-top-right-radius:22px;
-  border:1px solid var(--line);padding:14px 14px calc(14px + env(safe-area-inset-bottom));
-  box-shadow:0 -10px 50px rgba(0,0,0,.5);
-}
-.grabber{width:42px;height:5px;border-radius:999px;background:rgba(255,255,255,.22);margin:6px auto 10px}
-.sheet h3{margin:6px 0 10px;font-size:22px}
+.sheet.show{ display:block; opacity:1; transform:none; }
+.sheet .head{ padding:14px 16px 0; display:flex; justify-content:space-between; align-items:center; }
+.sheet h2{ font-size:34px; margin:6px 16px 0; letter-spacing:-.02em; }
+.sheet .note{ margin:6px 16px; color:#6e6e73; }
+.ring-wrap{ display:grid; place-items:center; margin:8px 0 16px; }
 .ring{
-  --size:160px;width:var(--size);height:var(--size);border-radius:50%;
-  margin:8px auto 10px;background:
-    conic-gradient(#0a84ff var(--deg,0deg),rgba(255,255,255,.12) 0);
-  display:grid;place-items:center;box-shadow:inset 0 0 0 12px rgba(255,255,255,.08);
+  width:280px; height:280px; position:relative;
+  touch-action:none; user-select:none; -webkit-user-select:none;
 }
-.ring .val{font-size:28px;font-weight:900}
-.choice{display:flex;gap:10px;margin-top:10px}
-.btn-gray{flex:1;background:#1a1c22;border:1px solid var(--line);color:#e9ebf5;border-radius:12px;padding:12px 14px;font-weight:700}
-.btn-primary{flex:1;background:#fff;color:#000;border:none;border-radius:12px;padding:12px 14px;font-weight:800}
+.ring svg{ width:100%; height:100%; display:block; }
+.ring .center{
+  position:absolute; inset:0; display:grid; place-items:center;
+  font-weight:800; font-size:44px; letter-spacing:-.02em;
+}
+.ring .handle{
+  position:absolute; width:28px; height:28px; border-radius:50%;
+  background:#fff; border:3px solid #E5E5EA; box-shadow:0 6px 16px rgba(0,0,0,.25);
+  transform:translate(-14px,-14px);
+  touch-action:none; will-change:transform,left,top;
+}
+.sheet .cta{ display:flex; gap:10px; padding:0 16px 22px; }
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  padding:14px 16px; border-radius:14px; border:1px solid var(--hair); background:var(--card);
+  font-weight:700;
+}
+.btn.primary{ background:#000; color:#fff; border-color:#000; }
+.link{ text-align:center; color:var(--tint); margin:8px 0 18px; }
 
-/* Keypad (Other Amount) */
-.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
-.key{padding:14px 0;border-radius:12px;background:#1a1c22;border:1px solid var(--line);font-size:20px;font-weight:700;text-align:center}
-.key:active{transform:scale(.98)}
-.display{font-size:34px;font-weight:900;text-align:center;margin:6px 0}
+/* ====== Loading overlay ====== */
+.loading{
+  position:absolute; inset:0; display:none; place-items:center;
+  background:rgba(250,250,255,.82); z-index:40; backdrop-filter:blur(10px);
+  opacity:0; transition:opacity .2s ease;
+}
+.loading.show{ display:grid; opacity:1; }
+.spinner{
+  width:44px; height:44px; border:4px solid #e5e5ea; border-top-color:#000; border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+@keyframes spin{ to{ transform:rotate(1turn); } }
 
-/* Reduce motion */
-@media (prefers-reduced-motion:reduce){
-  .fade,.sheet,.loader,.spinner{transition:none!important;animation:none!important}
+/* ====== Small helpers ====== */
+.badge{ padding:2px 8px; border-radius:999px; border:1px solid var(--hair); background:#fff; color:#111; font-size:12px; }
+.hint{ color:var(--muted); font-size:12px; }
+.hidden{ display:none !important; }
+
+@media (prefers-reduced-motion: reduce){
+  .page,.sheet{ transition:none !important; }
+  .spinner{ animation:none; }
 }
 </style>
 </head>
 <body>
+<div class="app" id="app">
 
-<!---------------- WALLET (stacked cards) ---------------->
-<section id="wallet" class="page active">
-  <div class="header">
-    <div class="title">Wallet</div>
-  </div>
+  <!-- ============ WALLET (stack) ============ -->
+  <section class="page active" id="page-wallet">
+    <header class="nav">
+      <h1>Wallet</h1>
+      <span class="badge">iPhone 15 Pro</span>
+    </header>
 
-  <div class="container">
-    <div class="stack">
-      <!-- Sapphire (collapsed) -->
-      <button class="wallet-card grad-sapphire fade show" data-open="sapphire">
-        <div class="card-pad">
-          <div class="card-row">
-            <div class="card-name">Sapphire Preferred</div>
-            <div class="visa"></div>
-          </div>
-          <div class="card-bal">$14.13</div>
-          <div class="card-sub">Available $310.87 • •••• 7295</div>
-        </div>
-      </button>
-
-      <!-- AAdvantage (collapsed) -->
-      <button class="wallet-card grad-aadv fade show" data-open="aadv">
-        <div class="card-pad">
-          <div class="card-row">
-            <div class="card-name">AAdvantage®</div>
-            <div class="visa"></div>
-          </div>
-          <div class="card-bal">$0.00</div>
-          <div class="card-sub">Available $325.00 • •••• 8126</div>
-        </div>
-      </button>
+    <div class="stack" id="stack">
+      <!-- Cards injected by JS -->
     </div>
-  </div>
-</section>
+  </section>
 
-<!---------------- CARD VIEW ---------------->
-<section id="cardView" class="page">
-  <div class="header">
-    <button class="btn-back" id="backBtn">‹ Wallet</button>
-    <div></div>
-  </div>
+  <!-- ============ CARD DETAIL ============ -->
+  <section class="page" id="page-card">
+    <header class="nav">
+      <button class="btn" id="btn-back">&larr; Done</button>
+      <div class="hint" id="card-due"></div>
+    </header>
 
-  <div class="card-view container">
-    <!-- Big card -->
-    <div id="bigCard" class="big-card grad-sapphire fade">
-      <div class="badge" id="brandBadge">Sapphire Preferred</div>
-      <div class="visa"></div>
-      <div class="digits" id="bigDigits">4047 3820 6612 7295</div>
-      <div class="holder" id="bigHolder">Shloak Patel</div>
+    <div class="big-card grad-1" id="detail-visual">
+      <div class="visa">VISA</div>
     </div>
 
-    <!-- Status / Pay -->
-    <div class="strip fade" id="strip">
-      <div class="chip" id="dueChip">Payment due Sep 7, 2025 • in <span id="dueIn"></span></div>
-      <button class="pay-btn" id="openPay">Pay</button>
-    </div>
-
-    <!-- Balances -->
-    <div class="info-box fade" id="balancesBox">
-      <div class="info-row"><div class="label">Current balance</div><div class="val" id="curBalLbl">$0.00</div></div>
-      <div class="info-row"><div class="label">Available balance</div><div class="val" id="availBalLbl">$0.00</div></div>
-      <div class="info-row"><div class="label">Credit limit</div><div class="val" id="limitLbl">$0.00</div></div>
-    </div>
-
-    <!-- Card details -->
-    <div class="info-box fade" id="detailsBox">
-      <div class="info-row"><div class="label">Card number</div><div class="val" id="numLbl">•••• •••• •••• 0000</div></div>
-      <div class="info-row"><div class="label">Expiry</div><div class="val" id="expLbl">00/00</div></div>
-      <div class="info-row"><div class="label">Security code</div><div class="val" id="cvvLbl">000</div></div>
-      <div class="info-row"><div class="label">ZIP</div><div class="val" id="zipLbl">00000</div></div>
-      <div class="info-row"><div class="label">Cardholder</div><div class="val" id="nameLbl">—</div></div>
-      <div class="info-row"><div class="label">Billing address</div><div class="val" id="addrLbl">—</div></div>
-    </div>
-
-    <!-- Transactions -->
-    <div class="section-title fade">Latest Transactions</div>
-    <div class="list fade" id="txList"></div>
-  </div>
-</section>
-
-<!---------------- LOADER ---------------->
-<div id="loader" class="loader" aria-hidden="true">
-  <div>
-    <div class="spinner"></div>
-    <div style="text-align:center;font-weight:700">Opening card…</div>
-  </div>
-</div>
-
-<!---------------- PAY SHEET ---------------->
-<div id="sheet" class="sheet" aria-hidden="true">
-  <div class="surface">
-    <div class="grabber"></div>
-    <h3 id="sheetTitle">Choose Amount</h3>
-    <div class="ring"><div class="val" id="ringVal">$0.00</div></div>
-    <div style="text-align:center;color:var(--muted);font-size:13px" id="dueLine">Make payment by Sep 7, 2025</div>
-
-    <div class="choice">
-      <button class="btn-gray" id="btnSchedule">Schedule</button>
-      <button class="btn-primary" id="btnPayFull">Pay $0.00</button>
-    </div>
-
-    <div style="text-align:center;margin-top:10px;color:#9ed0ff;font-weight:600" id="otherLink">Other Amount</div>
-
-    <!-- Other amount keypad -->
-    <div id="otherArea" style="display:none">
-      <div class="display" id="amtDisplay">$0</div>
-      <div class="keypad" id="pad">
-        <div class="key">1</div><div class="key">2</div><div class="key">3</div>
-        <div class="key">4</div><div class="key">5</div><div class="key">6</div>
-        <div class="key">7</div><div class="key">8</div><div class="key">9</div>
-        <div class="key">.</div><div class="key">0</div><div class="key">⌫</div>
+    <div class="tiles">
+      <div class="tile">
+        <div class="label">Card Balance</div>
+        <div class="value" id="detail-balance">$0.00</div>
+        <div class="hint" id="detail-available">$0.00 Available</div>
       </div>
-      <div class="choice" style="margin-top:10px">
-        <button class="btn-gray" id="btnCancelOther">Cancel</button>
-        <button class="btn-primary" id="btnPayOther">Pay</button>
+      <div class="tile" style="position:relative">
+        <div class="label">Payment Due In</div>
+        <div class="value" id="detail-duein">—</div>
+        <button class="pay-dot" id="btn-pay">Pay</button>
       </div>
+    </div>
+
+    <div class="section" id="numbers">
+      <div style="font-weight:700; margin-bottom:6px;">Card Details</div>
+      <div class="list" id="numlist"><!-- injected --></div>
+    </div>
+
+    <div class="section">
+      <div style="font-weight:800; font-size:20px; margin:2px 0 10px;">Latest Card Transactions</div>
+      <div class="list" id="tx-list"><!-- injected --></div>
+    </div>
+  </section>
+
+  <!-- ============ CHOOSE AMOUNT SHEET ============ -->
+  <section class="sheet" id="sheet">
+    <div class="head">
+      <button class="btn" id="sheet-cancel">Cancel</button>
+      <span></span>
+    </div>
+    <h2>Choose Amount</h2>
+    <div class="note" id="sheet-note">Make payments by 11:59 PM on <span id="sheet-deadline">—</span>.</div>
+
+    <div class="ring-wrap">
+      <div class="ring" id="ring">
+        <!-- SVG donut -->
+        <svg viewBox="0 0 300 300" id="ring-svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="gradBlue" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="var(--ring-blue1)"/>
+              <stop offset="100%" stop-color="var(--ring-blue2)"/>
+            </linearGradient>
+            <linearGradient id="gradGreen" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="var(--ring-green1)"/>
+              <stop offset="100%" stop-color="var(--ring-green2)"/>
+            </linearGradient>
+          </defs>
+          <circle cx="150" cy="150" r="120" stroke="var(--ring-track)" stroke-width="24" fill="none"/>
+          <circle cx="150" cy="150" r="120" stroke="url(#gradBlue)" stroke-width="24" fill="none"
+                  stroke-linecap="round" stroke-dasharray="0 1000" id="ring-progress"
+                  transform="rotate(-90 150 150)"/>
+        </svg>
+        <div class="center" id="ring-amount">$0.00</div>
+        <div class="handle" id="ring-handle" style="left:150px; top:30px;"></div>
+      </div>
+    </div>
+
+    <div class="note" id="sheet-copy">Pay Card Balance</div>
+    <div class="cta">
+      <button class="btn" id="btn-schedule">Schedule</button>
+      <button class="btn primary" id="btn-pay-now">Pay $0.00</button>
+    </div>
+    <div class="link" id="other-amount">Other Amount</div>
+  </section>
+
+  <!-- ============ GLOBAL LOADING OVERLAY ============ -->
+  <div class="loading" id="loading">
+    <div style="display:grid; gap:10px; place-items:center;">
+      <div class="spinner"></div>
+      <div class="hint" id="loading-text">Loading…</div>
     </div>
   </div>
 </div>
 
 <script>
-/* ============================
-   DATA (exact, as provided)
-   ============================ */
-const DATA = {
-  dueISO: '2025-09-07',
-  cards: {
-    sapphire: {
-      id:'sapphire',
-      brand:'Sapphire Preferred',
-      gradient:'grad-sapphire',
-      number:'4047 3820 6612 7295',
-      last4:'7295',
-      exp:'07/30',
-      cvv:'501',
-      zip:'28104',
-      holder:'Shloak Patel',
-      address:'2133 Garden View Lane, Matthews NC, 28104',
-      balance: 14.13,
-      available: 310.87,
-      transactions: [
-        { id:'t-2025-08-08-1', date:'Aug 08, 2025', merchant:'DD* DOORDASH FOODLIO', amount:'$14.13',  points:14.13, category:'Food & Drinks', cardEnding:'****7295', status:'Pending' },
-        { id:'t-2025-08-07-1', date:'Aug 07, 2025', merchant:'CARD-PAYMENT-7295',   amount:'-$12.46', points:0,     category:'Payment', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-08-06-1', date:'Aug 06, 2025', merchant:'DD* DOORDASH',        amount:'$12.46',  points:12.46, category:'Food & Drink', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-07-24-1', date:'Jul 24, 2025', merchant:'CARD-PAYMENT-7295',   amount:'-$41.77', points:0,     category:'Payment', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-07-22-1', date:'Jul 22, 2025', merchant:'DD* DOORDASH DUNKIN', amount:'$11.34',  points:11.34, category:'Food & Drink', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-07-17-1', date:'Jul 17, 2025', merchant:'CARD-PAYMENT-7295',   amount:'-$35.28', points:0,     category:'Payment', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-07-13-1', date:'Jul 13, 2025', merchant:'DD *DOORDASH TACO BELL', amount:'$10.43', points:10.43, category:'Food & Drink', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-07-11-1', date:'Jul 11, 2025', merchant:'AFFIRM.COM PAYMENTS', amount:'$20.00',  points:20,    category:'Services', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-07-08-1', date:'Jul 08, 2025', merchant:'Refund received for WL* STEAM PURCHASE', amount:'-$209.83', points:-629.49, category:'Online Shopping', cardEnding:'****7295', status:'Refunded' },
-        { id:'t-2025-07-07-1', date:'Jul 07, 2025', merchant:'CARD-PAYMENT-7295',   amount:'-$40.00', points:0,     category:'Payment', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-07-05-1', date:'Jul 05, 2025', merchant:'WL *STEAM PURCHASE',  amount:'$209.83', points:629.49, category:'Online Shopping', cardEnding:'****7295', status:'Refunded' },
-        { id:'t-2025-06-22-1', date:'Jun 22, 2025', merchant:'FANATEC* Paypal',     amount:'$18.38',  points:55.14, category:'Online Shopping', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-06-20-1', date:'Jun 20, 2025', merchant:'Amazon',               amount:'$53.24',  points:159.72, category:'Online Shopping', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-06-20-2', date:'Jun 20, 2025', merchant:'CARD-PAYMENT-7295',   amount:'-$5.15',  points:0,     category:'Payment', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-06-19-1', date:'Jun 19, 2025', merchant:'CARD-PAYMENT-7295',   amount:'-$184.51', points:0,    category:'Payment', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-06-13-1', date:'Jun 13, 2025', merchant:'CHASE TRVL (MLR-LCA)', amount:'$515.37', points:2576.85, category:'Travel', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-06-06-1', date:'Jun 06, 2025', merchant:'CHASE TRVL (SAU-MLR)', amount:'-$16,163.97', points:-80819.85, category:'Travel', cardEnding:'****7295', status:'Refunded' },
-        { id:'t-2025-06-05-1', date:'Jun 05, 2025', merchant:'CHASE TRVL (RFD-SAU)', amount:'$660.97', points:3304.85, category:'Travel', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-05-07-1', date:'May 07, 2025', merchant:'CARD-PAYMENT-7295',   amount:'-$40.00', points:0,     category:'Payment', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-04-29-1', date:'Apr 29, 2025', merchant:'CARD-PAYMENT-7295',   amount:'-$48.60', points:0,     category:'Payment', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-04-26-1', date:'Apr 26, 2025', merchant:'CHASE TRVL* SINGAPORE AIRLINES (GRA - TKO)', amount:'$1,162.92', points:5814.60, category:'Travel', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-04-24-1', date:'Apr 24, 2025', merchant:'CHASE TRVL (PER - LCA - GRA)', amount:'$1,034.36', points:5171.80, category:'Travel', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-04-24-2', date:'Apr 24, 2025', merchant:'CHASE TRVL (TKO - SAU - GRI)', amount:'$2,327.31', points:11636.55, category:'Travel', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-04-23-1', date:'Apr 23, 2025', merchant:'AMERICAN AIRLINES (IZO-GRA)', amount:'$147.32', points:736.60, category:'Travel', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-04-14-1', date:'Apr 14, 2025', merchant:'AMAZON MKTPLACE PMTS', amount:'-$27.74', points:-83.22, category:'Online Shopping', cardEnding:'****7295', status:'Refunded' },
-        { id:'t-2025-04-13-1', date:'Apr 13, 2025', merchant:'APPLE.COM/BILL', amount:'$11.73', points:35.19, category:'Streaming', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-04-12-1', date:'Apr 12, 2025', merchant:'Printify, Inc', amount:'$12.28', points:36.84, category:'Online Shopping', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-04-11-1', date:'Apr 11, 2025', merchant:'GOOGLE *YT Primetime', amount:'$13.87', points:41.61, category:'Streaming', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-04-11-2', date:'Apr 11, 2025', merchant:'APPLE.COM/BILL', amount:'$21.31', points:63.93, category:'Streaming', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-04-11-3', date:'Apr 11, 2025', merchant:'Amazon.com', amount:'$15.81', points:47.43, category:'Online Shopping', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-04-10-1', date:'Apr 10, 2025', merchant:'AMAZON MKTPLACE PMTS', amount:'$27.74', points:83.22, category:'Online Shopping', cardEnding:'****7295', status:'Refunded' },
-        { id:'t-2025-04-10-2', date:'Apr 10, 2025', merchant:'AMAZON MKTPLACE PMTS', amount:'$12.27', points:36.81, category:'Online Shopping', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-04-10-3', date:'Apr 10, 2025', merchant:'Printify, Inc', amount:'$19.92', points:59.76, category:'Online Shopping', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-04-08-1', date:'Apr 08, 2025', merchant:'AFFIRM.COM PAYMENTS', amount:'$25.00', points:25, category:'Services', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-04-08-2', date:'Apr 08, 2025', merchant:'DISCORD* GIFT-NITRO-MO', amount:'$10.66', points:31.98, category:'Chatting', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-04-08-3', date:'Apr 08, 2025', merchant:'APPLE.COM/BILL', amount:'$16.04', points:48.12, category:'Streaming', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-04-08-4', date:'Apr 08, 2025', merchant:'SP BACONS DESIGNS', amount:'$31.00', points:93, category:'Online Shopping', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-04-07-1', date:'Apr 07, 2025', merchant:'DISCORD* GIFT-NITRO-MO', amount:'$10.66', points:31.98, category:'Chatting', cardEnding:'****7295', status:'Posted' },
-        { id:'t-2025-04-07-2', date:'Apr 07, 2025', merchant:'DISCORD* GIFT-NITRO-MO', amount:'$10.66', points:31.98, category:'Chatting', cardEnding:'****7295', status:'Posted' }
-      ]
-    },
-    aadv: {
-      id:'aadv',
-      brand:'AAdvantage®',
-      gradient:'grad-aadv',
-      number:'4042 1902 7823 8126',
-      last4:'8126',
-      exp:'07/30',
-      cvv:'872',
-      zip:'28104',
-      holder:'Shloak Patel',
-      address:'2133 Garden View Lane, Matthews NC, 28104',
-      balance: 0.00,
-      available: 325.00,
-      transactions: [
-        { id:'t-2025-07-27-1', date:'Jul 27, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$7.65',  points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-07-26-1', date:'Jul 26, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$78.35', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-07-17-1', date:'Jul 17, 2025', merchant:'AFFIRM.COM PAYMENTS', amount:'$58.51', points:58.51, category:'Other', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-07-15-1', date:'Jul 15, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$37.83', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-07-14-1', date:'Jul 14, 2025', merchant:'Disney Plus', amount:'$21.32', points:42.64, category:'Streaming', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-07-10-1', date:'Jul 10, 2025', merchant:'Credit Transfer to TOTAL CHECKING (...6750)', amount:'$24.01', points:0, category:'Transfer', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-07-09-1', date:'Jul 09, 2025', merchant:'ROBLOX 1.888.858.2569', amount:'$19.99', points:39.98, category:'Online Shopping', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-07-08-1', date:'Jul 08, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$44.34', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-07-07-1', date:'Jul 07, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$40.00', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
+/* =========================
+   Data (exact user-provided)
+   ========================= */
+const DUE_DATE_STR = '2025-09-07';
 
-        { id:'t-2025-06-30-1', date:'Jun 30, 2025', merchant:'DD* DOORDASH TACOBELL', amount:'$17.26', points:17.26, category:'Food & Drink', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-06-23-1', date:'Jun 23, 2025', merchant:'Affirm BNPL', amount:'$27.66', points:27.66, category:'Other', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-06-20-1', date:'Jun 20, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$10.09', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-06-19-1', date:'Jun 19, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$122.49', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-06-17-1', date:'Jun 17, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$38.86', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-06-14-1', date:'Jun 14, 2025', merchant:'CHASE TRVL (HND-IZO)', amount:'4,273.66mi', points:0, category:'Travel (Miles)', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-06-10-1', date:'Jun 10, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$70.06', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
+const sapphire = {
+  id:'sapphire',
+  name:'Sapphire Preferred',
+  gradient:'grad-1',
+  number:'4047 3820 6612 7295',
+  exp:'07/30',
+  cvv:'501',
+  zip:'28104',
+  holder:'Shloak Patel',
+  billing:'2133 Garden View Lane, Matthews NC, 28104',
+  limit:325.00,
+  balance:14.13,
+  available:310.87,
+  transactions:[
+    { id:'t-2025-08-08-1', date:'Aug 08, 2025', merchant:'DD* DOORDASH FOODLIO', amount:'$14.13',  points:14.13, category:'Food & Drinks', cardEnding:'****7295', status:'Pending' },
+    { id:'t-2025-08-07-1', date:'Aug 07, 2025', merchant:'CARD-PAYMENT-7295', amount:'-$12.46', points:0, category:'Payment', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-08-06-1', date:'Aug 06, 2025', merchant:'DD* DOORDASH', amount:'$12.46', points:12.46, category:'Food & Drink', cardEnding:'****7295', status:'Posted' },
 
-        { id:'t-2025-06-03-1', date:'Jun 03, 2025', merchant:'APPLE.COM/BILL', amount:'$21.31', points:42.62, category:'Streaming', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-06-03-2', date:'Jun 03, 2025', merchant:'CAROWINDS FOOD', amount:'$0.25', points:0.25, category:'Other', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-06-03-3', date:'Jun 03, 2025', merchant:'CAROWINDS FOOD', amount:'$8.65', points:8.65, category:'Other', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-06-03-4', date:'Jun 03, 2025', merchant:'CAROWINDS FOOD', amount:'$20.56', points:20.56, category:'Other', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-07-24-1', date:'Jul 24, 2025', merchant:'CARD-PAYMENT-7295', amount:'-$41.77', points:0, category:'Payment', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-07-22-1', date:'Jul 22, 2025', merchant:'DD* DOORDASH DUNKIN', amount:'$11.34', points:11.34, category:'Food & Drink', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-07-17-1', date:'Jul 17, 2025', merchant:'CARD-PAYMENT-7295', amount:'-$35.28', points:0, category:'Payment', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-07-13-1', date:'Jul 13, 2025', merchant:'DD *DOORDASH TACO BELL', amount:'$10.43', points:10.43, category:'Food & Drink', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-07-11-1', date:'Jul 11, 2025', merchant:'AFFIRM.COM PAYMENTS', amount:'$20.00', points:20, category:'Services', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-07-08-1', date:'Jul 08, 2025', merchant:'Refund received for WL* STEAM PURCHASE', amount:'-$209.83', points:-629.49, category:'Online Shopping', cardEnding:'****7295', status:'Refunded' },
+    { id:'t-2025-07-07-1', date:'Jul 07, 2025', merchant:'CARD-PAYMENT-7295', amount:'-$40.00', points:0, category:'Payment', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-07-05-1', date:'Jul 05, 2025', merchant:'WL *STEAM PURCHASE', amount:'$209.83', points:629.49, category:'Online Shopping', cardEnding:'****7295', status:'Refunded' },
 
-        { id:'t-2025-06-02-1', date:'Jun 02, 2025', merchant:'DISCORD* GIFT-NITRO-MO', amount:'$10.66', points:21.32, category:'Chatting', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-06-01-1', date:'Jun 01, 2025', merchant:'CHASE TRVL (IZO - RFD)', amount:'$703.92', points:703.92, category:'Travel', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-06-22-1', date:'Jun 22, 2025', merchant:'FANATEC* Paypal', amount:'$18.38', points:55.14, category:'Online Shopping', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-06-20-1', date:'Jun 20, 2025', merchant:'Amazon', amount:'$53.24', points:159.72, category:'Online Shopping', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-06-20-2', date:'Jun 20, 2025', merchant:'CARD-PAYMENT-7295', amount:'-$5.15', points:0, category:'Payment', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-06-19-1', date:'Jun 19, 2025', merchant:'CARD-PAYMENT-7295', amount:'-$184.51', points:0, category:'Payment', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-06-13-1', date:'Jun 13, 2025', merchant:'CHASE TRVL (MLR-LCA)', amount:'$515.37', points:2576.85, category:'Travel', cardEnding:'****7295', status:'Posted' },
 
-        { id:'t-2025-05-30-1', date:'May 30, 2025', merchant:'Pay in 4* Paypal Printify loan', amount:'$12.27', points:12.27, category:'Other', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-06-06-1', date:'Jun 06, 2025', merchant:'CHASE TRVL (SAU-MLR)', amount:'-$16,163.97', points:-80819.85, category:'Travel', cardEnding:'****7295', status:'Refunded' },
+    { id:'t-2025-06-05-1', date:'Jun 05, 2025', merchant:'CHASE TRVL (RFD-SAU)', amount:'$660.97', points:3304.85, category:'Travel', cardEnding:'****7295', status:'Posted' },
 
-        { id:'t-2025-05-29-1', date:'May 29, 2025', merchant:'PTFS RESERVATIONS', amount:'$14.90', points:14.90, category:'Other', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-05-29-2', date:'May 29, 2025', merchant:'CHASE TRVL (HND - IZO)* AMERICAN', amount:'5,457.50mi', points:0, category:'Travel (Miles)', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-05-07-1', date:'May 07, 2025', merchant:'CARD-PAYMENT-7295', amount:'-$40.00', points:0, category:'Payment', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-04-29-1', date:'Apr 29, 2025', merchant:'CARD-PAYMENT-7295', amount:'-$48.60', points:0, category:'Payment', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-04-26-1', date:'Apr 26, 2025', merchant:'CHASE TRVL* SINGAPORE AIRLINES (GRA - TKO)', amount:'$1,162.92', points:5814.60, category:'Travel', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-04-24-1', date:'Apr 24, 2025', merchant:'CHASE TRVL (PER - LCA - GRA)', amount:'$1,034.36', points:5171.80, category:'Travel', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-04-24-2', date:'Apr 24, 2025', merchant:'CHASE TRVL (TKO - SAU - GRI)', amount:'$2,327.31', points:11636.55, category:'Travel', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-04-23-1', date:'Apr 23, 2025', merchant:'AMERICAN AIRLINES (IZO-GRA)', amount:'$147.32', points:736.60, category:'Travel', cardEnding:'****7295', status:'Posted' },
 
-        { id:'t-2025-05-19-1', date:'May 19, 2025', merchant:'CHASE TRVL (IZO - LCA)* AMERICAN', amount:'$453.57', points:1360.71, category:'Travel (American Airlines)', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-04-14-1', date:'Apr 14, 2025', merchant:'AMAZON MKTPLACE PMTS', amount:'-$27.74', points:-83.22, category:'Online Shopping', cardEnding:'****7295', status:'Refunded' },
+    { id:'t-2025-04-13-1', date:'Apr 13, 2025', merchant:'APPLE.COM/BILL', amount:'$11.73', points:35.19, category:'Streaming', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-04-12-1', date:'Apr 12, 2025', merchant:'Printify, Inc', amount:'$12.28', points:36.84, category:'Online Shopping', cardEnding:'****7295', status:'Posted' },
 
-        { id:'t-2025-05-18-1', date:'May 18, 2025', merchant:'CHASE TRVL (HND - GVK - IZO)* LUFTHANSA', amount:'$2,688.93', points:2688.93, category:'Travel', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-04-11-1', date:'Apr 11, 2025', merchant:'GOOGLE *YT Primetime', amount:'$13.87', points:41.61, category:'Streaming', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-04-11-2', date:'Apr 11, 2025', merchant:'APPLE.COM/BILL', amount:'$21.31', points:63.93, category:'Streaming', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-04-11-3', date:'Apr 11, 2025', merchant:'Amazon.com', amount:'$15.81', points:47.43, category:'Online Shopping', cardEnding:'****7295', status:'Posted' },
 
-        { id:'t-2025-05-17-1', date:'May 17, 2025', merchant:'CHASE TRVL (RFD - TKO)* QATAR AIRWAYS', amount:'5,675.00mi', points:0, category:'Travel (Miles)', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-05-17-2', date:'May 17, 2025', merchant:'CHASE TRVL (IZO - GRA)* AMERICAN AIRLINES', amount:'$620.16', points:1860.48, category:'Travel (American Airlines)', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-04-10-1', date:'Apr 10, 2025', merchant:'AMAZON MKTPLACE PMTS', amount:'$27.74', points:83.22, category:'Online Shopping', cardEnding:'****7295', status:'Refunded' },
+    { id:'t-2025-04-10-2', date:'Apr 10, 2025', merchant:'AMAZON MKTPLACE PMTS', amount:'$12.27', points:36.81, category:'Online Shopping', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-04-10-3', date:'Apr 10, 2025', merchant:'Printify, Inc', amount:'$19.92', points:59.76, category:'Online Shopping', cardEnding:'****7295', status:'Posted' },
 
-        { id:'t-2025-05-12-1', date:'May 12, 2025', merchant:'AMAZON GROCERY AMZN.CO', amount:'$21.86', points:43.72, category:'Online Shopping', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-04-08-1', date:'Apr 08, 2025', merchant:'AFFIRM.COM PAYMENTS', amount:'$25.00', points:25, category:'Services', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-04-08-2', date:'Apr 08, 2025', merchant:'DISCORD* GIFT-NITRO-MO', amount:'$10.66', points:31.98, category:'Chatting', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-04-08-3', date:'Apr 08, 2025', merchant:'APPLE.COM/BILL', amount:'$16.04', points:48.12, category:'Streaming', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-04-08-4', date:'Apr 08, 2025', merchant:'SP BACONS DESIGNS', amount:'$31.00', points:93, category:'Online Shopping', cardEnding:'****7295', status:'Posted' },
 
-        { id:'t-2025-05-10-1', date:'May 10, 2025', merchant:'Printify, Inc* Paypal loan', amount:'$12.28', points:24.56, category:'Online Shopping', cardEnding:'****8126', status:'Posted' },
-
-        { id:'t-2025-05-07-1', date:'May 07, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$40.00', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
-
-        { id:'t-2025-04-25-1', date:'Apr 25, 2025', merchant:'CHASE TRVL* AMERICAN AIRLINES (MLL > GRA)', amount:'$132.13', points:396.39, category:'Travel (American Airlines)', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-04-25-2', date:'Apr 25, 2025', merchant:'CHASE TRVL* AMERICAN AIRLINES (TKO > IZO > MLL)', amount:'$1,042.51', points:3127.53, category:'Travel (American Airlines)', cardEnding:'****8126', status:'Posted' },
-
-        { id:'t-2025-04-24-1', date:'Apr 24, 2025', merchant:'CHASE TRVL (GRA - PHP - MLL)', amount:'$344.79', points:344.79, category:'Travel', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-04-24-2', date:'Apr 24, 2025', merchant:'CHASE TRVL (GRI - IZO - PER)', amount:'$1,551.54', points:1551.54, category:'Travel', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-04-24-3', date:'Apr 24, 2025', merchant:'QATAR AIRWAYS (GRA - TKO)', amount:'$927.42', points:1854.84, category:'Travel (Oneworld)', cardEnding:'****8126', status:'Posted' },
-
-        { id:'t-2025-04-23-1', date:'Apr 23, 2025', merchant:'AMERICAN AIRLINES (TKO - GRA - IZO)', amount:'$1,256.27', points:3768.81, category:'Travel (American Airlines)', cardEnding:'****8126', status:'Posted' },
-
-        { id:'t-2025-04-16-1', date:'Apr 16, 2025', merchant:'DISCORD* 5XSERVERBOOST', amount:'$29.29', points:58.58, category:'Chatting', cardEnding:'****8126', status:'Posted' },
-
-        { id:'t-2025-04-15-1', date:'Apr 15, 2025', merchant:'Cathay Pacific (GRA - TKO)', amount:'$1,052.79', points:2105.58, category:'Travel (Oneworld)', cardEnding:'****8126', status:'Posted' },
-
-        { id:'t-2025-04-13-1', date:'Apr 13, 2025', merchant:'Disney Plus', amount:'$21.32', points:42.64, category:'Streaming', cardEnding:'****8126', status:'Posted' },
-        { id:'t-2025-04-13-2', date:'Apr 13, 2025', merchant:'AMERICAN AIRLINES (LCA - GRA)', amount:'$267.50', points:802.50, category:'Travel (American Airlines)', cardEnding:'****8126', status:'Posted' }
-      ]
-    }
-  }
+    { id:'t-2025-04-07-1', date:'Apr 07, 2025', merchant:'DISCORD* GIFT-NITRO-MO', amount:'$10.66', points:31.98, category:'Chatting', cardEnding:'****7295', status:'Posted' },
+    { id:'t-2025-04-07-2', date:'Apr 07, 2025', merchant:'DISCORD* GIFT-NITRO-MO', amount:'$10.66', points:31.98, category:'Chatting', cardEnding:'****7295', status:'Posted' }
+  ]
 };
 
-/* ============================
-   UTILITIES
-   ============================ */
-const $ = (s,root=document)=>root.querySelector(s);
-const $$ = (s,root=document)=>Array.from(root.querySelectorAll(s));
+const aadv = {
+  id:'aadv',
+  name:'AAdvantage',
+  gradient:'grad-2',
+  number:'4042 1902 7823 8126',
+  exp:'07/30',
+  cvv:'872',
+  zip:'28104',
+  holder:'Shloak Patel',
+  billing:sapphire.billing,
+  limit:325.00,
+  balance:0.00,
+  available:325.00,
+  transactions:[
+    { id:'t-2025-07-27-1', date:'Jul 27, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$7.65', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-07-26-1', date:'Jul 26, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$78.35', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-07-17-1', date:'Jul 17, 2025', merchant:'AFFIRM.COM PAYMENTS', amount:'$58.51', points:58.51, category:'Other', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-07-15-1', date:'Jul 15, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$37.83', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-07-14-1', date:'Jul 14, 2025', merchant:'Disney Plus', amount:'$21.32', points:42.64, category:'Streaming', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-07-10-1', date:'Jul 10, 2025', merchant:'Credit Transfer to TOTAL CHECKING (...6750)', amount:'$24.01', points:0, category:'Transfer', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-07-09-1', date:'Jul 09, 2025', merchant:'ROBLOX 1.888.858.2569', amount:'$19.99', points:39.98, category:'Online Shopping', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-07-08-1', date:'Jul 08, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$44.34', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-07-07-1', date:'Jul 07, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$40.00', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
+
+    { id:'t-2025-06-30-1', date:'Jun 30, 2025', merchant:'DD* DOORDASH TACOBELL', amount:'$17.26', points:17.26, category:'Food & Drink', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-06-23-1', date:'Jun 23, 2025', merchant:'Affirm BNPL', amount:'$27.66', points:27.66, category:'Other', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-06-20-1', date:'Jun 20, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$10.09', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-06-19-1', date:'Jun 19, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$122.49', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-06-17-1', date:'Jun 17, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$38.86', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-06-14-1', date:'Jun 14, 2025', merchant:'CHASE TRVL (HND-IZO)', amount:'4,273.66mi', points:0, category:'Travel (Miles)', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-06-10-1', date:'Jun 10, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$70.06', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
+
+    { id:'t-2025-06-03-1', date:'Jun 03, 2025', merchant:'APPLE.COM/BILL', amount:'$21.31', points:42.62, category:'Streaming', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-06-03-2', date:'Jun 03, 2025', merchant:'CAROWINDS FOOD', amount:'$0.25', points:0.25, category:'Other', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-06-03-3', date:'Jun 03, 2025', merchant:'CAROWINDS FOOD', amount:'$8.65', points:8.65, category:'Other', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-06-03-4', date:'Jun 03, 2025', merchant:'CAROWINDS FOOD', amount:'$20.56', points:20.56, category:'Other', cardEnding:'****8126', status:'Posted' },
+
+    { id:'t-2025-06-02-1', date:'Jun 02, 2025', merchant:'DISCORD* GIFT-NITRO-MO', amount:'$10.66', points:21.32, category:'Chatting', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-06-01-1', date:'Jun 01, 2025', merchant:'CHASE TRVL (IZO - RFD)', amount:'$703.92', points:703.92, category:'Travel', cardEnding:'****8126', status:'Posted' },
+
+    { id:'t-2025-05-30-1', date:'May 30, 2025', merchant:'Pay in 4* Paypal Printify loan', amount:'$12.27', points:12.27, category:'Other', cardEnding:'****8126', status:'Posted' },
+
+    { id:'t-2025-05-29-1', date:'May 29, 2025', merchant:'PTFS RESERVATIONS', amount:'$14.90', points:14.90, category:'Other', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-05-29-2', date:'May 29, 2025', merchant:'CHASE TRVL (HND - IZO)* AMERICAN', amount:'5,457.50mi', points:0, category:'Travel (Miles)', cardEnding:'****8126', status:'Posted' },
+
+    { id:'t-2025-05-19-1', date:'May 19, 2025', merchant:'CHASE TRVL (IZO - LCA)* AMERICAN', amount:'$453.57', points:1360.71, category:'Travel (American Airlines)', cardEnding:'****8126', status:'Posted' },
+
+    { id:'t-2025-05-18-1', date:'May 18, 2025', merchant:'CHASE TRVL (HND - GVK - IZO)* LUFTHANSA', amount:'$2,688.93', points:2688.93, category:'Travel', cardEnding:'****8126', status:'Posted' },
+
+    { id:'t-2025-05-17-1', date:'May 17, 2025', merchant:'CHASE TRVL (RFD - TKO)* QATAR AIRWAYS', amount:'5,675.00mi', points:0, category:'Travel (Miles)', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-05-17-2', date:'May 17, 2025', merchant:'CHASE TRVL (IZO - GRA)* AMERICAN AIRLINES', amount:'$620.16', points:1860.48, category:'Travel (American Airlines)', cardEnding:'****8126', status:'Posted' },
+
+    { id:'t-2025-05-12-1', date:'May 12, 2025', merchant:'AMAZON GROCERY AMZN.CO', amount:'$21.86', points:43.72, category:'Online Shopping', cardEnding:'****8126', status:'Posted' },
+
+    { id:'t-2025-05-10-1', date:'May 10, 2025', merchant:'Printify, Inc* Paypal loan', amount:'$12.28', points:24.56, category:'Online Shopping', cardEnding:'****8126', status:'Posted' },
+
+    { id:'t-2025-05-07-1', date:'May 07, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$40.00', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
+
+    { id:'t-2025-04-25-1', date:'Apr 25, 2025', merchant:'CHASE TRVL* AMERICAN AIRLINES (MLL > GRA)', amount:'$132.13', points:396.39, category:'Travel (American Airlines)', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-04-25-2', date:'Apr 25, 2025', merchant:'CHASE TRVL* AMERICAN AIRLINES (TKO > IZO > MLL)', amount:'$1,042.51', points:3127.53, category:'Travel (American Airlines)', cardEnding:'****8126', status:'Posted' },
+
+    { id:'t-2025-04-24-1', date:'Apr 24, 2025', merchant:'CHASE TRVL (GRA - PHP - MLL)', amount:'$344.79', points:344.79, category:'Travel', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-04-24-2', date:'Apr 24, 2025', merchant:'CHASE TRVL (GRI - IZO - PER)', amount:'$1,551.54', points:1551.54, category:'Travel', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-04-24-3', date:'Apr 24, 2025', merchant:'QATAR AIRWAYS (GRA - TKO)', amount:'$927.42', points:1854.84, category:'Travel (Oneworld)', cardEnding:'****8126', status:'Posted' },
+
+    { id:'t-2025-04-23-1', date:'Apr 23, 2025', merchant:'AMERICAN AIRLINES (TKO - GRA - IZO)', amount:'$1,256.27', points:3768.81, category:'Travel (American Airlines)', cardEnding:'****8126', status:'Posted' },
+
+    { id:'t-2025-04-16-1', date:'Apr 16, 2025', merchant:'DISCORD* 5XSERVERBOOST', amount:'$29.29', points:58.58, category:'Chatting', cardEnding:'****8126', status:'Posted' },
+
+    { id:'t-2025-04-15-1', date:'Apr 15, 2025', merchant:'Cathay Pacific (GRA - TKO)', amount:'$1,052.79', points:2105.58, category:'Travel (Oneworld)', cardEnding:'****8126', status:'Posted' },
+
+    { id:'t-2025-04-13-1', date:'Apr 13, 2025', merchant:'Disney Plus', amount:'$21.32', points:42.64, category:'Streaming', cardEnding:'****8126', status:'Posted' },
+    { id:'t-2025-04-13-2', date:'Apr 13, 2025', merchant:'AMERICAN AIRLINES (LCA - GRA)', amount:'$267.50', points:802.50, category:'Travel (American Airlines)', cardEnding:'****8126', status:'Posted' }
+  ]
+};
+
+/* =========================
+   State & persistence
+   ========================= */
+const LS_KEY='walletCardsV1';
+let cards = load();
+
+function load(){
+  const raw = localStorage.getItem(LS_KEY);
+  if(!raw) return { sapphire, aadv };
+  try{
+    const parsed = JSON.parse(raw);
+    // merge transactions + static fields if needed
+    return { sapphire: {...sapphire, ...parsed.sapphire}, aadv: {...aadv, ...parsed.aadv} };
+  }catch{return { sapphire, aadv }}
+}
+function save(){ localStorage.setItem(LS_KEY, JSON.stringify(cards)); }
+
+/* =========================
+   Helpers
+   ========================= */
+const $ = (sel,root=document)=>root.querySelector(sel);
+const $$ = (sel,root=document)=>Array.from(root.querySelectorAll(sel));
 const fmt = n => '$' + Number(n).toFixed(2);
-const parseMoney = s => Number(String(s).replace(/[,$]/g,'').replace(/^\$/, ''));
-const daysUntil = (iso)=> Math.max(0, Math.ceil( (new Date(iso).setHours(23,59,59,999) - Date.now())/86400000 ));
-
-function setText(sel, val){ $(sel).textContent = val; }
-
-/* ============================
-   STATE (computed limits)
-   ============================ */
-const STATE = {
-  currentId: null,
-  cards: {
-    sapphire: {
-      ...DATA.cards.sapphire,
-      limit: Number((DATA.cards.sapphire.balance + DATA.cards.sapphire.available).toFixed(2))
-    },
-    aadv: {
-      ...DATA.cards.aadv,
-      limit: Number((DATA.cards.aadv.balance + DATA.cards.aadv.available).toFixed(2))
-    }
-  }
+const todayMDY = ()=> new Date().toLocaleDateString('en-US',{year:'numeric',month:'short',day:'2-digit'}).replace(',','');
+const daysUntil = (iso)=> {
+  const d = new Date(iso), now=new Date();
+  const ms = d - new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.ceil(ms/86400000);
 };
 
-/* ============================
-   RENDER TRANSACTIONS
-   ============================ */
-function renderTx(listEl, txs){
-  listEl.innerHTML = '';
-  txs.forEach(t=>{
-    const row = document.createElement('div');
-    row.className = 'row';
-    const amtNum = parseMoney(t.amount.replace('mi','')); // miles lines will NaN → handled below
-    let amtClass = 'amt-pos';
-    if(String(t.amount).startsWith('-')) amtClass = 'amt-neg';
-    if(String(t.status).toLowerCase().includes('refund')) amtClass = 'amt-ref';
-
-    row.innerHTML = `
-      <div>
-        <div class="merchant">${t.merchant}</div>
-        <div class="meta">${t.date} • ${t.category}</div>
+/* =========================
+   Wallet stack render
+   ========================= */
+const stack = $('#stack');
+function renderStack(){
+  stack.innerHTML='';
+  [cards.sapphire, cards.aadv].forEach((c,i)=>{
+    const btn = document.createElement('button');
+    btn.className='card-btn'; btn.setAttribute('data-id', c.id);
+    btn.innerHTML = `
+      <div class="card-visual ${c.gradient}">
+        <div class="visa">VISA</div>
       </div>
-      <div class="amount ${amtClass}">${t.amount}</div>
+      <div class="card-caption">
+        <div>
+          <div class="caption-title">${c.name}</div>
+          <div class="caption-sub">Due ${new Date(DUE_DATE_STR).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="caption-title">${fmt(c.balance)}</div>
+          <div class="caption-sub">${fmt(c.available)} Available</div>
+        </div>
+      </div>`;
+    btn.addEventListener('click', ()=>openCard(c.id));
+    stack.appendChild(btn);
+  });
+}
+renderStack();
+
+/* =========================
+   Card detail
+   ========================= */
+const pageWallet = $('#page-wallet');
+const pageCard = $('#page-card');
+const numbers = $('#numlist');
+const txList = $('#tx-list');
+
+let current = null;
+
+function openCard(id){
+  current = id==='sapphire'? cards.sapphire : cards.aadv;
+
+  // tiny loading to mimic Wallet feel
+  showLoading('Opening card…');
+  setTimeout(()=>{
+    hideLoading();
+    pageWallet.classList.remove('active');
+    pageCard.classList.add('active');
+
+    // Visual gradient
+    const vis = $('#detail-visual');
+    vis.className = 'big-card ' + current.gradient;
+
+    // Top tiles
+    $('#detail-balance').textContent = fmt(current.balance);
+    $('#detail-available').textContent = `${fmt(current.available)} Available`;
+    const dueDays = daysUntil(DUE_DATE_STR);
+    $('#detail-duein').textContent = dueDays<=7? `${dueDays} Day${dueDays>1?'s':''}` : (dueDays<14?'1 Week': Math.round(dueDays/7)+' Weeks');
+    $('#card-due').textContent = 'Payment due ' + new Date(DUE_DATE_STR).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+
+    // Numbers box
+    numbers.innerHTML = `
+      <div class="item"><div class="left"><div class="icon">••</div><div><div class="merch">Card Number</div><div class="sub">${current.number}</div></div></div><div></div></div>
+      <div class="item"><div class="left"><div class="icon">ID</div><div><div class="merch">Cardholder Name</div><div class="sub">${current.holder}</div></div></div><div></div></div>
+      <div class="item"><div class="left"><div class="icon">CVV</div><div><div class="merch">Security</div><div class="sub">${current.cvv}</div></div></div><div></div></div>
+      <div class="item"><div class="left"><div class="icon">📍</div><div><div class="merch">Billing Address</div><div class="sub">${current.billing}</div></div></div><div></div></div>
+      <div class="item"><div class="left"><div class="icon">⏳</div><div><div class="merch">Expiry</div><div class="sub">${current.exp} • ZIP ${current.zip}</div></div></div><div></div></div>
     `;
-    listEl.appendChild(row);
+
+    // Transactions
+    renderTx(current.transactions, txList);
+
+  }, 250);
+}
+
+function renderTx(data, mount){
+  mount.innerHTML = '';
+  data.slice(0, 20).forEach(t=>{
+    const negative = /^\-/.test(t.amount);
+    const row = document.createElement('div');
+    row.className='item';
+    row.innerHTML = `
+      <div class="left">
+        <div class="icon">${t.merchant.startsWith('CARD')?'💳':'🛍️'}</div>
+        <div>
+          <div class="merch">${t.merchant}</div>
+          <div class="sub">${t.date} • ${t.status}</div>
+        </div>
+      </div>
+      <div class="${negative?'amt-neg':'amt-pos'}">${t.amount}</div>`;
+    mount.appendChild(row);
   });
 }
 
-/* ============================
-   OPEN / CLOSE CARD
-   ============================ */
-const walletPage = $('#wallet');
-const cardPage = $('#cardView');
-const loader = $('#loader');
-
-function openCard(id){
-  STATE.currentId = id;
-  const c = STATE.cards[id];
-
-  // loader
-  $('#loader div div:last-child').textContent = 'Opening card…';
-  loader.classList.add('show');
-
-  setTimeout(()=>{
-    // Fill card visuals
-    const big = $('#bigCard');
-    big.classList.remove('grad-sapphire','grad-aadv');
-    big.classList.add(c.gradient);
-    $('#brandBadge').textContent = c.brand;
-    $('#bigDigits').textContent = c.number;
-    $('#bigHolder').textContent = c.holder;
-
-    // Balances & details
-    setText('#curBalLbl', fmt(c.balance));
-    setText('#availBalLbl', fmt(c.available));
-    setText('#limitLbl', fmt(c.limit));
-    setText('#numLbl', c.number);
-    setText('#expLbl', c.exp);
-    setText('#cvvLbl', c.cvv);
-    setText('#zipLbl', c.zip);
-    setText('#nameLbl', c.holder);
-    setText('#addrLbl', c.address);
-
-    // Due chip
-    const d = daysUntil(DATA.dueISO);
-    setText('#dueIn', d + (d===1?' day':' days'));
-
-    // Amount ring & buttons
-    $('#ringVal').textContent = fmt(c.balance);
-    $('#btnPayFull').textContent = 'Pay ' + fmt(c.balance);
-
-    // Render transactions
-    renderTx($('#txList'), c.transactions);
-
-    // show page
-    walletPage.classList.remove('active');
-    cardPage.classList.add('active');
-
-    // animate in pieces
-    $$('.fade', cardPage).forEach(el=>setTimeout(()=>el.classList.add('show'), 10));
-
-    // hide loader
-    loader.classList.remove('show');
-  }, 700); // silky open
-}
-
-function backToWallet(){
-  cardPage.classList.remove('active');
-  walletPage.classList.add('active');
-}
-
-/* Bind opens */
-$$('[data-open]').forEach(btn=>{
-  btn.addEventListener('click', ()=>openCard(btn.getAttribute('data-open')));
+$('#btn-back').addEventListener('click', ()=>{
+  pageCard.classList.remove('active');
+  pageWallet.classList.add('active');
 });
-$('#backBtn').addEventListener('click', backToWallet);
 
-/* ============================
-   PAYMENT SHEET
-   ============================ */
+/* =========================
+   Choose Amount (ring slider)
+   ========================= */
 const sheet = $('#sheet');
-const otherLink = $('#otherLink');
-const otherArea = $('#otherArea');
-const pad = $('#pad');
-let otherBuffer = '';
+const ringSvg = $('#ring-svg');
+const ringProg = $('#ring-progress');
+const ringHandle = $('#ring-handle');
+const ringAmount = $('#ring-amount');
+const btnPayNow = $('#btn-pay-now');
+const sheetDeadline = $('#sheet-deadline');
+
+let maxPay = 0;
+let chosen = 0;   // value in dollars
+const R = 120;    // radius used in SVG
+const CX = 150, CY = 150;
 
 function openSheet(){
-  const c = STATE.cards[STATE.currentId];
-  $('#sheetTitle').textContent = 'Choose Amount';
-  $('#ringVal').textContent = fmt(c.balance);
-  $('#btnPayFull').textContent = 'Pay ' + fmt(c.balance);
-  $('#dueLine').textContent = 'Make payment by Sep 7, 2025';
-  otherArea.style.display = 'none';
+  if(!current) return;
+  sheetDeadline.textContent = new Date(DUE_DATE_STR).toLocaleDateString('en-US',{month:'long', day:'numeric'});
+  maxPay = Math.max(0, Number(current.balance));
+  chosen = maxPay; // preselect full balance
   sheet.classList.add('show');
+  updateRingByValue(chosen);
 }
 function closeSheet(){ sheet.classList.remove('show'); }
 
-$('#openPay').addEventListener('click', openSheet);
-$('#btnSchedule').addEventListener('click', ()=>alert('Scheduling not implemented in this demo.'));
-/* Other Amount keypad */
-otherLink.addEventListener('click', ()=>{
-  otherBuffer = '';
-  $('#amtDisplay').textContent = '$0';
-  otherArea.style.display = 'block';
-  // move ring/buttons a bit but keep sheet open
-});
-pad.addEventListener('click', (e)=>{
-  const k = e.target.closest('.key'); if(!k) return;
-  const v = k.textContent.trim();
-  if(v==='⌫'){ otherBuffer = otherBuffer.slice(0, -1); }
-  else{
-    if(v==='.' && otherBuffer.includes('.')) return;
-    otherBuffer += v;
-  }
-  if(!otherBuffer || otherBuffer === '.') $('#amtDisplay').textContent = '$0';
-  else $('#amtDisplay').textContent = '$' + otherBuffer;
-});
-$('#btnCancelOther').addEventListener('click', ()=>{ otherArea.style.display='none'; });
-$('#btnPayOther').addEventListener('click', ()=>{
-  const amt = Number(otherBuffer || '0');
-  if(!(amt>0)) return;
-  applyPayment(amt);
-});
+$('#btn-pay').addEventListener('click', openSheet);
+$('#sheet-cancel').addEventListener('click', closeSheet);
+$('#btn-schedule').addEventListener('click', ()=>alert('Scheduling not included in this demo.'));
 
-/* Pay full */
-$('#btnPayFull').addEventListener('click', ()=>{
-  const c = STATE.cards[STATE.currentId];
-  applyPayment(c.balance);
-});
-
-/* ============================
-   APPLY PAYMENT (updates UI)
-   ============================ */
-function todayStr(){
-  const d = new Date();
-  const mon = d.toLocaleString('en-US',{month:'short'});
-  return `${mon} ${String(d.getDate()).padStart(2,'0')}, ${d.getFullYear()}`;
+function updateRing(progress){  // progress in [0..1]
+  const len = 2*Math.PI*R;
+  ringProg.setAttribute('stroke-dasharray', `${len*progress} ${len*(1-progress)}`);
+  // angle for handle (start top, clockwise)
+  const ang = -Math.PI/2 + progress*2*Math.PI;
+  const hx = CX + R*Math.cos(ang);
+  const hy = CY + R*Math.sin(ang);
+  ringHandle.style.left = hx+'px';
+  ringHandle.style.top  = hy+'px';
 }
-function applyPayment(amount){
-  const c = STATE.cards[STATE.currentId];
-  amount = Math.min(amount, c.balance); // cap
-  if(amount<=0) return;
+function updateRingByValue(val){
+  val = Math.min(maxPay, Math.max(0, val));
+  chosen = val;
+  const pct = maxPay ? val/maxPay : 0;
+  updateRing(pct);
+  ringAmount.textContent = fmt(val);
+  btnPayNow.textContent = 'Pay ' + fmt(val);
+  $('#sheet-copy').textContent = (val === maxPay) ? 'Pay Card Balance' : (val >= maxPay*0.8 ? 'Pay More Toward Your Balance' : 'Pay June Balance');
+}
 
-  // show loader
-  $('#loader div div:last-child').textContent = 'Processing payment…';
-  loader.classList.add('show');
+/* Pointer/drag on ring */
+function pointToValue(clientX, clientY){
+  const rect = ringSvg.getBoundingClientRect();
+  const x = clientX - (rect.left + rect.width/2);
+  const y = clientY - (rect.top + rect.height/2);
+  let ang = Math.atan2(y,x);           // -PI..PI from +X axis
+  ang = (ang + Math.PI/2 + 2*Math.PI)%(2*Math.PI); // start at top, clockwise
+  const pct = ang/(2*Math.PI);
+  return pct*maxPay;
+}
+let dragging=false;
+['pointerdown','mousedown','touchstart'].forEach(ev=>{
+  ringSvg.addEventListener(ev, (e)=>{
+    dragging=true;
+    const c = e.touches? e.touches[0]: e;
+    updateRingByValue(pointToValue(c.clientX, c.clientY));
+  });
+  ringHandle.addEventListener(ev, (e)=>{
+    dragging=true;
+    const c = e.touches? e.touches[0]: e;
+    updateRingByValue(pointToValue(c.clientX, c.clientY));
+  });
+});
+['pointermove','mousemove','touchmove'].forEach(ev=>{
+  window.addEventListener(ev, (e)=>{
+    if(!dragging) return;
+    const c = e.touches? e.touches[0]: e;
+    updateRingByValue(pointToValue(c.clientX, c.clientY));
+  }, {passive:true});
+});
+['pointerup','mouseup','touchend','touchcancel','blur'].forEach(ev=>{
+  window.addEventListener(ev, ()=>dragging=false);
+});
+
+/* Pay now */
+btnPayNow.addEventListener('click', ()=>{
+  if(!current || chosen<=0) return;
   closeSheet();
-
+  showLoading('Processing payment…');
   setTimeout(()=>{
-    // Update balances: reduce balance, increase available, keep limit constant
-    c.balance = Number((c.balance - amount).toFixed(2));
-    c.available = Number(Math.min(c.limit, c.available + amount).toFixed(2));
+    // Apply payment
+    current.balance = Math.max(0, Number((current.balance - chosen).toFixed(2)));
+    current.available = Number((current.limit - current.balance).toFixed(2));
 
-    // Add payment transaction (top)
-    c.transactions.unshift({
-      id: 'pay-'+Date.now(),
-      date: todayStr(),
-      merchant: `CARD-PAYMENT-${c.last4}`,
-      amount: '-$' + amount.toFixed(2),
-      points: 0,
-      category: 'Payment',
-      cardEnding: '****'+c.last4,
-      status: 'Posted'
+    // Add a posted transaction
+    const last4 = current.number.slice(-4);
+    current.transactions.unshift({
+      id:'t-pay-'+Date.now(),
+      date: todayMDY(),
+      merchant: `CARD-PAYMENT-${last4}`,
+      amount: '-'+fmt(chosen).replace('$',''),
+      points:0,
+      category:'Payment',
+      cardEnding:'****'+last4,
+      status:'Posted'
     });
 
-    // Refresh card page numbers
-    setText('#curBalLbl', fmt(c.balance));
-    setText('#availBalLbl', fmt(c.available));
-    // Update wallet tiles
-    const collapsed = document.querySelector(`[data-open="${c.id}"] .card-bal`);
-    if(collapsed) collapsed.textContent = fmt(c.balance);
-    const collapsedSub = document.querySelector(`[data-open="${c.id}"] .card-sub`);
-    if(collapsedSub) collapsedSub.textContent = `Available ${fmt(c.available)} • •••• ${c.last4}`;
-    // Ring text for next open
-    $('#ringVal').textContent = fmt(c.balance);
-    $('#btnPayFull').textContent = 'Pay ' + fmt(c.balance);
+    // Save + re-render
+    if(current.id==='sapphire'){ cards.sapphire=current; } else { cards.aadv=current; }
+    save();
+    renderStack();
+    openCard(current.id); // refresh details
+    hideLoading();
+  }, 1200);
+});
 
-    // Re-render tx
-    renderTx($('#txList'), c.transactions);
+/* =========================
+   Loading overlay
+   ========================= */
+const loading = $('#loading');
+function showLoading(msg){ $('#loading-text').textContent = msg||'Loading…'; loading.classList.add('show'); }
+function hideLoading(){ loading.classList.remove('show'); }
 
-    loader.classList.remove('show');
-  }, 900);
-}
-
-/* ============================
-   INIT minor details
-   ============================ */
-(function init(){
-  // small fade-in on wallet tiles
-  $$('.wallet-card').forEach((el,i)=>{ el.style.transitionDelay = (i*40)+'ms'; });
-})();
+/* Boot */
+renderStack();
 </script>
 </body>
 </html>
