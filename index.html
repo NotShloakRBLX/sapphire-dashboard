@@ -473,7 +473,19 @@
       updateByFraction(frac,false);
     }
   });
-  payBtn.addEventListener('click',()=>{alert('Paid $'+amount.toFixed(2)+' (demo).'); sheet.classList.remove('active');});
+
+  // >>> UPDATED: confirm + update balances on Pay
+  payBtn.addEventListener('click', ()=>{
+    if (amount <= 0) { sheet.classList.remove('active'); return; }
+    if (confirm(`Confirm card payment of ${fmtUSD(amount)}?`)) {
+      // Decrease card balance; increase available
+      SETTINGS.cardBalance = +Math.max(0, SETTINGS.cardBalance - amount).toFixed(2);
+      SETTINGS.availableBalance = +(SETTINGS.availableBalance + amount).toFixed(2);
+
+      applyBalances();           // refresh UI + ring limits
+      sheet.classList.remove('active');
+    }
+  });
 
   // Apply your manual balances on load
   applyBalances();
@@ -566,4 +578,3 @@
 </script>
 </body>
 </html>
-
