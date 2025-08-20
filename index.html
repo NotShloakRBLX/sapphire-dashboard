@@ -51,7 +51,6 @@
     cursor:pointer;transition:transform var(--t),filter var(--t)
   }
   .pass::after, .bigCard::after{
-    /* subtle inner gloss & realistic corner ring */
     content:"";position:absolute;inset:0;border-radius:inherit;
     box-shadow:inset 0 0 0 .75px rgba(255,255,255,.22), inset 0 1px 16px rgba(255,255,255,.08);
     pointer-events:none
@@ -85,7 +84,7 @@
 
   /* --- Tiles layout --- */
   .grid{
-    margin-top:16px;                          /* move everything down a bit */
+    margin-top:16px;
     display:grid;grid-template-columns:1fr 1fr;gap:12px;
   }
   .tile{
@@ -96,7 +95,7 @@
   .val{font-size:26px;font-weight:800;margin:0}
   .micro{font-size:12px;color:var(--muted);margin-top:4px}
 
-  /* Make card-balance tile a little smaller (compact spacing) */
+  /* Card-balance more compact */
   .compact{padding:12px 14px}
   .compact .kb{margin-bottom:2px}
   .compact .val{font-size:25px}
@@ -107,21 +106,22 @@
   .bars{display:flex;gap:6px;margin-top:6px;align-items:flex-end}
   .bars i{flex:1;height:20px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.8),rgba(255,255,255,.45));opacity:.26}
 
-  /* Payment Due expanded (spans two rows) */
-  .dueTile{display:grid;grid-template-columns:1fr auto;align-items:center}
-  .dueTall{grid-row:span 2}
-  .dueVal{line-height:1;margin-right:88px}
+  /* >>> Payment Due layout updated per instructions <<< */
+  .dueTile{position:relative;display:block;padding:12px 16px 16px}
+  .dueHeader{margin:0 0 4px;color:var(--muted);font-size:13px}
+  .dueVal{line-height:1}
   .dueVal .num{display:block;font-size:40px;font-weight:900;letter-spacing:-.3px}
   .dueVal .unit{display:block;font-size:26px;font-weight:900;margin-top:2px;letter-spacing:-.2px}
+  /* Anchor the Pay bubble to BOTTOM-RIGHT, inside tile */
   .payBubble{
-    position:absolute;right:12px;top:50%;transform:translateY(-50%);
+    position:absolute;right:14px;bottom:14px; /* <-- bottom-right */
     width:70px;height:70px;border-radius:50%;
     background:#000;color:#fff;display:grid;place-items:center;
     font-weight:900;letter-spacing:.2px;
     border:3px solid #fff;box-shadow:0 12px 30px rgba(0,0,0,.55);
     transition:transform var(--t),opacity var(--t)
   }
-  .payBubble:active{transform:translateY(-50%) scale(.95)}
+  .payBubble:active{transform:scale(.95)}
 
   .listItem{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:12px}
   .avatar{width:34px;height:34px;border-radius:9px;background:#111;border:1px solid rgba(255,255,255,.18)}
@@ -173,7 +173,7 @@
         <article class="pass grad1 openCard" tabindex="0">
           <div class="label">Visa Card</div>
           <div class="visa">
-            <!-- VISA wordmark – solid path, no fill-rule (fixes “broken” look) -->
+            <!-- VISA (white gradient) -->
             <svg viewBox="0 0 512 170" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <linearGradient id="visaG1" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -229,7 +229,6 @@
           </div>
         </div>
 
-        <!-- GRID: left column (Card Balance + Weekly Activity), right column (Payment Due spanning 2 rows) -->
         <div class="grid">
           <div class="tile compact">
             <div class="kb">Card Balance</div>
@@ -237,13 +236,12 @@
             <p class="micro">$11,497.27 Available</p>
           </div>
 
-          <div class="tile dueTile dueTall" id="dueTile">
-            <div>
-              <div class="kb">Payment Due In</div>
-              <div class="dueVal">
-                <span class="num">1</span>
-                <span class="unit">Week</span>
-              </div>
+          <!-- Payment Due: text TOP-LEFT, Pay bubble BOTTOM-RIGHT -->
+          <div class="tile dueTile" id="dueTile">
+            <p class="dueHeader">Payment Due In</p>
+            <div class="dueVal">
+              <span class="num">1</span>
+              <span class="unit">Week</span>
             </div>
             <button class="payBubble" id="openPay">Pay</button>
           </div>
@@ -254,7 +252,7 @@
             <div class="bars"><i style="height:22px"></i><i style="height:28px"></i><i style="height:16px"></i><i style="height:24px"></i><i style="height:18px"></i><i style="height:26px"></i><i style="height:12px"></i></div>
           </div>
 
-          <!-- Savings Account moved UNDER all tiles and full width -->
+          <!-- Savings Account under all tiles -->
           <div class="tile full">
             <div class="kb">Savings Account</div>
             <div class="val">$70.19</div>
@@ -278,7 +276,7 @@
     <section class="view"></section>
   </div>
 
-  <!-- Payment sheet (defaults $0; lock at max) -->
+  <!-- Payment sheet (slider) -->
   <div class="sheet" id="sheet">
     <div class="dim" id="dim"></div>
     <div class="panel">
@@ -335,7 +333,7 @@
   document.getElementById('closeSheet').addEventListener('click',closeSheet);
   document.addEventListener('keydown',e=>{if(e.key==='Escape') closeSheet()});
 
-  /* Slider values – default at $0.00, MAX = card balance */
+  /* Slider values */
   const MIN=0.00, THRESH=149.36, MAX=181.43;
 
   const ringWrap=document.getElementById('ringWrap');
@@ -398,8 +396,8 @@
     const x=(evt.touches?evt.touches[0].clientX:evt.clientX)-rect.left;
     const y=(evt.touches?evt.touches[0].clientY:evt.clientY)-rect.top;
     const cx=rect.width/2, cy=rect.height/2;
-    let theta=Math.atan2(y-cy,x-cx); // -PI..PI (0 at right)
-    theta+=Math.PI/2;                // top = 0
+    let theta=Math.atan2(y-cy,x-cx);
+    theta+=Math.PI/2;
     if(theta<0) theta+=Math.PI*2;
     return theta/(Math.PI*2);
   }
