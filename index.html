@@ -506,12 +506,21 @@
     setTimeout(hide, 1600);
   }
 
-  // Pay -> update balances (persist) -> success pop-up
+  // Pay -> update balances (persist) -> success pop-up + add transaction
   payBtn.addEventListener('click', ()=>{
     if (amount <= 0) { sheet.classList.remove('active'); return; }
+
+    // capture the time of payment
+    const payIso = new Date().toISOString();
+
+    // update balances
     SETTINGS.cardBalance      = +Math.max(0, SETTINGS.cardBalance - amount).toFixed(2);
     SETTINGS.availableBalance = +(SETTINGS.availableBalance + amount).toFixed(2);
     saveBalances();           // persist across reloads
+
+    // add a transaction for this payment
+    window.addPayment({ amount, iso: payIso });
+
     applyBalances();          // refresh UI + ring limits
     sheet.classList.remove('active');
     showPaySuccess(amount);   // in-app confirmation
@@ -633,6 +642,3 @@
 </script>
 </body>
 </html>
-
-
-
