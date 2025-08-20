@@ -13,7 +13,7 @@
     --muted:rgba(255,255,255,.62);
     --shadow:0 14px 40px rgba(0,0,0,.40);
     --t:.35s cubic-bezier(.2,.8,.2,1);
-    --radiusCard:16px;
+    --radiusCard:28px;
     --radiusTile:20px;
   }
   *{box-sizing:border-box}
@@ -56,6 +56,7 @@
   .pass + .pass{margin-top:-126px}
   .pass:active{transform:scale(.99)}
 
+  /* Card gradients (purple/blue) */
   .grad1{
     background:
       radial-gradient(120% 120% at 20% 10%, rgba(173,104,255,.45) 0%, transparent 60%),
@@ -74,14 +75,34 @@
   .hint{color:var(--muted);text-align:center;margin:18px 0 8px;font-size:13px}
 
   .content{padding:6px 12px 28px}
-  .bigCard{height:212px;border-radius:var(--radiusCard);overflow:hidden;box-shadow:var(--shadow);position:relative}
+
+  /* Top display card with refined corners */
+  .bigCard{
+    height:212px;border-radius:18px;overflow:hidden;box-shadow:var(--shadow);position:relative
+  }
   .bigCard .visa{right:22px;bottom:18px}
 
-  /* GRID */
+  /* ---------- GRID LAYOUT FIX ---------- */
   .grid{
     margin-top:16px;
-    display:grid;grid-template-columns:1fr 1fr;gap:12px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    align-items:start;                   /* do not stretch rows */
   }
+  /* Left column spans two rows; inside uses flex to stack */
+  .leftCol{
+    grid-column:1;
+    grid-row:1 / span 2;
+    display:flex; flex-direction:column; gap:12px;
+    height:100%;
+  }
+  /* Right tile spans two rows */
+  .dueTall{
+    grid-column:2;
+    grid-row:1 / span 2;
+  }
+
   .tile{
     background:var(--tile);border:1px solid var(--tileBorder);
     border-radius:var(--radiusTile);padding:14px 16px;position:relative
@@ -90,93 +111,72 @@
   .val{font-size:26px;font-weight:800;margin:0}
   .micro{font-size:12px;color:var(--muted);margin-top:4px}
 
-  /* Card Balance tile — tightened bottom padding to remove extra space */
+  /* compact trims bottom padding to remove extra space */
   .compact{padding:12px 14px 8px}
-  .compact .kb{margin-bottom:2px}
-  .compact .val{font-size:25px}
-  .compact .micro{margin-top:0}
-
   .full{grid-column:1/-1}
 
-  /* Payment Due */
+  .bars{display:flex;gap:6px;margin-top:6px;align-items:flex-end}
+  .bars i{flex:1;height:20px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.8),rgba(255,255,255,.45));opacity:.26}
+
+  /* Payment Due tile (tall) */
   .dueTile{padding:12px 16px 16px}
   .dueHeader{margin:0 0 4px;color:var(--muted);font-size:13px}
   .dueVal{line-height:1}
   .dueVal .num{display:block;font-size:40px;font-weight:900;letter-spacing:-.3px}
   .dueVal .unit{display:block;font-size:26px;font-weight:900;margin-top:2px;letter-spacing:-.2px}
-  .dueTall{grid-row:span 2;min-height:260px;} /* spans two rows */
 
-  /* Pay bubble base */
+  /* Pay bubbles */
   .payBubble{
     position:absolute;right:14px;bottom:14px;
     width:70px;height:70px;border-radius:50%;
     background:#000;color:#fff;display:grid;place-items:center;
-    font-weight:900;letter-spacing:.2px;
-    border:3px solid #fff;box-shadow:0 12px 30px rgba(0,0,0,.55);
-    transition:transform var(--t),opacity var(--t)
+    font-weight:900;letter-spacing:.2px;border:3px solid #fff;
+    box-shadow:0 12px 30px rgba(0,0,0,.55);transition:transform var(--t),opacity var(--t)
   }
+  .payBubble.sm{width:58px;height:58px}  /* smaller for Statement */
   .payBubble:active{transform:scale(.95)}
 
-  /* Smaller pay bubble ONLY for Statement Balance */
-  #statementTile .payBubble{
-    width:58px;height:58px;border-width:2.5px;
-    right:12px;bottom:12px;
-  }
+  /* Make Statement tile fill the leftover height in the left column */
+  #statementTile{flex:1; padding-bottom:16px;}
 
   .listItem{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:12px}
   .avatar{display:none}
 
-  /* Payment sheet */
-  .sheet{position:fixed;inset:0;display:grid;place-items:end center;pointer-events:none;z-index:9}
-  .sheet.active{pointer-events:auto}
-  .dim{position:absolute;inset:0;background:rgba(0,0,0,.45);opacity:0;transition:opacity var(--t)}
-  .sheet.active .dim{opacity:1}
-  .panel{width:100%;max-width:430px;background:#fff;color:#000;border-radius:20px 20px 0 0;transform:translateY(100%);transition:transform var(--t);box-shadow:0 -20px 40px rgba(0,0,0,.35)}
-  .sheet.active .panel{transform:translateY(0)}
-  .panelHead{display:flex;align-items:center;justify-content:center;padding:12px 14px 0;position:relative}
-  .closeX{position:absolute;left:14px;top:8px;width:36px;height:36px;border-radius:10px;border:none;background:#efefef;font-size:20px;font-weight:900;cursor:pointer}
-  .title{font-size:28px;font-weight:900;margin:6px 0 0;text-align:center}
-  .ringWrap{position:relative;width:86%;max-width:360px;aspect-ratio:1;margin:12px auto 12px}
-  .ringWrap svg{width:100%;height:100%}
-  .centerText{position:absolute;inset:0;display:grid;place-items:center;text-align:center;pointer-events:none}
-  .amt{font-weight:900;font-size:44px}
-  .info{padding:0 14px 8px;text-align:center;font-weight:900;color:#1d1d1d}
-  .info small{display:block;margin-top:4px;color:#6a6a6a;font-weight:600}
-  .actions{display:flex;justify-content:center;padding:0 14px 18px}
-  .btn{border-radius:14px;padding:14px 22px;font-weight:900;border:0}
-  .primary{background:#000;color:#fff;min-width:65%}
-  .other{text-align:center;padding-bottom:20px;color:#007aff;font-weight:900}
-
+  /* -------- Transaction details (page 3) -------- */
   .pos-0 .views{transform:translateX(0%)}
   .pos-1 .views{transform:translateX(-33.3333%)}
+  .pos-2 .views{transform:translateX(-66.6667%)}
 
-/* GRID */
-.grid{
-  margin-top:16px;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-  align-items:start;               /* stop items from stretching */
-}
+  .txnHeader{padding:28px 18px 10px;text-align:center}
+  .txnAmount{font-size:60px;font-weight:900;letter-spacing:-.5px}
+  .txnMerchant{color:var(--muted);font-size:22px;font-weight:700;margin-top:6px}
+  .txnDate{color:var(--muted);font-size:16px;margin-top:4px}
 
-/* Left column wrapper spans the two rows on the left */
-.leftCol{
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-  grid-column:1;
-  grid-row:1 / span 2;
-}
+  .block{ margin:14px 12px; }
+  .row{
+    margin:14px 12px;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:16px;
+    background:var(--tile); border:1px solid var(--tileBorder);
+    border-radius:var(--radiusTile);
+  }
+  .row h3{ margin:0; font-size:18px; }
+  .row .right{ font-weight:900; font-size:18px; }
+  .statusLine{ font-size:18px; margin-bottom:4px; }
 
-/* Ensure the tall tile occupies the entire right column */
-.dueTall{
-  grid-column:2;
-  grid-row:1 / span 2;
-}
-
-/* (optional) tighten bottom padding in Card Balance tile a bit more */
-.compact{ padding:12px 14px 6px; }
-
+  /* Txn list rows */
+  .txnRow{
+    display:flex;gap:12px;align-items:center;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:14px;padding:12px;cursor:pointer;
+  }
+  .txnRow + .txnRow{margin-top:10px}
+  .txnMain{flex:1}
+  .txnTitle{font-weight:800}
+  .txnTitle .sep{opacity:.6}
+  .txnSub{color:var(--muted);font-size:12px}
+  .txnAmt{font-weight:800}
 </style>
 </head>
 <body>
@@ -188,7 +188,7 @@
         <h1>Wallet</h1>
         <div class="iconrow">
           <div class="iconbtn" aria-label="Search"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
-          <div class="iconbtn" aria-label="List"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M4 4h16v2H4zM4 9h16v2H4zM4 14h11v2H4zM4 19h11v2H4z"/></svg></div>
+          <div class="iconbtn" aria-label="List"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M4 5h16v2H4zm0 5h16v2H4zm0 5h11v2H4z"/></svg></div>
           <div class="iconbtn" aria-label="More"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></div>
         </div>
       </div>
@@ -241,65 +241,77 @@
         </div>
 
         <div class="grid">
-  <!-- LEFT COLUMN: stacks Card Balance + Statement Balance -->
-  <div class="leftCol">
-    <!-- Card Balance -->
-    <div class="tile compact">
-      <div class="kb">Card Balance</div>
-      <p class="val" id="cardBalance">$181.43</p>
-      <p class="micro" id="availableCredit">$11,497.27 Available</p>
-    </div>
+          <!-- LEFT COLUMN (spans two rows) -->
+          <div class="leftCol">
+            <div class="tile compact">
+              <div class="kb">Card Balance</div>
+              <p class="val" id="cardBalance">$181.43</p>
+              <p class="micro" id="availableCredit">$11,497.27 Available</p>
+            </div>
 
-    <!-- Statement Balance -->
-    <div class="tile compact" id="statementTile">
-      <div class="kb">Statement Balance</div>
-      <p class="val" id="statementBalance">$0.00</p>
-      <button class="payBubble" id="openPayStatement">Pay</button>
-    </div>
-  </div>
+            <div class="tile" id="statementTile">
+              <div class="kb">Statement Balance</div>
+              <p class="val" id="statementBalance">$0.00</p>
+              <button class="payBubble sm" id="openPayStatement">Pay</button>
+            </div>
+          </div>
 
-  <!-- RIGHT COLUMN: Payment Due spans two rows -->
-  <div class="tile dueTile dueTall" id="dueTile">
-    <p class="dueHeader">Payment Due In</p>
-    <div class="dueVal">
-      <span class="num">1</span>
-      <span class="unit">Week</span>
-    </div>
-    <button class="payBubble" id="openPay">Pay</button>
-  </div>
+          <!-- RIGHT COLUMN (tall) -->
+          <div class="tile dueTile dueTall" id="dueTile">
+            <p class="dueHeader">Payment Due In</p>
+            <div class="dueVal">
+              <span class="num">1</span>
+              <span class="unit">Week</span>
+            </div>
+            <button class="payBubble" id="openPay">Pay</button>
+          </div>
 
-
-          <!-- Savings Account -->
+          <!-- Savings -->
           <div class="tile full">
             <div class="kb">Savings Account</div>
             <div class="val">$70.19</div>
           </div>
 
-          <!-- Latest transactions -->
-          <div class="tile full">
+          <!-- Transactions -->
+          <div class="tile full" id="txnsTile">
             <div class="kb" style="margin-bottom:8px">Latest Card Transactions</div>
-            <div class="listItem">
-              <div class="avatar"></div>
-              <div style="flex:1">
-                <div style="font-weight:800">Apple Store <span style="opacity:.6">• Refund</span></div>
-                <div style="color:var(--muted);font-size:12px">7/14/23</div>
-              </div>
-              <div style="font-weight:800">+ $40.35</div>
-            </div>
+            <div id="txnList"></div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="view"></section>
+    <!-- Transaction details view -->
+    <section class="view" id="txnView">
+      <div class="nav">
+        <button class="pill" id="backTxn">Back</button>
+        <div class="iconrow"></div>
+      </div>
+
+      <div class="txnHeader">
+        <div class="txnAmount" id="txnAmount">$0.00</div>
+        <div class="txnMerchant" id="txnMerchant">Merchant</div>
+        <div class="txnDate" id="txnDate">MM/DD/YY, 0:00 PM</div>
+      </div>
+
+      <div class="tile block">
+        <div class="statusLine" id="txnStatus"><strong>Status: Approved</strong></div>
+        <div class="micro" id="txnCard">Apple Card</div>
+      </div>
+
+      <div class="row">
+        <h3>Total</h3>
+        <div class="right" id="txnTotal">$0.00</div>
+      </div>
+    </section>
   </div>
 
-  <!-- Payment sheet -->
+  <!-- Payment sheet (existing) -->
   <div class="sheet" id="sheet">
     <div class="dim" id="dim"></div>
     <div class="panel">
       <div class="panelHead"><button class="closeX" id="closeSheet" aria-label="Close">×</button></div>
-      <div class="title" id="sheetTitle">Choose Amount</div>
+      <div class="title">Choose Amount</div>
 
       <div class="ringWrap" id="ringWrap">
         <svg viewBox="0 0 320 320" id="ringSvg" aria-hidden="true">
@@ -345,16 +357,8 @@
   const sheet=document.getElementById('sheet');
   const dim=document.getElementById('dim');
   const openPay=document.getElementById('openPay');
-  const openPayStatement=document.getElementById('openPayStatement');
   const closeSheet=()=>sheet.classList.remove('active');
-  openPay.addEventListener('click',()=>{
-    document.getElementById('sheetTitle').textContent='Choose Amount';
-    sheet.classList.add('active');
-  });
-  openPayStatement.addEventListener('click',()=>{
-    document.getElementById('sheetTitle').textContent='Pay Statement Balance';
-    sheet.classList.add('active');
-  });
+  openPay.addEventListener('click',()=>sheet.classList.add('active'));
   dim.addEventListener('click',closeSheet);
   document.getElementById('closeSheet').addEventListener('click',closeSheet);
   document.addEventListener('keydown',e=>{if(e.key==='Escape') closeSheet()});
@@ -445,6 +449,82 @@
   payBtn.addEventListener('click',()=>{alert('Paid $'+amount.toFixed(2)+' (demo).'); sheet.classList.remove('active');});
 
   updateByFraction(0,false);
+
+  // --------- Transactions: data + list + click to details ---------
+  const txnListEl = document.getElementById('txnList');
+
+  function uid(){ return 't_'+Math.random().toString(36).slice(2,9) }
+
+  // NOTE: amounts are stored as positive numbers.
+  // Show rule: purchases -> "$xx.xx"; refunds & payments -> "- $xx.xx"
+  const transactions = [
+    {
+      id: uid(),
+      merchant: 'Apple Store',
+      amount: 40.35,
+      kind: 'refund',                 // 'purchase' | 'refund' | 'payment'
+      status: 'Refunded',
+      card: 'Apple Card',
+      iso: '2023-07-14T16:32:00'
+    }
+  ];
+
+  function shortDate(iso){
+    const d = new Date(iso);
+    return d.toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit'});
+  }
+  function fullDateTime(iso){
+    const d = new Date(iso);
+    return d.toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit'}) + ', ' +
+           d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+  }
+  function amountListText(t){
+    return (t.kind==='purchase' ? '$' : '- $') + t.amount.toFixed(2);
+  }
+
+  function renderTransactions(){
+    transactions.sort((a,b)=> new Date(b.iso) - new Date(a.iso));
+    txnListEl.innerHTML = transactions.map(t => `
+      <div class="txnRow" data-id="${t.id}" tabindex="0" role="button" aria-label="Open ${t.merchant} transaction">
+        <div class="txnMain">
+          <div class="txnTitle">${t.merchant} <span class="sep">• ${t.status}</span></div>
+          <div class="txnSub">${shortDate(t.iso)}</div>
+        </div>
+        <div class="txnAmt">${amountListText(t)}</div>
+      </div>
+    `).join('');
+  }
+
+  function openTxnDetails(id){
+    const t = transactions.find(x=>x.id===id);
+    if(!t) return;
+    // Amount shown as absolute in details
+    document.getElementById('txnAmount').textContent = '$' + t.amount.toFixed(2);
+    document.getElementById('txnMerchant').textContent = t.merchant;
+    document.getElementById('txnDate').textContent = fullDateTime(t.iso);
+    document.getElementById('txnStatus').innerHTML = '<strong>Status: ' + t.status + '</strong>';
+    document.getElementById('txnCard').textContent = t.card;
+    document.getElementById('txnTotal').textContent = '$' + t.amount.toFixed(2);
+    app.className = 'app pos-2';
+  }
+
+  txnListEl.addEventListener('click', e=>{
+    const row = e.target.closest('.txnRow');
+    if(!row) return;
+    openTxnDetails(row.dataset.id);
+  });
+  txnListEl.addEventListener('keydown', e=>{
+    if(e.key!=='Enter') return;
+    const row = e.target.closest('.txnRow');
+    if(!row) return;
+    openTxnDetails(row.dataset.id);
+  });
+
+  document.getElementById('backTxn').addEventListener('click', () => {
+    app.className = 'app pos-1';
+  });
+
+  renderTransactions();
 })();
 </script>
 </body>
