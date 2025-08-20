@@ -79,7 +79,7 @@
   /* TOP CARD with refined continuous corners (top & bottom matched) */
   .bigCard{
     height:212px;
-    border-radius:16px/14px; /* subtle, “iOS-y” continuous corners */
+    border-radius:16px/14px;
     overflow:hidden;box-shadow:var(--shadow);position:relative
   }
   .bigCard .visa{right:22px;bottom:18px}
@@ -178,6 +178,20 @@
   .btn{border-radius:14px;padding:14px 22px;font-weight:900;border:0}
   .primary{background:#000;color:#fff;min-width:65%}
   .other{text-align:center;padding-bottom:20px;color:#007aff;font-weight:900}
+
+  /* Payment success pop-up */
+  .success{position:fixed;inset:0;display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .25s var(--t);z-index:10}
+  .success.active{opacity:1;pointer-events:auto}
+  .success .box{
+    width:86%;max-width:360px;background:#111;color:#fff;border:1px solid rgba(255,255,255,.14);
+    border-radius:18px;box-shadow:var(--shadow);padding:18px 18px 16px;text-align:center
+  }
+  .success .check{
+    width:56px;height:56px;border-radius:50%;margin:2px auto 10px;
+    display:grid;place-items:center;font-weight:900;background:#34c759;color:#000;box-shadow:0 8px 20px rgba(0,0,0,.35)
+  }
+  .success .title{font-weight:900;font-size:20px;margin:6px 0 4px}
+  .success .sub{color:var(--muted);font-weight:700}
 </style>
 </head>
 <body>
@@ -343,6 +357,15 @@
       <div class="other" id="otherAmountBtn">Other Amount</div>
     </div>
   </div>
+
+  <!-- Success popup -->
+  <div class="success" id="paySuccess" aria-live="polite" aria-atomic="true">
+    <div class="box">
+      <div class="check">✓</div>
+      <div class="title">Payment Successful</div>
+      <div class="sub" id="paySuccessMsg">$0.00 has been applied to your card.</div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -474,17 +497,28 @@
     }
   });
 
-  // >>> UPDATED: confirm + update balances on Pay
+  // SUCCESS POPUP
+  const successEl = document.getElementById('paySuccess');
+  const successMsg = document.getElementById('paySuccessMsg');
+  function showPaySuccess(n){
+    successMsg.textContent = `${fmtUSD(n)} has been applied to your card.`;
+    successEl.classList.add('active');
+    const hide = ()=>successEl.classList.remove('active');
+    successEl.addEventListener('click', hide, {once:true});
+    setTimeout(hide, 1600);
+  }
+
+  // Pay -> update balances -> success pop-up
   payBtn.addEventListener('click', ()=>{
     if (amount <= 0) { sheet.classList.remove('active'); return; }
-    if (confirm(`Confirm card payment of ${fmtUSD(amount)}?`)) {
-      // Decrease card balance; increase available
-      SETTINGS.cardBalance = +Math.max(0, SETTINGS.cardBalance - amount).toFixed(2);
-      SETTINGS.availableBalance = +(SETTINGS.availableBalance + amount).toFixed(2);
 
-      applyBalances();           // refresh UI + ring limits
-      sheet.classList.remove('active');
-    }
+    // Decrease card balance; increase available
+    SETTINGS.cardBalance = +Math.max(0, SETTINGS.cardBalance - amount).toFixed(2);
+    SETTINGS.availableBalance = +(SETTINGS.availableBalance + amount).toFixed(2);
+
+    applyBalances();           // refresh UI + ring limits
+    sheet.classList.remove('active');
+    showPaySuccess(amount);    // in-app confirmation
   });
 
   // Apply your manual balances on load
@@ -507,8 +541,7 @@
 
   function rid(){ return 't_'+Math.random().toString(36).slice(2,9) }
 
-  // purchases -> "$xx.xx"
-  // refunds/payments -> "- $xx.xx"
+  // purchases -> "$xx.xx"; refunds/payments -> "- $xx.xx"
   function formatDisplay(t){ return (t.kind === 'purchase' ? '$' : '- $') + t.amount.toFixed(2); }
   function formatMoneyAbs(n){ return '$' + Math.abs(n).toFixed(2) }
   function shortDate(iso){
