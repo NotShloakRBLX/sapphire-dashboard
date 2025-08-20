@@ -1,428 +1,555 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
-<title>Wallet • Visa Card (Demo)</title>
-<style>
-  :root{
-    --bg:#0b0b0b;
-    --tile:rgba(255,255,255,.06);
-    --tileBorder:rgba(255,255,255,.10);
-    --text:#fff;
-    --muted:rgba(255,255,255,.62);
-    --shadow:0 14px 40px rgba(0,0,0,.40);
-    --t:.35s cubic-bezier(.2,.8,.2,1);
-    --radiusCard:28px;
-    --radiusTile:20px;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;background:#000;color:var(--text);
-    font:15px -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    -webkit-font-smoothing:antialiased
-  }
-  .app{max-width:430px;height:100svh;margin:0 auto;position:relative;overflow:hidden;background:var(--bg)}
-  .views{display:flex;width:300%;height:100%;transition:transform var(--t)}
-  .view{width:100%;height:100%;overflow:auto;padding-bottom:28px;background:linear-gradient(#0b0b0b,#0b0b0b 50%,#0a0a0a)}
-  .view::-webkit-scrollbar{width:0;height:0}
-
-  /* Top nav */
-  .nav{
-    position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;
-    padding:14px 14px 10px;
-    background:linear-gradient(180deg,rgba(10,10,10,.95),rgba(10,10,10,.55) 40%,transparent);
-    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)
-  }
-  .nav h1{margin:0;font-size:28px;font-weight:800}
-  .pill{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:999px;padding:6px 10px;font-weight:700}
-  .iconbtn{
-    width:34px;height:34px;border-radius:999px;background:rgba(255,255,255,.06);
-    border:1px solid rgba(255,255,255,.14);display:grid;place-items:center;transition:transform var(--t)
-  }
-  .iconbtn:active{transform:scale(.96)}
-  .iconrow{display:flex;gap:10px}
-
-  /* Wallet passes */
-  .stack{padding:10px 12px 26px}
-  .pass{
-    position:relative;height:212px;border-radius:var(--radiusCard);overflow:hidden;box-shadow:var(--shadow);
-    cursor:pointer;transition:transform var(--t),filter var(--t)
-  }
-  .pass::after, .bigCard::after{
-    content:"";position:absolute;inset:0;border-radius:inherit;
-    box-shadow:inset 0 0 0 .75px rgba(255,255,255,.22), inset 0 1px 16px rgba(255,255,255,.08);
-    pointer-events:none
-  }
-  .pass + .pass{margin-top:-126px}
-  .pass:active{transform:scale(.99)}
-
-  /* Card gradients (purple/blue) */
-  .grad1{
-    background:
-      radial-gradient(120% 120% at 20% 10%, rgba(173,104,255,.45) 0%, transparent 60%),
-      radial-gradient(120% 120% at 90% 90%, rgba(88,199,255,.45) 0%, transparent 60%),
-      linear-gradient(135deg,#7c5cff 0%, #2e83ff 100%);
-  }
-  .grad2{
-    background:
-      radial-gradient(120% 120% at 80% 20%, rgba(123,129,255,.45) 0%, transparent 60%),
-      radial-gradient(120% 120% at 10% 90%, rgba(180,92,255,.45) 0%, transparent 60%),
-      linear-gradient(135deg,#5b66ff 0%, #9b52ff 100%);
-  }
-
-  .visa{position:absolute;right:22px;bottom:18px}
-  .visa svg{width:98px;height:auto;filter:drop-shadow(0 4px 12px rgba(0,0,0,.35))}
-  .label{position:absolute;left:18px;bottom:18px;font-weight:800;font-size:18px;text-shadow:0 2px 8px rgba(0,0,0,.35)}
-  .hint{color:var(--muted);text-align:center;margin:18px 0 8px;font-size:13px}
-
-  /* Card detail */
-  .content{padding:6px 12px 28px}
-  .bigCard{height:212px;border-radius:var(--radiusCard);overflow:hidden;box-shadow:var(--shadow);position:relative}
-  .bigCard .visa{right:22px;bottom:18px}
-
-  /* --- Tiles layout --- */
-  .grid{
-    margin-top:16px;
-    display:grid;grid-template-columns:1fr 1fr;gap:12px;
-  }
-  .tile{
-    background:var(--tile);border:1px solid var(--tileBorder);
-    border-radius:var(--radiusTile);padding:14px 16px;position:relative
-  }
-  .kb{font-size:13px;color:var(--muted);margin:0 0 6px}
-  .val{font-size:26px;font-weight:800;margin:0}
-  .micro{font-size:12px;color:var(--muted);margin-top:4px}
-
-  /* Card-balance more compact */
-  .compact{padding:12px 14px}
-  .compact .kb{margin-bottom:2px}
-  .compact .val{font-size:25px}
-  .compact .micro{margin-top:0}
-
-  .full{grid-column:1/-1}
-
-  .bars{display:flex;gap:6px;margin-top:6px;align-items:flex-end}
-  .bars i{flex:1;height:20px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.8),rgba(255,255,255,.45));opacity:.26}
-
-  /* >>> Payment Due layout updated per instructions <<< */
-  .dueTile{position:relative;display:block;padding:12px 16px 16px}
-  .dueHeader{margin:0 0 4px;color:var(--muted);font-size:13px}
-  .dueVal{line-height:1}
-  .dueVal .num{display:block;font-size:40px;font-weight:900;letter-spacing:-.3px}
-  .dueVal .unit{display:block;font-size:26px;font-weight:900;margin-top:2px;letter-spacing:-.2px}
-  /* Anchor the Pay bubble to BOTTOM-RIGHT, inside tile */
-  .payBubble{
-    position:absolute;right:14px;bottom:14px; /* <-- bottom-right */
-    width:70px;height:70px;border-radius:50%;
-    background:#000;color:#fff;display:grid;place-items:center;
-    font-weight:900;letter-spacing:.2px;
-    border:3px solid #fff;box-shadow:0 12px 30px rgba(0,0,0,.55);
-    transition:transform var(--t),opacity var(--t)
-  }
-  .payBubble:active{transform:scale(.95)}
-
-  .listItem{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:12px}
-  .avatar{width:34px;height:34px;border-radius:9px;background:#111;border:1px solid rgba(255,255,255,.18)}
-
-  /* Sheet (payment ring) */
-  .sheet{position:fixed;inset:0;display:grid;place-items:end center;pointer-events:none;z-index:9}
-  .sheet.active{pointer-events:auto}
-  .dim{position:absolute;inset:0;background:rgba(0,0,0,.45);opacity:0;transition:opacity var(--t)}
-  .sheet.active .dim{opacity:1}
-  .panel{width:100%;max-width:430px;background:#fff;color:#000;border-radius:20px 20px 0 0;transform:translateY(100%);transition:transform var(--t);box-shadow:0 -20px 40px rgba(0,0,0,.35)}
-  .sheet.active .panel{transform:translateY(0)}
-  .panelHead{display:flex;align-items:center;justify-content:center;padding:12px 14px 0;position:relative}
-  .closeX{position:absolute;left:14px;top:8px;width:36px;height:36px;border-radius:10px;border:none;background:#efefef;font-size:20px;font-weight:900;cursor:pointer}
-  .title{font-size:28px;font-weight:900;margin:6px 0 0;text-align:center}
-
-  .ringWrap{position:relative;width:86%;max-width:360px;aspect-ratio:1;margin:12px auto 12px}
-  .ringWrap svg{width:100%;height:100%}
-  .centerText{position:absolute;inset:0;display:grid;place-items:center;text-align:center;pointer-events:none}
-  .amt{font-weight:900;font-size:44px}
-
-  .info{padding:0 14px 8px;text-align:center;font-weight:900;color:#1d1d1d}
-  .info small{display:block;margin-top:4px;color:#6a6a6a;font-weight:600}
-
-  .actions{display:flex;justify-content:center;padding:0 14px 18px}
-  .btn{border-radius:14px;padding:14px 22px;font-weight:900;border:0}
-  .primary{background:#000;color:#fff;min-width:65%}
-  .other{text-align:center;padding-bottom:20px;color:#007aff;font-weight:900}
-
-  .pos-0 .views{transform:translateX(0%)}
-  .pos-1 .views{transform:translateX(-33.3333%)}
-</style>
-</head>
-<body>
-<div class="app pos-0" id="app">
-  <div class="views">
-    <!-- Wallet -->
-    <section class="view" id="wallet">
-      <div class="nav">
-        <h1>Wallet</h1>
-        <div class="iconrow">
-          <div class="iconbtn" aria-label="Search"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
-          <div class="iconbtn" aria-label="List"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M4 5h16v2H4zm0 5h16v2H4zm0 5h11v2H4z"/></svg></div>
-          <div class="iconbtn" aria-label="More"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></div>
-        </div>
-      </div>
-
-      <div class="stack">
-        <!-- Card 1 -->
-        <article class="pass grad1 openCard" tabindex="0">
-          <div class="label">Visa Card</div>
-          <div class="visa">
-            <!-- VISA (white gradient) -->
-            <svg viewBox="0 0 512 170" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="visaG1" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#e7ecf5"/>
-                </linearGradient>
-              </defs>
-              <path fill="url(#visaG1)"
-                d="M226.8 168.1l27.1-165.6h43.4l-27.1 165.6h-43.4zm197.6-161.7c-8.6-3.2-22.2-6.7-39-6.7-43 0-73.3 21.6-73.5 52.5-.3 22.8 21.6 35.6 38.1 43.1 16.9 7.7 22.6 12.7 22.6 19.6-.1 10.6-13.6 15.4-26.2 15.4-17.5 0-26.8-2.4-41.2-8.2l-5.6-2.5-6.1 37.9c10.2 4.3 29 8 48.6 8.2 45.8 0 75.6-21.3 75.9-54.3.2-18.1-11.5-31.8-36.8-43.2-15.3-7.4-24.7-12.3-24.6-19.8.1-6.6 7.9-13.7 25.1-13.7 14.2-.2 24.7 2.9 32.7 6.1l3.9 1.9 5.9-36.3zm70.9 2.7h-33.9c-10.5 0-18.3 3-22.9 14.2l-65.3 149.1h46.3l9.2-25.4h56.6c1.3 5.9 5.4 25.4 5.4 25.4h40.9l-36.3-163.3zm-55.1 105.9c3.6-9.1 17.2-44.1 17.2-44.1-.3.5 3.6-9.2 5.9-15.1l3 13.7 9.9 45.5h-36zM168.4 2.6L125 109.5l-4.6-23.6C113.1 63.3 94.7 41 74.5 31.8l38.5 135.9h45.4l67.4-165H168.4zM70.4 2.5H1.2L0 8.6C57.7 23 95 58.9 110.7 109.5L94.4 21.1C91.4 10.9 82.9 3.9 70.4 2.5z"/>
-            </svg>
-          </div>
-        </article>
-
-        <!-- Card 2 -->
-        <article class="pass grad2 openCard" tabindex="0">
-          <div class="label">Visa Card</div>
-          <div class="visa">
-            <svg viewBox="0 0 512 170" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="visaG2" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#e7ecf5"/>
-                </linearGradient>
-              </defs>
-              <path fill="url(#visaG2)"
-                d="M226.8 168.1l27.1-165.6h43.4l-27.1 165.6h-43.4zm197.6-161.7c-8.6-3.2-22.2-6.7-39-6.7-43 0-73.3 21.6-73.5 52.5-.3 22.8 21.6 35.6 38.1 43.1 16.9 7.7 22.6 12.7 22.6 19.6-.1 10.6-13.6 15.4-26.2 15.4-17.5 0-26.8-2.4-41.2-8.2l-5.6-2.5-6.1 37.9c10.2 4.3 29 8 48.6 8.2 45.8 0 75.6-21.3 75.9-54.3.2-18.1-11.5-31.8-36.8-43.2-15.3-7.4-24.7-12.3-24.6-19.8.1-6.6 7.9-13.7 25.1-13.7 14.2-.2 24.7 2.9 32.7 6.1l3.9 1.9 5.9-36.3zm70.9 2.7h-33.9c-10.5 0-18.3 3-22.9 14.2l-65.3 149.1h46.3l9.2-25.4h56.6c1.3 5.9 5.4 25.4 5.4 25.4h40.9l-36.3-163.3zm-55.1 105.9c3.6-9.1 17.2-44.1 17.2-44.1-.3.5 3.6-9.2 5.9-15.1l3 13.7 9.9 45.5h-36zM168.4 2.6L125 109.5l-4.6-23.6C113.1 63.3 94.7 41 74.5 31.8l38.5 135.9h45.4l67.4-165H168.4zM70.4 2.5H1.2L0 8.6C57.7 23 95 58.9 110.7 109.5L94.4 21.1C91.4 10.9 82.9 3.9 70.4 2.5z"/>
-            </svg>
-          </div>
-        </article>
-      </div>
-
-      <div class="hint">Tap a card to open its details</div>
-    </section>
-
-    <!-- Card dashboard -->
-    <section class="view" id="card">
-      <div class="nav">
-        <button class="pill" id="doneBtn">Done</button>
-        <div class="iconrow">
-          <div class="iconbtn"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
-          <div class="iconbtn"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M4 4h16v2H4zM4 9h16v2H4zM4 14h11v2H4zM4 19h11v2H4z"/></svg></div>
-          <div class="iconbtn"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></div>
-        </div>
-      </div>
-
-      <div class="content">
-        <div class="bigCard grad1">
-          <div class="visa">
-            <!-- same gradient white logo on the big card -->
-            <svg viewBox="0 0 512 170" xmlns="http://www.w3.org/2000/svg">
-              <defs><linearGradient id="visaG3" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#e7ecf5"/></linearGradient></defs>
-              <path fill="url(#visaG3)"
-                d="M226.8 168.1l27.1-165.6h43.4l-27.1 165.6h-43.4zm197.6-161.7c-8.6-3.2-22.2-6.7-39-6.7-43 0-73.3 21.6-73.5 52.5-.3 22.8 21.6 35.6 38.1 43.1 16.9 7.7 22.6 12.7 22.6 19.6-.1 10.6-13.6 15.4-26.2 15.4-17.5 0-26.8-2.4-41.2-8.2l-5.6-2.5-6.1 37.9c10.2 4.3 29 8 48.6 8.2 45.8 0 75.6-21.3 75.9-54.3.2-18.1-11.5-31.8-36.8-43.2-15.3-7.4-24.7-12.3-24.6-19.8.1-6.6 7.9-13.7 25.1-13.7 14.2-.2 24.7 2.9 32.7 6.1l3.9 1.9 5.9-36.3zm70.9 2.7h-33.9c-10.5 0-18.3 3-22.9 14.2l-65.3 149.1h46.3l9.2-25.4h56.6c1.3 5.9 5.4 25.4 5.4 25.4h40.9l-36.3-163.3zm-55.1 105.9c3.6-9.1 17.2-44.1 17.2-44.1-.3.5 3.6-9.2 5.9-15.1l3 13.7 9.9 45.5h-36zM168.4 2.6L125 109.5l-4.6-23.6C113.1 63.3 94.7 41 74.5 31.8l38.5 135.9h45.4l67.4-165H168.4zM70.4 2.5H1.2L0 8.6C57.7 23 95 58.9 110.7 109.5L94.4 21.1C91.4 10.9 82.9 3.9 70.4 2.5z"/>
-            </svg>
-          </div>
-        </div>
-
-        <div class="grid">
-          <div class="tile compact">
-            <div class="kb">Card Balance</div>
-            <p class="val" id="cardBalance">$181.43</p>
-            <p class="micro">$11,497.27 Available</p>
-          </div>
-
-          <!-- Payment Due: text TOP-LEFT, Pay bubble BOTTOM-RIGHT -->
-          <div class="tile dueTile" id="dueTile">
-            <p class="dueHeader">Payment Due In</p>
-            <div class="dueVal">
-              <span class="num">1</span>
-              <span class="unit">Week</span>
-            </div>
-            <button class="payBubble" id="openPay">Pay</button>
-          </div>
-
-          <div class="tile">
-            <div class="kb">Weekly Activity</div>
-            <div class="kb">+ $0.00 Daily Cash</div>
-            <div class="bars"><i style="height:22px"></i><i style="height:28px"></i><i style="height:16px"></i><i style="height:24px"></i><i style="height:18px"></i><i style="height:26px"></i><i style="height:12px"></i></div>
-          </div>
-
-          <!-- Savings Account under all tiles -->
-          <div class="tile full">
-            <div class="kb">Savings Account</div>
-            <div class="val">$70.19</div>
-          </div>
-
-          <div class="tile full">
-            <div class="kb" style="margin-bottom:8px">Latest Card Transactions</div>
-            <div class="listItem">
-              <div class="avatar"></div>
-              <div style="flex:1">
-                <div style="font-weight:800">Apple Store <span style="opacity:.6">• Refund</span></div>
-                <div style="color:var(--muted);font-size:12px">7/14/23</div>
-              </div>
-              <div style="font-weight:800">+ $40.35</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="view"></section>
-  </div>
-
-  <!-- Payment sheet (slider) -->
-  <div class="sheet" id="sheet">
-    <div class="dim" id="dim"></div>
-    <div class="panel">
-      <div class="panelHead"><button class="closeX" id="closeSheet" aria-label="Close">×</button></div>
-      <div class="title">Choose Amount</div>
-
-      <div class="ringWrap" id="ringWrap">
-        <svg viewBox="0 0 320 320" id="ringSvg" aria-hidden="true">
-          <defs>
-            <linearGradient id="gradBlue" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#51c0ff"/><stop offset="100%" stop-color="#0a84ff"/></linearGradient>
-            <linearGradient id="gradGreen" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#b8ffb9"/><stop offset="100%" stop-color="#34c759"/></linearGradient>
-            <linearGradient id="gradGray"  x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#e9ecef"/><stop offset="100%" stop-color="#cfd8dc"/></linearGradient>
-          </defs>
-          <circle cx="160" cy="160" r="120" stroke="#e9e9ef" stroke-opacity=".65" stroke-width="26" fill="none"/>
-          <circle id="progress" cx="160" cy="160" r="120" stroke="url(#gradGray)" stroke-width="26" fill="none"
-                  stroke-linecap="round" transform="rotate(-90 160 160)" />
-          <circle id="handle" cx="160" cy="40" r="12" fill="#fff" stroke="#e6e6e6" stroke-width="2"/>
-        </svg>
-
-        <div class="centerText" aria-live="polite" aria-atomic="true">
-          <div class="amt" id="amountLabel">$0.00</div>
-        </div>
-      </div>
-
-      <div class="info" id="payInfo">
-        Pay June Balance
-        <small>Paying your monthly balance is recommended to help keep you financially healthy and avoid interest charges.</small>
-      </div>
-
-      <div class="actions">
-        <button class="btn primary" id="payNowBtn">Pay $0.00</button>
-      </div>
-      <div class="other" id="otherAmountBtn">Other Amount</div>
-    </div>
-  </div>
-</div>
-
-<script>
-(()=> {
-  const app=document.getElementById('app');
-  document.querySelectorAll('.openCard').forEach(el=>{
-    el.addEventListener('click',()=>app.className='app pos-1');
-    el.addEventListener('keypress',e=>{if(e.key==='Enter') app.className='app pos-1';});
-  });
-  document.getElementById('doneBtn').addEventListener('click',()=>app.className='app pos-0');
-
-  /* Sheet open/close */
-  const sheet=document.getElementById('sheet');
-  const dim=document.getElementById('dim');
-  const openPay=document.getElementById('openPay');
-  const closeSheet=()=>sheet.classList.remove('active');
-  openPay.addEventListener('click',()=>sheet.classList.add('active'));
-  dim.addEventListener('click',closeSheet);
-  document.getElementById('closeSheet').addEventListener('click',closeSheet);
-  document.addEventListener('keydown',e=>{if(e.key==='Escape') closeSheet()});
-
-  /* Slider values */
-  const MIN=0.00, THRESH=149.36, MAX=181.43;
-
-  const ringWrap=document.getElementById('ringWrap');
-  const ringSvg=document.getElementById('ringSvg');
-  const progress=document.getElementById('progress');
-  const handle=document.getElementById('handle');
-  const amountLabel=document.getElementById('amountLabel');
-  const payBtn=document.getElementById('payNowBtn');
-  const info=document.getElementById('payInfo');
-
-  const R=120;
-  const C=2*Math.PI*R;
-  progress.setAttribute('stroke-dasharray', `${C}`);
-  progress.setAttribute('stroke-dashoffset', `${C}`); // 0%
-
-  let amount=MIN;
-  let dragging=false, lastFrac=0, lockAtMax=false;
-
-  function setUI(v){
-    if(Math.abs(v-MAX)<0.01){
-      progress.setAttribute('stroke','url(#gradBlue)');
-      info.innerHTML='Pay Card Balance<small>Paying the total amount you’ve spent is a great way to clear your balance and stay ahead on your finances.</small>';
-    }else if(v>THRESH){
-      progress.setAttribute('stroke','url(#gradGreen)');
-      info.innerHTML='Pay More Toward Your Balance<small>Paying more of your card balance helps free up available credit and reduces the amount to pay next month.</small>';
-    }else{
-      progress.setAttribute('stroke','url(#gradGray)');
-      info.innerHTML='Pay June Balance<small>Paying your monthly balance is recommended to help keep you financially healthy and avoid interest charges.</small>';
-    }
-  }
-
-  function updateByFraction(frac, fromDrag=false){
-    frac = Math.max(0, Math.min(1, frac));
-
-    // lock at MAX: once you hit the top, keep it there until you drag back
-    if (!lockAtMax && lastFrac>0.95 && frac<0.05) lockAtMax = true;
-    if (lockAtMax && frac<0.95) lockAtMax = false;
-    if (lockAtMax) frac = 1;
-
-    lastFrac = frac;
-    amount = +( (MIN + frac*(MAX-MIN)).toFixed(2) );
-
-    const dash = C*(1-frac);
-    progress.style.transition = fromDrag ? 'none' : 'stroke-dashoffset 220ms ease, stroke 220ms ease';
-    progress.setAttribute('stroke-dashoffset', `${dash}`);
-
-    const ang=(-90 + 360*frac)*Math.PI/180;
-    const hx=160 + R*Math.cos(ang), hy=160 + R*Math.sin(ang);
-    handle.style.transition = fromDrag ? 'none' : 'cx 180ms ease, cy 180ms ease';
-    handle.setAttribute('cx',hx.toFixed(2));
-    handle.setAttribute('cy',hy.toFixed(2));
-
-    amountLabel.textContent='$'+amount.toFixed(2);
-    payBtn.textContent='Pay $'+amount.toFixed(2);
-    setUI(amount);
-  }
-
-  function fractionFromPointer(evt){
-    const rect=ringWrap.getBoundingClientRect();
-    const x=(evt.touches?evt.touches[0].clientX:evt.clientX)-rect.left;
-    const y=(evt.touches?evt.touches[0].clientY:evt.clientY)-rect.top;
-    const cx=rect.width/2, cy=rect.height/2;
-    let theta=Math.atan2(y-cy,x-cx);
-    theta+=Math.PI/2;
-    if(theta<0) theta+=Math.PI*2;
-    return theta/(Math.PI*2);
-  }
-
-  const start=e=>{dragging=true; updateByFraction(fractionFromPointer(e), true); e.preventDefault();}
-  const move =e=>{if(!dragging) return; updateByFraction(fractionFromPointer(e), true);}
-  const end  =()=>{dragging=false;}
-
-  handle.addEventListener('mousedown',start); handle.addEventListener('touchstart',start,{passive:false});
-  ringSvg.addEventListener('mousedown',start); ringSvg.addEventListener('touchstart',start,{passive:false});
-  window.addEventListener('mousemove',move,{passive:false}); window.addEventListener('touchmove',move,{passive:false});
-  window.addEventListener('mouseup',end); window.addEventListener('touchend',end);
-
-  document.getElementById('otherAmountBtn').addEventListener('click',()=>{
-    const raw=prompt('Enter a payment amount (0.00–'+MAX.toFixed(2)+')', amount.toFixed(2));
-    if(!raw) return; const n=parseFloat(raw.replace(/[^\d.]/g,'')); if(isFinite(n)) {
-      const frac = Math.max(0, Math.min(1, n/MAX));
-      updateByFraction(frac,false);
-    }
-  });
-  payBtn.addEventListener('click',()=>{alert('Paid $'+amount.toFixed(2)+' (demo).'); sheet.classList.remove('active');});
-
-  // init at $0.00
-  updateByFraction(0,false);
-})();
-</script>
-</body>
-</html>
++<!DOCTYPE html>
++<html lang="en">
++<head>
++    <meta charset="UTF-8">
++    <meta name="viewport" content="width=device-width, initial-scale=1.0">
++    <title>Apple Card Dashboard</title>
++    <style>
++        * {
++            margin: 0;
++            padding: 0;
++            box-sizing: border-box;
++        }
++
++        body {
++            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
++            background: #f2f2f7;
++            padding: 20px;
++            min-height: 100vh;
++        }
++
++        .phone-container {
++            max-width: 375px;
++            margin: 0 auto;
++            background: white;
++            border-radius: 25px;
++            overflow: hidden;
++            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
++            position: relative;
++        }
++
++        .status-bar {
++            background: #000;
++            color: white;
++            padding: 8px 20px;
++            display: flex;
++            justify-content: space-between;
++            align-items: center;
++            font-size: 14px;
++            font-weight: 600;
++        }
++
++        .time {
++            background: #ff3b30;
++            padding: 2px 8px;
++            border-radius: 12px;
++            font-size: 12px;
++        }
++
++        .status-icons {
++            display: flex;
++            align-items: center;
++            gap: 5px;
++        }
++
++        .header {
++            padding: 20px;
++            display: flex;
++            justify-content: space-between;
++            align-items: center;
++            background: white;
++        }
++
++        .header h1 {
++            font-size: 28px;
++            font-weight: 700;
++            color: #000;
++        }
++
++        .header-icons {
++            display: flex;
++            gap: 15px;
++        }
++
++        .icon {
++            width: 24px;
++            height: 24px;
++            background: #8e8e93;
++            border-radius: 50%;
++        }
++
++        .apple-card {
++            margin: 0 20px 20px;
++            height: 200px;
++            border-radius: 20px;
++            background: linear-gradient(135deg, #ff6b9d 0%, #c471f5 50%, #12c2e9 100%);
++            position: relative;
++            overflow: hidden;
++        }
++
++        .apple-logo {
++            position: absolute;
++            top: 20px;
++            left: 20px;
++            width: 30px;
++            height: 30px;
++            background: rgba(255, 255, 255, 0.3);
++            border-radius: 50%;
++            display: flex;
++            align-items: center;
++            justify-content: center;
++            font-size: 18px;
++            color: white;
++        }
++
++        .mastercard-logo {
++            position: absolute;
++            bottom: 20px;
++            right: 20px;
++            width: 50px;
++            height: 30px;
++            display: flex;
++            align-items: center;
++            gap: -5px;
++        }
++
++        .circle-red, .circle-yellow {
++            width: 20px;
++            height: 20px;
++            border-radius: 50%;
++            opacity: 0.7;
++        }
++
++        .circle-red {
++            background: #eb001b;
++        }
++
++        .circle-yellow {
++            background: #ff5f00;
++            margin-left: -8px;
++        }
++
++        .balance-section {
++            padding: 0 20px 20px;
++            display: flex;
++            justify-content: space-between;
++        }
++
++        .balance-item h3 {
++            font-size: 14px;
++            color: #8e8e93;
++            font-weight: 500;
++            margin-bottom: 5px;
++        }
++
++        .balance-amount {
++            font-size: 28px;
++            font-weight: 700;
++            color: #000;
++        }
++
++        .available {
++            font-size: 14px;
++            color: #8e8e93;
++            margin-top: 2px;
++        }
++
++        .due-time {
++            font-size: 28px;
++            font-weight: 700;
++            color: #000;
++        }
++
++        .activity-section {
++            margin: 0 20px 20px;
++            background: white;
++            border-radius: 15px;
++            padding: 20px;
++        }
++
++        .activity-header {
++            display: flex;
++            justify-content: space-between;
++            align-items: center;
++            margin-bottom: 10px;
++        }
++
++        .activity-title {
++            font-size: 16px;
++            font-weight: 600;
++            color: #000;
++        }
++
++        .pay-button {
++            background: #000;
++            color: white;
++            border: none;
++            border-radius: 20px;
++            padding: 8px 16px;
++            font-size: 14px;
++            font-weight: 600;
++            cursor: pointer;
++        }
++
++        .daily-cash {
++            font-size: 14px;
++            color: #8e8e93;
++            margin-bottom: 15px;
++        }
++
++        .chart-placeholder {
++            height: 60px;
++            background: linear-gradient(to right, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%);
++            border-radius: 8px;
++            display: flex;
++            align-items: end;
++            padding: 10px;
++            gap: 3px;
++        }
++
++        .bar {
++            background: #e0e0e0;
++            border-radius: 2px;
++            flex: 1;
++        }
++
++        .bar:nth-child(1) { height: 20%; }
++        .bar:nth-child(2) { height: 40%; }
++        .bar:nth-child(3) { height: 60%; }
++        .bar:nth-child(4) { height: 30%; }
++        .bar:nth-child(5) { height: 80%; }
++        .bar:nth-child(6) { height: 50%; }
++        .bar:nth-child(7) { height: 70%; }
++
++        .savings-section {
++            margin: 0 20px 20px;
++            background: white;
++            border-radius: 15px;
++            padding: 20px;
++            display: flex;
++            align-items: center;
++            justify-content: space-between;
++        }
++
++        .savings-info {
++            display: flex;
++            align-items: center;
++            gap: 15px;
++        }
++
++        .savings-icon {
++            width: 40px;
++            height: 40px;
++            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
++            border-radius: 10px;
++            display: flex;
++            align-items: center;
++            justify-content: center;
++            color: white;
++            font-size: 18px;
++        }
++
++        .savings-text h4 {
++            font-size: 16px;
++            font-weight: 600;
++            color: #000;
++            margin-bottom: 2px;
++        }
++
++        .savings-balance {
++            font-size: 14px;
++            color: #8e8e93;
++        }
++
++        .chevron {
++            width: 20px;
++            height: 20px;
++            background: #c7c7cc;
++            border-radius: 50%;
++            position: relative;
++        }
++
++        .chevron::after {
++            content: '›';
++            position: absolute;
++            top: 50%;
++            left: 50%;
++            transform: translate(-50%, -50%);
++            color: white;
++            font-size: 14px;
++        }
++
++        .offers-section {
++            margin: 0 20px 20px;
++            background: white;
++            border-radius: 15px;
++            padding: 20px;
++            position: relative;
++        }
++
++        .close-btn {
++            position: absolute;
++            top: 15px;
++            right: 15px;
++            width: 24px;
++            height: 24px;
++            background: #f0f0f0;
++            border-radius: 50%;
++            display: flex;
++            align-items: center;
++            justify-content: center;
++            cursor: pointer;
++            font-size: 16px;
++            color: #8e8e93;
++        }
++
++        .offers-content {
++            display: flex;
++            align-items: center;
++            gap: 15px;
++        }
++
++        .apple-pay-icon {
++            width: 50px;
++            height: 30px;
++            background: #000;
++            border-radius: 8px;
++            display: flex;
++            align-items: center;
++            justify-content: center;
++            color: white;
++            font-size: 12px;
++            font-weight: 600;
++        }
++
++        .offers-text h4 {
++            font-size: 16px;
++            font-weight: 600;
++            color: #000;
++            margin-bottom: 5px;
++        }
++
++        .offers-description {
++            font-size: 14px;
++            color: #8e8e93;
++            line-height: 1.4;
++        }
++
++        .learn-more {
++            margin: 0 20px 20px;
++            color: #007aff;
++            font-size: 16px;
++            font-weight: 500;
++            cursor: pointer;
++        }
++
++        .transactions-section {
++            margin: 0 20px 20px;
++            background: white;
++            border-radius: 15px;
++            overflow: hidden;
++        }
++
++        .transactions-header {
++            padding: 20px;
++            border-bottom: 1px solid #f0f0f0;
++            display: flex;
++            justify-content: space-between;
++            align-items: center;
++        }
++
++        .transactions-title {
++            font-size: 20px;
++            font-weight: 700;
++            color: #000;
++        }
++
++        .expand-icon {
++            width: 24px;
++            height: 24px;
++            background: #f0f0f0;
++            border-radius: 50%;
++            display: flex;
++            align-items: center;
++            justify-content: center;
++        }
++
++        .transaction-item {
++            padding: 15px 20px;
++            display: flex;
++            align-items: center;
++            gap: 15px;
++        }
++
++        .transaction-icon {
++            width: 40px;
++            height: 40px;
++            background: #f0f0f0;
++            border-radius: 10px;
++            display: flex;
++            align-items: center;
++            justify-content: center;
++            font-size: 18px;
++        }
++
++        .transaction-info {
++            flex: 1;
++        }
++
++        .transaction-name {
++            font-size: 16px;
++            font-weight: 600;
++            color: #000;
++            margin-bottom: 2px;
++        }
++
++        .transaction-type {
++            font-size: 14px;
++            color: #8e8e93;
++        }
++
++        .transaction-date {
++            font-size: 12px;
++            color: #8e8e93;
++            margin-top: 2px;
++        }
++
++        .transaction-amount {
++            font-size: 16px;
++            font-weight: 600;
++            color: #34c759;
++        }
++
++        .transaction-chevron {
++            width: 20px;
++            height: 20px;
++            background: #f0f0f0;
++            border-radius: 50%;
++            display: flex;
++            align-items: center;
++            justify-content: center;
++            font-size: 12px;
++            color: #8e8e93;
++        }
++
++        @media (max-width: 400px) {
++            .phone-container {
++                margin: 0;
++                border-radius: 0;
++                min-height: 100vh;
++            }
++        }
++    </style>
++</head>
++<body>
++    <div class="phone-container">
++        <!-- Status Bar -->
++        <div class="status-bar">
++            <div class="time">12:59</div>
++            <div class="status-icons">
++                <span>•••</span>
++                <span>📶</span>
++                <span>📶</span>
++                <span>90</span>
++            </div>
++        </div>
++
++        <!-- Header -->
++        <div class="header">
++            <h1>Done</h1>
++            <div class="header-icons">
++                <div class="icon"></div>
++                <div class="icon"></div>
++                <div class="icon"></div>
++            </div>
++        </div>
++
++        <!-- Apple Card -->
++        <div class="apple-card">
++            <div class="apple-logo">🍎</div>
++            <div class="mastercard-logo">
++                <div class="circle-red"></div>
++                <div class="circle-yellow"></div>
++            </div>
++        </div>
++
++        <!-- Balance Section -->
++        <div class="balance-section">
++            <div class="balance-item">
++                <h3>Card Balance</h3>
++                <div class="balance-amount">$181.43</div>
++                <div class="available">$11,497.27 Available</div>
++            </div>
++            <div class="balance-item">
++                <h3>Payment Due In</h3>
++                <div class="due-time">1 Week</div>
++            </div>
++        </div>
++
++        <!-- Weekly Activity Section -->
++        <div class="activity-section">
++            <div class="activity-header">
++                <div>
++                    <div class="activity-title">Weekly Activity</div>
++                    <div class="daily-cash">+$0.00 Daily Cash</div>
++                </div>
++                <button class="pay-button">Pay</button>
++            </div>
++            <div class="chart-placeholder">
++                <div class="bar"></div>
++                <div class="bar"></div>
++                <div class="bar"></div>
++                <div class="bar"></div>
++                <div class="bar"></div>
++                <div class="bar"></div>
++                <div class="bar"></div>
++            </div>
++        </div>
++
++        <!-- Savings Account Section -->
++        <div class="savings-section">
++            <div class="savings-info">
++                <div class="savings-icon">💰</div>
++                <div class="savings-text">
++                    <h4>Savings Account</h4>
++                    <div class="savings-balance">Current Balance: $70.19</div>
++                </div>
++            </div>
++            <div class="chevron"></div>
++        </div>
++
++        <!-- Apple Pay Offers Section -->
++        <div class="offers-section">
++            <div class="close-btn">×</div>
++            <div class="offers-content">
++                <div class="apple-pay-icon">Pay</div>
++                <div class="offers-text">
++                    <h4>Exclusive Offers with Apple Pay</h4>
++                    <div class="offers-description">Enjoy special offers on travel, summer styles, entertainment, and more.</div>
++                </div>
++            </div>
++        </div>
++
++        <!-- Learn More -->
++        <div class="learn-more">Learn More</div>
++
++        <!-- Latest Card Transactions -->
++        <div class="transactions-section">
++            <div class="transactions-header">
++                <h2 class="transactions-title">Latest Card Transactions</h2>
++                <div class="expand-icon">⊖</div>
++            </div>
++            <div class="transaction-item">
++                <div class="transaction-icon">🍎</div>
++                <div class="transaction-info">
++                    <div class="transaction-name">Apple Store</div>
++                    <div class="transaction-type">Refund</div>
++                    <div class="transaction-date">7/14/23</div>
++                </div>
++                <div class="transaction-amount">+$40.35</div>
++                <div class="transaction-chevron">›</div>
++            </div>
++        </div>
++    </div>
++</body>
++</html>
