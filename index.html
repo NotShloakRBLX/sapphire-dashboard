@@ -47,8 +47,23 @@
   .bars{display:flex;gap:6px;margin-top:8px;align-items:flex-end}
   .bars i{flex:1;height:20px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,.45));opacity:.26;animation:grow .9s var(--t) both}
   @keyframes grow{from{transform:scaleY(.2);transform-origin:bottom}to{transform:scaleY(1)}}
-  .payBubble{position:absolute;top:50%;right:16px;transform:translateY(-50%);width:62px;height:62px;border-radius:50%;background:#000;color:#fff;display:grid;place-items:center;font-weight:900;letter-spacing:.2px;box-shadow:0 10px 24px rgba(0,0,0,.45);transition:transform var(--t),opacity var(--t)}
-  .payBubble:active{transform:translateY(-50%) scale(.95)}
+  /* Layout the due tile with flex and pin the bubble at the far right */
+#dueTile{display:flex;align-items:center;gap:12px;position:relative}
+#dueTile .kb{position:absolute;top:12px;left:14px}
+#dueTile .val{margin:28px 0 0 14px} /* pushes the "1 Week" text down under the small label */
+
+/* Pay bubble sits at far right and no longer drifts */
+.payBubble{
+  position:static;               /* <— no absolute */
+  margin-left:auto;              /* push to the right edge */
+  width:62px;height:62px;border-radius:50%;
+  background:#000;color:#fff;display:grid;place-items:center;
+  font-weight:900;letter-spacing:.2px;
+  box-shadow:0 10px 24px rgba(0,0,0,.45);
+  transition:transform var(--t),opacity var(--t)
+}
+.payBubble:active{transform:scale(.95)}
+
   .sheet{position:fixed;inset:0;display:grid;place-items:end center;pointer-events:none;z-index:9}
   .sheet.active{pointer-events:auto}
   .dim{position:absolute;inset:0;background:rgba(0,0,0,.45);opacity:0;transition:opacity var(--t)}
@@ -61,6 +76,10 @@
   .due{color:#666;text-align:center;font-weight:700;margin-bottom:4px}
   .ringWrap{position:relative;width:86%;max-width:360px;aspect-ratio:1;margin:10px auto 8px}
   .ringWrap svg{width:100%;height:100%}
+
+/* Prevent scrolling/gestures while dragging the ring */
+#ringWrap, #ringSvg, #ringSvg * { touch-action: none; }
+
   .centerText{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
   .amt{font-weight:900;font-size:44px}
   .ni{position:absolute;top:58%;left:50%;transform:translate(-50%,0);font-size:12px;letter-spacing:.3px;color:#7a7a7a;font-weight:800}
@@ -139,10 +158,11 @@
           </div>
 
           <div class="tile" id="dueTile">
-            <div class="kb">Payment Due In</div>
-            <div class="val">1 Week</div>
-            <button class="payBubble" id="openPay">Pay</button>
-          </div>
+  <div class="kb">Payment Due In</div>
+  <div class="val">1 Week</div>
+  <button class="payBubble" id="openPay">Pay</button>
+</div>
+
 
           <div class="tile">
             <div class="kb">Weekly Activity</div>
@@ -312,20 +332,43 @@
     return MIN + frac*(MAX - MIN);
   }
 
-  // Drag/snap
-  let dragging=false;
-  const start=e=>{dragging=true; update(valFromPointer(e), true); e.preventDefault();}
-  const move =e=>{if(!dragging) return; update(valFromPointer(e), true);}
-  const end  =()=>{ if(!dragging) return; dragging=false;
-    let best=amount, bestd=1e9;
-    SNAP.forEach(s=>{const d=Math.abs(s-amount); if(d<bestd){bestd=d; best=s;}});
-    if(bestd<=SNAP_EPS) update(best,false); else update(amount,false);
-  };
+// ----- Pointer Events (works on desktop + mobile, incl. iOS) -----
+function valFromPointer(e){
+  const rect = ringWrap.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  const cx = rect.width/2, cy = rect.height/2;
+  let theta = Math.atan2(y - cy, x - cx); // -PI..PI (0 at right)
+  theta += Math.PI/2;                      // top = 0
+  if (theta < 0) theta += Math.PI*2;
+  const frac = theta / (Math.PI*2);
+  return MIN + frac*(MAX - MIN);
+}
 
-  handle.addEventListener('mousedown',start); handle.addEventListener('touchstart',start,{passive:false});
-  ringSvg.addEventListener('mousedown',start); ringSvg.addEventListener('touchstart',start,{passive:false});
-  window.addEventListener('mousemove',move,{passive:false}); window.addEventListener('touchmove',move,{passive:false});
-  window.addEventListener('mouseup',end); window.addEventListener('touchend',end);
+let dragging = false;
+function onPointerDown(e){
+  dragging = true;
+  ringSvg.setPointerCapture?.(e.pointerId);
+  update(valFromPointer(e), true);
+  e.preventDefault();
+}
+function onPointerMove(e){
+  if (!dragging) return;
+  update(valFromPointer(e), true);
+}
+function onPointerUp(e){
+  if (!dragging) return;
+  dragging = false;
+  // snap to anchors if close
+  let best = amount, bestd = 1e9;
+  SNAP.forEach(s => { const d = Math.abs(s-amount); if (d < bestd){ bestd = d; best = s; } });
+  if (bestd <= SNAP_EPS) update(best,false); else update(amount,false);
+}
+
+ringSvg.addEventListener('pointerdown', onPointerDown);
+handle.addEventListener('pointerdown', onPointerDown);
+window.addEventListener('pointermove', onPointerMove);
+window.addEventListener('pointerup', onPointerUp);
 
   document.getElementById('otherAmountBtn').addEventListener('click',()=>{
     const raw=prompt('Enter a payment amount ('+MIN.toFixed(2)+'–'+MAX.toFixed(2)+')', amount.toFixed(2));
