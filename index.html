@@ -79,7 +79,7 @@
   /* TOP CARD with refined continuous corners (top & bottom matched) */
   .bigCard{
     height:212px;
-    border-radius:16px/14px;
+    border-radius:16px/14px; /* subtle, “iOS-y” continuous corners */
     overflow:hidden;box-shadow:var(--shadow);position:relative
   }
   .bigCard .visa{right:22px;bottom:18px}
@@ -380,11 +380,26 @@
   // Transaction details nav
   document.getElementById('backTxn').addEventListener('click', ()=>{ app.className='app pos-1'; });
 
-  /* === MANUAL BALANCES — EDIT THESE TWO NUMBERS ONLY === */
-  const SETTINGS = {
-    cardBalance: 14.13,     // <-- change this number
-    availableBalance: 310.87  // <-- and this one
+  /* === MANUAL DEFAULTS (edit & bump version to override saved values) === */
+  const SETTINGS_DEFAULT = {
+    version: 1,             // <— bump this number after you edit amounts to override saved values
+    cardBalance: 14.13,     // <— edit
+    availableBalance: 310.87 // <— edit
   };
+
+  // Load saved balances if they match the same version, otherwise use defaults
+  function loadBalances(){
+    try{
+      const s = JSON.parse(localStorage.getItem('demo_balances')||'null');
+      if (s && s.version === SETTINGS_DEFAULT.version &&
+          typeof s.cardBalance==='number' && typeof s.availableBalance==='number'){
+        return s;
+      }
+    }catch(e){}
+    return {...SETTINGS_DEFAULT};
+  }
+  let SETTINGS = loadBalances();
+  const saveBalances = () => localStorage.setItem('demo_balances', JSON.stringify(SETTINGS));
 
   /* ----- Payment sheet open/close ----- */
   const sheet=document.getElementById('sheet');
@@ -396,7 +411,7 @@
   document.getElementById('closeSheet').addEventListener('click',closeSheet);
   document.addEventListener('keydown',e=>{if(e.key==='Escape') closeSheet()});
 
-  /* ----- Circular slider (now reads MAX from SETTINGS.cardBalance) ----- */
+  /* ----- Circular slider (locks at max; only CCW unlocks) ----- */
   const MIN = 0.00;
   let   MAX = SETTINGS.cardBalance;
   let   THRESH = +(MAX * 0.82).toFixed(2);
@@ -415,7 +430,7 @@
   progress.setAttribute('stroke-dashoffset', `${C}`);
 
   let amount=MIN;
-  let dragging=false, lastFrac=0, lockAtMax=false;
+  let dragging=false, lastFrac=0, lockedAtMax=false;
 
   function setUI(v){
     if(Math.abs(v-MAX)<0.01){
@@ -430,11 +445,23 @@
     }
   }
 
-  function updateByFraction(frac, fromDrag=false){
-    frac = Math.max(0, Math.min(1, frac));
-    if (!lockAtMax && lastFrac>0.95 && frac<0.05) lockAtMax = true;
-    if (lockAtMax && frac<0.95) lockAtMax = false;
-    if (lockAtMax) frac = 1;
+  function updateByFraction(f, fromDrag=false){
+    let frac = Math.max(0, Math.min(1, f));
+
+    // If we've reached the end, lock there; while locked, only allow CCW (smaller frac)
+    const NEAR_MAX = 0.995;
+    if (lockedAtMax){
+      if (frac < NEAR_MAX){           // moving counterclockwise away from max
+        lockedAtMax = false;          // unlock and allow movement
+      } else {
+        frac = 1;                     // keep locked at max
+      }
+    } else {
+      if (frac >= NEAR_MAX){          // hit the max -> lock
+        lockedAtMax = true;
+        frac = 1;
+      }
+    }
 
     lastFrac = frac;
     amount = +( (MIN + frac*(MAX-MIN)).toFixed(2) );
@@ -454,7 +481,7 @@
     setUI(amount);
   }
 
-  // Write the manual numbers to the UI and sync the ring
+  // Write numbers to UI and sync ring
   const cardBalanceEl = document.getElementById('cardBalance');
   const availableEl   = document.getElementById('availableBalance');
   const fmtUSD = n => n.toLocaleString(undefined,{style:'currency',currency:'USD'});
@@ -465,8 +492,8 @@
 
     MAX    = Math.max(0, SETTINGS.cardBalance);
     THRESH = +(MAX * 0.82).toFixed(2);
-
-    updateByFraction(0, false); // knob at $0 with new limits
+    lockedAtMax = false;             // reset lock when limits change
+    updateByFraction(0, false);      // knob at $0 with new limits
   }
 
   function fractionFromPointer(evt){
@@ -508,20 +535,18 @@
     setTimeout(hide, 1600);
   }
 
-  // Pay -> update balances -> success pop-up
+  // Pay -> update balances (persist) -> success pop-up
   payBtn.addEventListener('click', ()=>{
     if (amount <= 0) { sheet.classList.remove('active'); return; }
-
-    // Decrease card balance; increase available
-    SETTINGS.cardBalance = +Math.max(0, SETTINGS.cardBalance - amount).toFixed(2);
+    SETTINGS.cardBalance     = +Math.max(0, SETTINGS.cardBalance - amount).toFixed(2);
     SETTINGS.availableBalance = +(SETTINGS.availableBalance + amount).toFixed(2);
-
-    applyBalances();           // refresh UI + ring limits
+    saveBalances();           // persist across reloads
+    applyBalances();          // refresh UI + ring limits
     sheet.classList.remove('active');
-    showPaySuccess(amount);    // in-app confirmation
+    showPaySuccess(amount);   // in-app confirmation
   });
 
-  // Apply your manual balances on load
+  // Apply balances on load
   applyBalances();
 
   /* ---------- TRANSACTIONS (manual add/remove; purchase=no sign; refund/payment=“-”) ---------- */
