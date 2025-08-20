@@ -149,6 +149,34 @@
 
   .pos-0 .views{transform:translateX(0%)}
   .pos-1 .views{transform:translateX(-33.3333%)}
+
+/* GRID */
+.grid{
+  margin-top:16px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  align-items:start;               /* stop items from stretching */
+}
+
+/* Left column wrapper spans the two rows on the left */
+.leftCol{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  grid-column:1;
+  grid-row:1 / span 2;
+}
+
+/* Ensure the tall tile occupies the entire right column */
+.dueTall{
+  grid-column:2;
+  grid-row:1 / span 2;
+}
+
+/* (optional) tighten bottom padding in Card Balance tile a bit more */
+.compact{ padding:12px 14px 6px; }
+
 </style>
 </head>
 <body>
@@ -213,29 +241,33 @@
         </div>
 
         <div class="grid">
-          <!-- Card Balance -->
-          <div class="tile compact">
-            <div class="kb">Card Balance</div>
-            <p class="val" id="cardBalance">$181.43</p>
-            <p class="micro" id="availableCredit">$11,497.27 Available</p>
-          </div>
+  <!-- LEFT COLUMN: stacks Card Balance + Statement Balance -->
+  <div class="leftCol">
+    <!-- Card Balance -->
+    <div class="tile compact">
+      <div class="kb">Card Balance</div>
+      <p class="val" id="cardBalance">$181.43</p>
+      <p class="micro" id="availableCredit">$11,497.27 Available</p>
+    </div>
 
-          <!-- Payment Due (taller, spans 2 rows) -->
-          <div class="tile dueTile dueTall" id="dueTile">
-            <p class="dueHeader">Payment Due In</p>
-            <div class="dueVal">
-              <span class="num">1</span>
-              <span class="unit">Week</span>
-            </div>
-            <button class="payBubble" id="openPay">Pay</button>
-          </div>
+    <!-- Statement Balance -->
+    <div class="tile compact" id="statementTile">
+      <div class="kb">Statement Balance</div>
+      <p class="val" id="statementBalance">$0.00</p>
+      <button class="payBubble" id="openPayStatement">Pay</button>
+    </div>
+  </div>
 
-          <!-- Statement Balance (single row; smaller pay bubble) -->
-          <div class="tile compact" id="statementTile">
-            <div class="kb">Statement Balance</div>
-            <p class="val" id="statementBalance">$0.00</p>
-            <button class="payBubble" id="openPayStatement">Pay</button>
-          </div>
+  <!-- RIGHT COLUMN: Payment Due spans two rows -->
+  <div class="tile dueTile dueTall" id="dueTile">
+    <p class="dueHeader">Payment Due In</p>
+    <div class="dueVal">
+      <span class="num">1</span>
+      <span class="unit">Week</span>
+    </div>
+    <button class="payBubble" id="openPay">Pay</button>
+  </div>
+
 
           <!-- Savings Account -->
           <div class="tile full">
