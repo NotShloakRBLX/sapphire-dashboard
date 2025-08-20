@@ -154,6 +154,29 @@
   .pos-1 .views{transform:translateX(-33.3333%)}
 
   .listItem .avatar{ display:none; }
+
+/* slide to the 3rd page */
+.pos-2 .views{ transform: translateX(-66.6667%); }
+
+/* Transaction details header */
+.txnHeader{ padding:28px 18px 10px; text-align:center; }
+.txnAmount{ font-size:60px; font-weight:900; letter-spacing:-.5px; }
+.txnMerchant{ color:var(--muted); font-size:22px; font-weight:700; margin-top:6px; }
+.txnDate{ color:var(--muted); font-size:16px; margin-top:4px; }
+
+/* Tiles on details page */
+.block{ margin:14px 12px; }
+.row{
+  margin:14px 12px;
+  display:flex; justify-content:space-between; align-items:center;
+  padding:16px;
+  background:var(--tile); border:1px solid var(--tileBorder);
+  border-radius:var(--radiusTile);
+}
+.row h3{ margin:0; font-size:18px; }
+.row .right{ font-weight:900; font-size:18px; }
+.statusLine{ font-size:18px; margin-bottom:4px; }
+
 </style>
 </head>
 <body>
@@ -249,7 +272,7 @@
 
           <div class="tile full">
             <div class="kb" style="margin-bottom:8px">Latest Card Transactions</div>
-            <div class="listItem">
+            <div class="listItem" id="openTxn">
               <div style="flex:1">
                 <div style="font-weight:800">Apple Store <span style="opacity:.6">• Refund</span></div>
                 <div style="color:var(--muted);font-size:12px">7/14/23</div>
@@ -261,7 +284,29 @@
       </div>
     </section>
 
-    <section class="view"></section>
+    <section class="view" id="txnView">
+  <div class="nav">
+    <button class="pill" id="backTxn">Back</button>
+    <div class="iconrow"></div>
+  </div>
+
+  <div class="txnHeader">
+    <div class="txnAmount">$40.35</div>
+    <div class="txnMerchant">Apple Store</div>
+    <div class="txnDate">07/14/23, 4:32 PM</div>
+  </div>
+
+  <div class="tile block">
+    <div class="statusLine"><strong>Status: Refunded</strong></div>
+    <div class="micro">Apple Card</div>
+  </div>
+
+  <div class="row">
+    <h3>Total</h3>
+    <div class="right">$40.35</div>
+  </div>
+</section>
+
   </div>
 
   <!-- Payment sheet (unchanged) -->
@@ -310,6 +355,17 @@
     el.addEventListener('keypress',e=>{if(e.key==='Enter') app.className='app pos-1';});
   });
   document.getElementById('doneBtn').addEventListener('click',()=>app.className='app pos-0');
+
+// Open Transaction Details
+document.getElementById('openTxn').addEventListener('click', () => {
+  app.className = 'app pos-2';
+});
+
+// Back from Transaction Details
+document.getElementById('backTxn').addEventListener('click', () => {
+  app.className = 'app pos-1';
+});
+
 
   /* Sheet open/close */
   const sheet=document.getElementById('sheet');
@@ -411,5 +467,4 @@
 </script>
 </body>
 </html>
-
 
