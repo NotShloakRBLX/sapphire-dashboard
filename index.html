@@ -106,7 +106,7 @@
   .dueVal .unit{display:block;font-size:26px;font-weight:900;margin-top:2px;letter-spacing:-.2px}
   .dueTall{grid-row:span 2;min-height:260px;} /* spans two rows */
 
-  /* Pay bubble bottom-right */
+  /* Pay bubble base */
   .payBubble{
     position:absolute;right:14px;bottom:14px;
     width:70px;height:70px;border-radius:50%;
@@ -117,10 +117,10 @@
   }
   .payBubble:active{transform:scale(.95)}
 
-  /* Statement Balance — single row so its bottom aligns with Payment Due */
-  #statementTile{ /* no grid-row span; let the grid split the tall tile evenly */
-    padding:12px 16px 16px;
-    min-height:auto; /* rely on the row height set by the spanning tile */
+  /* Smaller pay bubble ONLY for Statement Balance */
+  #statementTile .payBubble{
+    width:58px;height:58px;border-width:2.5px;
+    right:12px;bottom:12px;
   }
 
   .listItem{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:12px}
@@ -230,14 +230,14 @@
             <button class="payBubble" id="openPay">Pay</button>
           </div>
 
-          <!-- Statement Balance (single row; aligns bottom with Payment Due) -->
+          <!-- Statement Balance (single row; smaller pay bubble) -->
           <div class="tile compact" id="statementTile">
             <div class="kb">Statement Balance</div>
             <p class="val" id="statementBalance">$0.00</p>
             <button class="payBubble" id="openPayStatement">Pay</button>
           </div>
 
-          <!-- Savings Account (back to original spot) -->
+          <!-- Savings Account -->
           <div class="tile full">
             <div class="kb">Savings Account</div>
             <div class="val">$70.19</div>
