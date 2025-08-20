@@ -79,7 +79,7 @@
   /* TOP CARD with refined continuous corners (top & bottom matched) */
   .bigCard{
     height:212px;
-    border-radius:16px/14px; /* subtle, “iOS-y” continuous corners */
+    border-radius:16px/14px;
     overflow:hidden;box-shadow:var(--shadow);position:relative
   }
   .bigCard .visa{right:22px;bottom:18px}
@@ -382,12 +382,11 @@
 
   /* === MANUAL DEFAULTS (edit & bump version to override saved values) === */
   const SETTINGS_DEFAULT = {
-    version: 1,             // <— bump this number after you edit amounts to override saved values
-    cardBalance: 14.13,     // <— edit
-    availableBalance: 310.87 // <— edit
+    version: 1,
+    cardBalance: 14.13,
+    availableBalance: 310.87
   };
 
-  // Load saved balances if they match the same version, otherwise use defaults
   function loadBalances(){
     try{
       const s = JSON.parse(localStorage.getItem('demo_balances')||'null');
@@ -433,7 +432,7 @@
   let dragging=false, lastFrac=0, lockedAtMax=false;
 
   function setUI(v){
-    if(Math.abs(v-MAX)<0.01){
+    if(lockedAtMax || Math.abs(v-MAX)<0.01){
       progress.setAttribute('stroke','url(#gradBlue)');
       info.innerHTML='Pay Card Balance<small>Paying the total amount you’ve spent is a great way to clear your balance and stay ahead on your finances.</small>';
     }else if(v>THRESH){
@@ -445,32 +444,39 @@
     }
   }
 
-  function updateByFraction(f, fromDrag=false){
-    let frac = Math.max(0, Math.min(1, f));
+  // signed delta between two fractions in (-0.5, 0.5]
+  const signedDelta = (a,b)=>(((a-b)+1.5)%1)-0.5;
 
-    // If we've reached the end, lock there; while locked, only allow CCW (smaller frac)
-    const NEAR_MAX = 0.995;
+  function applyFromFraction(fracRaw, fromDrag=false){
+    // Clamp into [0,1)
+    let f = Math.max(0, Math.min(0.999999, fracRaw));
+    const delta = signedDelta(f, lastFrac);
+
+    // When locked at max (blue), ignore clockwise attempts (delta>0).
     if (lockedAtMax){
-      if (frac < NEAR_MAX){           // moving counterclockwise away from max
-        lockedAtMax = false;          // unlock and allow movement
-      } else {
-        frac = 1;                     // keep locked at max
-      }
-    } else {
-      if (frac >= NEAR_MAX){          // hit the max -> lock
-        lockedAtMax = true;
-        frac = 1;
+      if (delta > 0){
+        f = 1; // stay pinned
+      }else{
+        lockedAtMax = false; // CCW unlock
       }
     }
 
-    lastFrac = frac;
-    amount = +( (MIN + frac*(MAX-MIN)).toFixed(2) );
+    // If we hit the end, lock there
+    const NEAR_MAX = 0.995;
+    if (!lockedAtMax && f >= NEAR_MAX){
+      lockedAtMax = true;
+      f = 1;
+    }
 
-    const dash = C*(1-frac);
+    lastFrac = f;
+    const fracForAmount = (f===1)?1:f; // 1 maps to MAX exactly
+    amount = +((MIN + fracForAmount*(MAX-MIN)).toFixed(2));
+
+    const dash = C*(1-fracForAmount);
     progress.style.transition = fromDrag ? 'none' : 'stroke-dashoffset 220ms ease, stroke 220ms ease';
     progress.setAttribute('stroke-dashoffset', `${dash}`);
 
-    const ang=(-90 + 360*frac)*Math.PI/180;
+    const ang=(-90 + 360*fracForAmount)*Math.PI/180;
     const hx=160 + R*Math.cos(ang), hy=160 + R*Math.sin(ang);
     handle.style.transition = fromDrag ? 'none' : 'cx 180ms ease, cy 180ms ease';
     handle.setAttribute('cx',hx.toFixed(2));
@@ -493,7 +499,8 @@
     MAX    = Math.max(0, SETTINGS.cardBalance);
     THRESH = +(MAX * 0.82).toFixed(2);
     lockedAtMax = false;             // reset lock when limits change
-    updateByFraction(0, false);      // knob at $0 with new limits
+    lastFrac = 0;
+    applyFromFraction(0, false);     // knob at $0 with new limits
   }
 
   function fractionFromPointer(evt){
@@ -504,11 +511,11 @@
     let theta=Math.atan2(y-cy,x-cx);
     theta+=Math.PI/2;
     if(theta<0) theta+=Math.PI*2;
-    return theta/(Math.PI*2);
+    return theta/(Math.PI*2); // 0..1 clockwise from top
   }
 
-  const start=e=>{dragging=true; updateByFraction(fractionFromPointer(e), true); e.preventDefault();}
-  const move =e=>{if(!dragging) return; updateByFraction(fractionFromPointer(e), true);}
+  const start=e=>{dragging=true; applyFromFraction(fractionFromPointer(e), true); e.preventDefault();}
+  const move =e=>{if(!dragging) return; applyFromFraction(fractionFromPointer(e), true);}
   const end  =()=>{dragging=false;}
 
   handle.addEventListener('mousedown',start); handle.addEventListener('touchstart',start,{passive:false});
@@ -520,7 +527,7 @@
     const raw=prompt('Enter a payment amount (0.00–'+MAX.toFixed(2)+')', amount.toFixed(2));
     if(!raw) return; const n=parseFloat(raw.replace(/[^\d.]/g,'')); if(isFinite(n)) {
       const frac = Math.max(0, Math.min(1, n/MAX));
-      updateByFraction(frac,false);
+      applyFromFraction(frac,false);
     }
   });
 
@@ -538,7 +545,7 @@
   // Pay -> update balances (persist) -> success pop-up
   payBtn.addEventListener('click', ()=>{
     if (amount <= 0) { sheet.classList.remove('active'); return; }
-    SETTINGS.cardBalance     = +Math.max(0, SETTINGS.cardBalance - amount).toFixed(2);
+    SETTINGS.cardBalance      = +Math.max(0, SETTINGS.cardBalance - amount).toFixed(2);
     SETTINGS.availableBalance = +(SETTINGS.availableBalance + amount).toFixed(2);
     saveBalances();           // persist across reloads
     applyBalances();          // refresh UI + ring limits
@@ -555,9 +562,9 @@
   const transactions = [
     {
       id: rid(),
-      kind: 'refund',                 // 'purchase' | 'refund' | 'payment'
+      kind: 'refund',
       merchant: 'Apple Store',
-      amount: 40.35,                  // ALWAYS positive; sign shown by kind
+      amount: 40.35,
       status: 'Refunded',
       card: 'Apple Card',
       iso: '2023-07-14T16:32:00'
@@ -566,7 +573,6 @@
 
   function rid(){ return 't_'+Math.random().toString(36).slice(2,9) }
 
-  // purchases -> "$xx.xx"; refunds/payments -> "- $xx.xx"
   function formatDisplay(t){ return (t.kind === 'purchase' ? '$' : '- $') + t.amount.toFixed(2); }
   function formatMoneyAbs(n){ return '$' + Math.abs(n).toFixed(2) }
   function shortDate(iso){
@@ -600,7 +606,7 @@
   function openTxn(id){
     const t = transactions.find(x=>x.id===id);
     if(!t) return;
-    document.getElementById('txnAmount').textContent = formatMoneyAbs(t.amount); // center shows absolute
+    document.getElementById('txnAmount').textContent = formatMoneyAbs(t.amount);
     document.getElementById('txnMerchant').textContent = t.merchant;
     document.getElementById('txnDate').textContent = fullDateTime(t.iso);
     document.getElementById('txnStatus').innerHTML = `<strong>Status: ${t.status || (t.kind==='purchase'?'Approved':'Posted')}</strong>`;
@@ -609,7 +615,6 @@
     app.className = 'app pos-2';
   }
 
-  // Public helpers — manual add/remove from future UI if needed
   window.addPurchase = ({merchant, amount, iso, card='Apple Card', status='Approved'})=>{
     transactions.push({ id: rid(), kind:'purchase', merchant, amount:Number(amount), iso, status, card });
     renderTransactions();
