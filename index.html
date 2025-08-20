@@ -2,672 +2,638 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Wallet</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Apple Card – Demo</title>
 <style>
-/* ========= iOS look (light mode) ========= */
-:root{
-  --bg:#F2F2F7;           /* iOS grouped bg */
-  --card:#FFFFFF;
-  --label:#1C1C1E;
-  --muted:#6E6E73;
-  --hair:#E5E5EA;
-  --tint:#007AFF;         /* iOS blue */
-  --good:#34C759;
-  --shadow:0 8px 30px rgba(0,0,0,.10);
-  --ring-track:#E9E9ED;
-  --ring-blue1:#6EC5FF;
-  --ring-blue2:#0A84FF;
-  --ring-green1:#9FE8B5;
-  --ring-green2:#34C759;
-}
-*{box-sizing:border-box;}
-html,body{height:100%;}
-body{
-  margin:0; background:var(--bg); color:var(--label);
-  font: 16px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
-}
-/* Lock to iPhone 15 Pro width for perfect composition (still responsive) */
-.app{
-  width:min(393px, 100vw);
-  min-height:100dvh;
-  margin:0 auto;
-  background:var(--bg);
-  position:relative;
-  overflow:hidden;
-}
+  :root{
+    --bg: #0a0a0a;
+    --card-bg: #111214;
+    --tile: rgba(255,255,255,.06);
+    --tileBorder: rgba(255,255,255,.08);
+    --text: #fff;
+    --subtle: rgba(255,255,255,.65);
+    --muted: rgba(255,255,255,.45);
+    --accent: #0a84ff;
+    --success: #34c759;
+    --black: #000;
+    --shadow: 0 10px 30px rgba(0,0,0,.22);
+    --radius: 18px;
+    --t: 240ms cubic-bezier(.22,.61,.36,1);
+    --ringTrack: rgba(0,0,0,.08);
+    --ringWhite: rgba(255,255,255,.9);
+    --appleGradient: radial-gradient(120% 120% at 0% 100%, #ffa1e2 0%, #ffb8d6 10%,
+                       #ffc7a1 25%, #ffcd75 38%, #ffb151 55%, #ff9f2b 70%, #f7a63c 82%,
+                       #fdbb2d 100%);
+    --walletDepth: 22px;
+  }
 
-/* ====== Page transitions ====== */
-.page{
-  position:absolute; inset:0;
-  overflow:auto; -webkit-overflow-scrolling:touch;
-  background:var(--bg);
-  opacity:0; transform:translateX(40px);
-  transition:opacity .25s ease, transform .25s ease;
-  will-change:opacity,transform;
-}
-.page.active{ opacity:1; transform:none; }
+  *{ box-sizing:border-box }
+  html,body{ height:100%; background:#000; }
+  body{
+    margin:0;
+    color:var(--text);
+    font: 15px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    background: #000;
+  }
 
-/* ====== Nav bars ====== */
-.nav{
-  display:flex; align-items:center; justify-content:space-between;
-  padding:14px 18px 8px; position:sticky; top:0; z-index:5;
-  background:color-mix(in oklab, var(--bg) 88%, white);
-  backdrop-filter:saturate(180%) blur(20px);
-}
-.nav h1{
-  margin:0; font-size:34px; font-weight:800; letter-spacing:-.02em;
-}
-.nav .btn{
-  appearance:none; border:0; background:transparent; color:var(--tint);
-  font-size:17px; padding:8px 0; border-radius:10px;
-}
+  /* App frame */
+  .app{
+    position:relative;
+    margin:0 auto;
+    max-width:420px;
+    height:100vh;
+    background: #0b0b0b;
+    color:#fff;
+    overflow:hidden;
+  }
 
-/* ====== Wallet stack ====== */
-.stack{ padding:6px 14px 18px; }
-.card-btn{
-  width:100%; border:0; background:transparent; padding:0; display:block;
-  transform:translateY(0); transition:transform .25s ease, filter .25s ease;
-  will-change:transform,filter; filter:drop-shadow(var(--shadow));
-}
-.card-btn + .card-btn{ margin-top:-82px; }       /* stack overlap */
-.card-visual{
-  height:204px; border-radius:18px; overflow:hidden; position:relative;
-}
-.visa{ position:absolute; right:18px; bottom:14px; font-weight:900; font-size:22px; color:#fff; opacity:.95; letter-spacing:.06em; }
-.grad-1{ background: radial-gradient(120% 120% at 10% 0%, #7AA7FF 0%, #4C5CFF 35%, #101A6B 100%); }
-.grad-2{ background: radial-gradient(120% 120% at 0% 0%, #FFB5EC 0%, #FF7AA9 30%, #FF9A3C 70%, #FBD65E 100%); }
-.card-caption{
-  height:68px; margin:8px 10px 0; border-radius:16px;
-  background:var(--card); border:1px solid var(--hair); padding:10px 12px;
-  display:flex; align-items:center; justify-content:space-between; gap:8px;
-}
-.caption-title{ font-weight:700; }
-.caption-sub{ color:var(--muted); font-size:13px; }
+  /* Screens + transitions */
+  .screens{
+    display:flex;
+    width:300%;
+    height:100%;
+    transition: transform var(--t);
+  }
+  .screen{
+    width:100%;
+    height:100%;
+    overflow:auto;
+    padding-bottom:32px;
+    background: linear-gradient(#0b0b0b, #0b0b0b 50%, #0a0a0a);
+  }
+  .screen::-webkit-scrollbar{ width:0; height:0 }
 
-/* ====== Card detail ====== */
-.section{ background:var(--card); border:1px solid var(--hair); border-radius:16px; margin:10px 16px; padding:12px; }
-.big-card{ margin:10px 16px 8px; height:210px; border-radius:18px; position:relative; overflow:hidden; box-shadow:var(--shadow); }
-.tiles{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 16px; }
-.tile{ background:var(--card); border:1px solid var(--hair); border-radius:16px; padding:12px; min-height:86px; display:flex; flex-direction:column; justify-content:space-between; }
-.tile .label{ color:var(--muted); font-size:13px; }
-.tile .value{ font-size:28px; font-weight:800; letter-spacing:-.02em; }
-.pay-dot{ width:54px; height:54px; border-radius:27px; background:#000; color:#fff; display:grid; place-items:center; font-weight:700; align-self:flex-end; }
+  .nav{
+    position:sticky; top:0;
+    z-index:5;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px 10px;
+    background: linear-gradient(180deg, rgba(11,11,11,.9), rgba(11,11,11,.55) 35%, transparent);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  }
+  .nav h1{
+    margin:0; font-weight:700; letter-spacing:.2px; font-size:28px;
+  }
+  .iconbar{ display:flex; align-items:center; gap:10px; }
+  .pillButton{
+    border-radius:999px; border:1px solid rgba(255,255,255,.12);
+    padding:6px 10px; font-weight:600; background:rgba(255,255,255,.06);
+    transition: all var(--t);
+  }
+  .iconBtn{
+    width:34px; height:34px; border-radius:999px;
+    display:grid; place-items:center;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.12);
+    transition: transform var(--t), background var(--t), opacity var(--t);
+  }
+  .iconBtn:active{ transform:scale(.96) }
 
-/* ====== Transactions ====== */
-.list{ margin:10px 0 24px; }
-.item{ display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-top:1px solid var(--hair); background:var(--card); }
-.item:first-child{ border-top:0; border-top-left-radius:16px; border-top-right-radius:16px; }
-.item:last-child{ border-bottom-left-radius:16px; border-bottom-right-radius:16px; }
-.item .left{ display:flex; gap:12px; align-items:center; }
-.icon{ width:28px; height:28px; border-radius:7px; background:#EDEEF2; display:grid; place-items:center; font-weight:800; }
-.merch{ font-weight:600; }
-.sub{ color:var(--muted); font-size:12px; margin-top:2px; }
-.amt-pos{ color:#111; font-weight:700; }
-.amt-neg{ color:#FF3B30; font-weight:700; }
+  /* Wallet stack */
+  .walletStack{
+    padding: 6px 12px 24px;
+  }
+  .walletCard{
+    position:relative;
+    height:188px;
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow: var(--shadow);
+    transform: translateY(0) translateZ(0);
+    transition: transform var(--t), box-shadow var(--t), filter var(--t);
+    cursor:pointer;
+  }
+  .walletCard + .walletCard{ margin-top: -120px }
+  .walletCard:is(:hover,:focus-visible){ filter:brightness(1.02) }
 
-/* ====== Fullscreen modal (Choose Amount) ====== */
-.sheet{
-  position:absolute; inset:0; background:#fff;
-  opacity:0; transform:translateY(100px);
-  transition:opacity .25s ease, transform .25s ease;
-  display:none; z-index:30;
-}
-.sheet.show{ display:block; opacity:1; transform:none; }
-.sheet .head{ padding:14px 16px 0; display:flex; justify-content:space-between; align-items:center; }
-.sheet h2{ font-size:34px; margin:6px 16px 0; letter-spacing:-.02em; }
-.sheet .note{ margin:6px 16px; color:#6e6e73; }
-.ring-wrap{ display:grid; place-items:center; margin:8px 0 16px; }
-.ring{
-  width:280px; height:280px; position:relative;
-  touch-action:none; user-select:none; -webkit-user-select:none;
-}
-.ring svg{ width:100%; height:100%; display:block; }
-.ring .center{
-  position:absolute; inset:0; display:grid; place-items:center;
-  font-weight:800; font-size:44px; letter-spacing:-.02em;
-}
-.ring .handle{
-  position:absolute; width:28px; height:28px; border-radius:50%;
-  background:#fff; border:3px solid #E5E5EA; box-shadow:0 6px 16px rgba(0,0,0,.25);
-  transform:translate(-14px,-14px);
-  touch-action:none; will-change:transform,left,top;
-}
-.sheet .cta{ display:flex; gap:10px; padding:0 16px 22px; }
-.btn{
-  display:inline-flex; align-items:center; justify-content:center; gap:8px;
-  padding:14px 16px; border-radius:14px; border:1px solid var(--hair); background:var(--card);
-  font-weight:700;
-}
-.btn.primary{ background:#000; color:#fff; border-color:#000; }
-.link{ text-align:center; color:var(--tint); margin:8px 0 18px; }
+  .applecard{
+    background: radial-gradient(140% 120% at 0% 100%, #ffbdee 0%, #ffc4e2 12%,
+                #ffd6b7 28%, #ffd089 44%, #ffb86a 60%, #ff9f43 80%, #ff9d2f 100%);
+  }
+  .cardChrome{
+    position:absolute; inset:0; padding:16px;
+    background:
+      radial-gradient(120px 120px at 85% 80%, rgba(255,255,255,.25), transparent 60%) no-repeat;
+  }
+  .appleLogo{
+    width:26px; height:26px; opacity:.92;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,.2));
+  }
+  .brandDots{
+    position:absolute; right:18px; bottom:18px; opacity:.9;
+  }
 
-/* ====== Loading overlay ====== */
-.loading{
-  position:absolute; inset:0; display:none; place-items:center;
-  background:rgba(250,250,255,.82); z-index:40; backdrop-filter:blur(10px);
-  opacity:0; transition:opacity .2s ease;
-}
-.loading.show{ display:grid; opacity:1; }
-.spinner{
-  width:44px; height:44px; border:4px solid #e5e5ea; border-top-color:#000; border-radius:50%;
-  animation:spin 1s linear infinite;
-}
-@keyframes spin{ to{ transform:rotate(1turn); } }
+  .walletLabel{
+    position:absolute; left:16px; bottom:14px;
+    font-weight:700; font-size:18px; letter-spacing:.2px;
+    text-shadow:0 2px 10px rgba(0,0,0,.3);
+  }
 
-/* ====== Small helpers ====== */
-.badge{ padding:2px 8px; border-radius:999px; border:1px solid var(--hair); background:#fff; color:#111; font-size:12px; }
-.hint{ color:var(--muted); font-size:12px; }
-.hidden{ display:none !important; }
+  /* Tap hint */
+  .tapHint{
+    color:var(--subtle); text-align:center; margin:16px 0 8px; font-size:13px;
+  }
 
-@media (prefers-reduced-motion: reduce){
-  .page,.sheet{ transition:none !important; }
-  .spinner{ animation:none; }
-}
+  /* Card Dashboard */
+  .content{ padding:12px 14px 26px }
+  .bigCard{
+    height:180px; border-radius:20px; overflow:hidden; box-shadow: var(--shadow);
+    background: var(--appleGradient);
+    position:relative;
+  }
+  .bigCard .appleLogo{ position:absolute; left:16px; top:14px }
+  .bigCard .brandDots{ right:20px; bottom:18px }
+  .grid{
+    display:grid; gap:12px; margin-top:12px;
+    grid-template-columns: 1fr 1fr;
+  }
+  .tile{
+    background: var(--tile);
+    border:1px solid var(--tileBorder);
+    border-radius:16px; padding:14px;
+    transition: background var(--t), border-color var(--t), transform var(--t);
+  }
+  .tile:active{ transform:scale(.99) }
+
+  .tile.full{ grid-column:1 / -1 }
+  .kb{ font-size:13px; color:var(--muted); margin-bottom:4px }
+  .val{ font-weight:800; font-size:26px; letter-spacing:.2px }
+  .val small{ font-size:12px; color:var(--muted); font-weight:600; display:block; margin-top:4px }
+  .payBtn{
+    width:64px; height:64px; border-radius:999px; background:#000; color:#fff;
+    border:none; font-weight:700; font-size:17px; display:grid; place-items:center;
+    margin-left:auto; box-shadow: 0 10px 20px rgba(0,0,0,.35); transition: transform var(--t), background var(--t), opacity var(--t);
+  }
+  .payBtn:active{ transform: scale(.97) }
+
+  .bars{ display:flex; gap:4px; margin-top:6px }
+  .bars i{
+    width:100%; height:26px; border-radius:6px;
+    background: linear-gradient( 180deg, rgba(255,255,255,.75), rgba(255,255,255,.45));
+    mix-blend-mode: overlay; opacity:.25;
+    animation: grow 1200ms var(--t) both;
+  }
+  @keyframes grow{
+    from{ transform:scaleY(.2); transform-origin: bottom }
+    to{ transform:scaleY(1) }
+  }
+
+  .list{
+    margin-top:8px;
+    background: var(--tile);
+    border:1px solid var(--tileBorder);
+    border-radius:16px; overflow:hidden;
+  }
+  .row{
+    display:flex; gap:12px; align-items:center;
+    padding:14px 14px;
+    border-top:1px solid rgba(255,255,255,.06);
+  }
+  .row:first-child{ border-top:0 }
+  .badge{
+    width:34px; height:34px; border-radius:9px; display:grid; place-items:center;
+    background:#111; border:1px solid rgba(255,255,255,.16);
+  }
+  .row .title{ font-weight:700 }
+  .row .sub{ color:var(--muted); font-size:12px }
+
+  /* Pay Sheet */
+  .sheet{
+    position:fixed; inset:0; display:grid; place-items:end center;
+    pointer-events:none; z-index:20;
+  }
+  .sheet.active{ pointer-events:auto }
+  .dim{
+    position:absolute; inset:0; background: rgba(0,0,0,.45);
+    opacity:0; transition: opacity var(--t);
+  }
+  .sheet.active .dim{ opacity:1 }
+  .panel{
+    width:100%; max-width:420px;
+    background: #fff; color:#000; border-radius:16px 16px 0 0;
+    transform: translateY(100%);
+    transition: transform var(--t);
+    box-shadow: 0 -20px 40px rgba(0,0,0,.35);
+  }
+  .sheet.active .panel{ transform: translateY(0) }
+  .payHeader{
+    padding:16px; text-align:center; font-weight:800; font-size:22px;
+  }
+  .subDue{ color:#666; font-size:13px; margin-top:-8px; margin-bottom:6px; text-align:center }
+
+  .ringWrap{
+    position:relative; width:86%; max-width:360px; aspect-ratio:1/1;
+    margin:2px auto 4px;
+  }
+  .ringWrap svg{ width:100%; height:100%; overflow:visible }
+  .ringText{
+    position:absolute; inset:0; display:grid; place-items:center;
+    font-weight:800; font-size:44px; letter-spacing:.2px;
+  }
+  .ringText small{
+    position:absolute; bottom:19%; width:100%;
+    text-align:center; font-size:11px; color:#777; font-weight:700; letter-spacing:.6px;
+  }
+  .payInfobox{
+    text-align:center; color:#222; font-weight:700; margin:6px 14px 14px; line-height:1.35;
+  }
+  .payActions{
+    display:flex; gap:12px; padding: 0 16px 18px 16px;
+  }
+  .btn{
+    flex:1; border-radius:12px; padding:14px 16px; font-weight:800; font-size:16px; border:0;
+    transition: transform var(--t), background var(--t), color var(--t);
+  }
+  .btnGhost{ background:#efefef }
+  .btnPrimary{ background:#000; color:#fff }
+  .btn:active{ transform:translateY(1px) }
+  .otherAmount{
+    text-align:center; padding-bottom:22px; color:#007aff; font-weight:700; font-size:14px;
+  }
+
+  /* thin helpers */
+  .muted{ color:var(--muted) }
+  .right{ margin-left:auto }
+  .learn{ color:#9aa4ff; font-weight:700; font-size:13px }
+
+  /* Navigation between screens */
+  /* 0: wallet, 1: card, 2: (unused) */
+  .pos-0 .screens{ transform: translateX(0%) }
+  .pos-1 .screens{ transform: translateX(-33.3333%) }
+
+  /* Tap feedback */
+  .press{ transition: transform 120ms ease }
+  .press:active{ transform: scale(.98) }
+
+  /* iOS safe area padding */
+  .pb-safe{ padding-bottom: env(safe-area-inset-bottom) }
+  .pt-safe{ padding-top: calc(env(safe-area-inset-top) + 2px) }
+
+  /* small icons */
+  .ico{ display:inline-block; width:18px; height:18px }
+  .ico svg{ width:100%; height:100% }
+
+  .chip{ display:inline-flex; gap:8px; align-items:center }
+
+  /* subtle link */
+  a { color: inherit; text-decoration:none }
+
+  /* Smooth global transitions */
+  .tile, .walletCard, .payBtn, .btn, .panel, .dim, .iconBtn, .bars i, .bigCard{
+    will-change: transform, opacity, background, color;
+  }
 </style>
 </head>
 <body>
-<div class="app" id="app">
+<div class="app pos-0" id="app">
+  <!-- Sliding screens -->
+  <div class="screens">
 
-  <!-- ============ WALLET (stack) ============ -->
-  <section class="page active" id="page-wallet">
-    <header class="nav">
-      <h1>Wallet</h1>
-      <span class="badge">iPhone 15 Pro</span>
-    </header>
-
-    <div class="stack" id="stack">
-      <!-- Cards injected by JS -->
-    </div>
-  </section>
-
-  <!-- ============ CARD DETAIL ============ -->
-  <section class="page" id="page-card">
-    <header class="nav">
-      <button class="btn" id="btn-back">&larr; Done</button>
-      <div class="hint" id="card-due"></div>
-    </header>
-
-    <div class="big-card grad-1" id="detail-visual">
-      <div class="visa">VISA</div>
-    </div>
-
-    <div class="tiles">
-      <div class="tile">
-        <div class="label">Card Balance</div>
-        <div class="value" id="detail-balance">$0.00</div>
-        <div class="hint" id="detail-available">$0.00 Available</div>
+    <!-- Screen 0: Wallet -->
+    <section class="screen" id="wallet">
+      <div class="nav pt-safe">
+        <h1>Wallet</h1>
+        <div class="iconbar">
+          <div class="iconBtn" aria-label="Add">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" opacity=".9"><path d="M11 5h2v14h-2zM5 11h14v2H5z"/></svg>
+          </div>
+          <div class="iconBtn" aria-label="More">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" opacity=".9"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+          </div>
+        </div>
       </div>
-      <div class="tile" style="position:relative">
-        <div class="label">Payment Due In</div>
-        <div class="value" id="detail-duein">—</div>
-        <button class="pay-dot" id="btn-pay">Pay</button>
+
+      <div class="walletStack">
+        <!-- Card 1 -->
+        <div class="walletCard applecard press openCard" tabindex="0">
+          <div class="cardChrome">
+            <svg class="appleLogo" viewBox="0 0 256 256" fill="#ffffff">
+              <path d="M213 173c-6 14-10 23-20 37-13 19-31 43-55 44-13 0-22-4-33-9-8-3-18-8-33-8-15 0-25 5-34 8-3 1-7 3-11 3-19 0-36-20-49-39C22 186 31 156 47 131 59 113 76 98 97 97c12 0 22 5 31 9 8 4 16 8 27 8 15 0 26-6 35-10 7-3 13-6 20-6 3 0 27 1 43 21-1 1-23 14-17 54zM171 21c0 12-5 24-11 33-9 13-23 22-38 21-1-10 4-24 11-33 8-12 25-23 38-21z"/>
+            </svg>
+            <svg class="brandDots" width="96" height="60" viewBox="0 0 96 60">
+              <circle cx="56" cy="40" r="18" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="3"/>
+              <circle cx="74" cy="40" r="18" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="3"/>
+            </svg>
+            <div class="walletLabel">Apple&nbsp;Card</div>
+          </div>
+        </div>
+
+        <!-- Card 2 (stacked, also Apple Card as requested) -->
+        <div class="walletCard applecard press openCard" tabindex="0" style="filter:saturate(.95) brightness(.97)">
+          <div class="cardChrome">
+            <svg class="appleLogo" viewBox="0 0 256 256" fill="#ffffff">
+              <path d="M213 173c-6 14-10 23-20 37-13 19-31 43-55 44-13 0-22-4-33-9-8-3-18-8-33-8-15 0-25 5-34 8-3 1-7 3-11 3-19 0-36-20-49-39C22 186 31 156 47 131 59 113 76 98 97 97c12 0 22 5 31 9 8 4 16 8 27 8 15 0 26-6 35-10 7-3 13-6 20-6 3 0 27 1 43 21-1 1-23 14-17 54zM171 21c0 12-5 24-11 33-9 13-23 22-38 21-1-10 4-24 11-33 8-12 25-23 38-21z"/>
+            </svg>
+            <svg class="brandDots" width="96" height="60" viewBox="0 0 96 60">
+              <circle cx="56" cy="40" r="18" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="3"/>
+              <circle cx="74" cy="40" r="18" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="3"/>
+            </svg>
+            <div class="walletLabel">Apple&nbsp;Card</div>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <div class="section" id="numbers">
-      <div style="font-weight:700; margin-bottom:6px;">Card Details</div>
-      <div class="list" id="numlist"><!-- injected --></div>
-    </div>
+      <div class="tapHint">Tap a card to open its details</div>
+    </section>
 
-    <div class="section">
-      <div style="font-weight:800; font-size:20px; margin:2px 0 10px;">Latest Card Transactions</div>
-      <div class="list" id="tx-list"><!-- injected --></div>
-    </div>
-  </section>
+    <!-- Screen 1: Card Dashboard -->
+    <section class="screen" id="card">
+      <div class="nav pt-safe">
+        <button class="pillButton" id="doneBtn">Done</button>
+        <div class="iconbar">
+          <div class="iconBtn" title="Search">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          </div>
+          <div class="iconBtn" title="Statements">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M4 4h16v2H4zM4 9h16v2H4zM4 14h11v2H4zM4 19h11v2H4z"/></svg>
+          </div>
+          <div class="iconBtn" title="More">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff" opacity=".95"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+          </div>
+        </div>
+      </div>
 
-  <!-- ============ CHOOSE AMOUNT SHEET ============ -->
-  <section class="sheet" id="sheet">
-    <div class="head">
-      <button class="btn" id="sheet-cancel">Cancel</button>
-      <span></span>
-    </div>
-    <h2>Choose Amount</h2>
-    <div class="note" id="sheet-note">Make payments by 11:59 PM on <span id="sheet-deadline">—</span>.</div>
+      <div class="content">
+        <div class="bigCard">
+          <svg class="appleLogo" viewBox="0 0 256 256" fill="#ffffff">
+            <path d="M213 173c-6 14-10 23-20 37-13 19-31 43-55 44-13 0-22-4-33-9-8-3-18-8-33-8-15 0-25 5-34 8-3 1-7 3-11 3-19 0-36-20-49-39C22 186 31 156 47 131 59 113 76 98 97 97c12 0 22 5 31 9 8 4 16 8 27 8 15 0 26-6 35-10 7-3 13-6 20-6 3 0 27 1 43 21-1 1-23 14-17 54zM171 21c0 12-5 24-11 33-9 13-23 22-38 21-1-10 4-24 11-33 8-12 25-23 38-21z"/>
+          </svg>
+          <svg class="brandDots" width="106" height="66" viewBox="0 0 96 60">
+            <circle cx="56" cy="40" r="18" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="3"/>
+            <circle cx="74" cy="40" r="18" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="3"/>
+          </svg>
+        </div>
 
-    <div class="ring-wrap">
-      <div class="ring" id="ring">
-        <!-- SVG donut -->
-        <svg viewBox="0 0 300 300" id="ring-svg" aria-hidden="true">
+        <div class="grid">
+          <div class="tile">
+            <div class="kb">Card Balance</div>
+            <div class="chip">
+              <div class="val" id="cardBalance">$181.43</div>
+            </div>
+            <div class="kb" style="margin-top:4px"><span class="muted">$11,497.27 Available</span></div>
+          </div>
+
+          <div class="tile">
+            <div class="kb">Payment Due In</div>
+            <div class="val">1 Week</div>
+            <div class="right" style="margin-top:-46px">
+              <button class="payBtn" id="openPay">Pay</button>
+            </div>
+          </div>
+
+          <div class="tile">
+            <div class="kb">Weekly Activity</div>
+            <div class="kb">+ $0.00 Daily Cash</div>
+            <div class="bars" aria-hidden="true">
+              <i style="height:20px"></i><i style="height:28px"></i><i style="height:16px"></i>
+              <i style="height:24px"></i><i style="height:18px"></i><i style="height:26px"></i><i style="height:12px"></i>
+            </div>
+          </div>
+
+          <div class="tile">
+            <div class="kb">Savings Account</div>
+            <div class="val">$70.19</div>
+          </div>
+
+          <div class="tile full">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div class="badge">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="#fff" opacity=".85"><path d="M12 1l3 7h7l-5.5 4.2L18.9 20 12 15.8 5.1 20 7.5 12.2 2 8h7z"/></svg>
+              </div>
+              <div>
+                <div class="title">Exclusive Offers with Apple&nbsp;Pay</div>
+                <div class="sub">Enjoy special offers on travel, summer styles, entertainment, and more.</div>
+              </div>
+              <span class="right"></span>
+            </div>
+          </div>
+
+          <div class="tile full">
+            <div class="kb" style="margin-bottom:8px">Latest Card Transactions</div>
+            <div class="list">
+              <div class="row">
+                <div class="badge">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path d="M16 3H8C5.8 3 4 4.8 4 7v10c0 2.2 1.8 4 4 4h8c2.2 0 4-1.8 4-4V7c0-2.2-1.8-4-4-4z"/></svg>
+                </div>
+                <div style="flex:1">
+                  <div class="title">Apple Store <span class="muted">• Refund</span></div>
+                  <div class="sub">7/14/23</div>
+                </div>
+                <div class="title">+ $40.35</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- (extra slot reserved for future) -->
+    <section class="screen"></section>
+  </div>
+
+  <!-- Pay Sheet -->
+  <div class="sheet" id="sheet">
+    <div class="dim" id="dim"></div>
+    <div class="panel pb-safe" role="dialog" aria-modal="true" aria-label="Choose Amount">
+      <div class="payHeader">Choose Amount</div>
+      <div class="subDue" id="dueLine">Make payments by 11:59 PM on July 31.</div>
+      <div class="ringWrap" id="ringWrap">
+        <!-- SVG Ring -->
+        <svg viewBox="0 0 320 320" id="ringSvg">
+          <!-- base track -->
+          <circle cx="160" cy="160" r="120" stroke="rgba(0,0,0,.08)" stroke-width="26" fill="none" />
+          <!-- progress -->
           <defs>
-            <linearGradient id="gradBlue" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="var(--ring-blue1)"/>
-              <stop offset="100%" stop-color="var(--ring-blue2)"/>
+            <linearGradient id="gradBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#51c0ff"/>
+              <stop offset="100%" stop-color="#0a84ff"/>
             </linearGradient>
-            <linearGradient id="gradGreen" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="var(--ring-green1)"/>
-              <stop offset="100%" stop-color="var(--ring-green2)"/>
+            <linearGradient id="gradGreen" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#a8f17a"/>
+              <stop offset="100%" stop-color="#34c759"/>
             </linearGradient>
+            <linearGradient id="gradGray" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#e9ecef"/>
+              <stop offset="100%" stop-color="#cfd8dc"/>
+            </linearGradient>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="2" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
           </defs>
-          <circle cx="150" cy="150" r="120" stroke="var(--ring-track)" stroke-width="24" fill="none"/>
-          <circle cx="150" cy="150" r="120" stroke="url(#gradBlue)" stroke-width="24" fill="none"
-                  stroke-linecap="round" stroke-dasharray="0 1000" id="ring-progress"
-                  transform="rotate(-90 150 150)"/>
+          <circle id="progress" cx="160" cy="160" r="120"
+                  stroke="url(#gradBlue)" stroke-width="26" fill="none"
+                  stroke-linecap="round"
+                  transform="rotate(-90 160 160)"
+                  stroke-dasharray="753.98"
+                  stroke-dashoffset="0"
+                  filter="url(#glow)"/>
+          <!-- ticks -->
+          <g id="ticks" opacity=".25"></g>
+          <!-- handle -->
+          <circle id="handle" cx="280" cy="160" r="12" fill="#fff" stroke="#e6e6e6" stroke-width="2" />
         </svg>
-        <div class="center" id="ring-amount">$0.00</div>
-        <div class="handle" id="ring-handle" style="left:150px; top:30px;"></div>
+
+        <div class="ringText" id="ringText">
+          <div id="amountLabel">$181.43</div>
+          <small>NO INTEREST CHARGES</small>
+        </div>
       </div>
-    </div>
+      <div class="payInfobox" id="payInfo">Pay Card Balance<br/><span style="color:#6f6f6f; font-weight:600">Paying the total amount you've spent is a great way to clear your balance and stay ahead on your finances.</span>
+      </div>
 
-    <div class="note" id="sheet-copy">Pay Card Balance</div>
-    <div class="cta">
-      <button class="btn" id="btn-schedule">Schedule</button>
-      <button class="btn primary" id="btn-pay-now">Pay $0.00</button>
-    </div>
-    <div class="link" id="other-amount">Other Amount</div>
-  </section>
-
-  <!-- ============ GLOBAL LOADING OVERLAY ============ -->
-  <div class="loading" id="loading">
-    <div style="display:grid; gap:10px; place-items:center;">
-      <div class="spinner"></div>
-      <div class="hint" id="loading-text">Loading…</div>
+      <div class="payActions">
+        <button class="btn btnGhost" id="scheduleBtn">Schedule</button>
+        <button class="btn btnPrimary" id="payNowBtn">Pay $181.43</button>
+      </div>
+      <div class="otherAmount" id="otherAmountBtn">Other Amount</div>
     </div>
   </div>
 </div>
 
 <script>
-/* =========================
-   Data (exact user-provided)
-   ========================= */
-const DUE_DATE_STR = '2025-09-07';
+(() => {
+  const app = document.getElementById('app');
 
-const sapphire = {
-  id:'sapphire',
-  name:'Sapphire Preferred',
-  gradient:'grad-1',
-  number:'4047 3820 6612 7295',
-  exp:'07/30',
-  cvv:'501',
-  zip:'28104',
-  holder:'Shloak Patel',
-  billing:'2133 Garden View Lane, Matthews NC, 28104',
-  limit:325.00,
-  balance:14.13,
-  available:310.87,
-  transactions:[
-    { id:'t-2025-08-08-1', date:'Aug 08, 2025', merchant:'DD* DOORDASH FOODLIO', amount:'$14.13',  points:14.13, category:'Food & Drinks', cardEnding:'****7295', status:'Pending' },
-    { id:'t-2025-08-07-1', date:'Aug 07, 2025', merchant:'CARD-PAYMENT-7295', amount:'-$12.46', points:0, category:'Payment', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-08-06-1', date:'Aug 06, 2025', merchant:'DD* DOORDASH', amount:'$12.46', points:12.46, category:'Food & Drink', cardEnding:'****7295', status:'Posted' },
-
-    { id:'t-2025-07-24-1', date:'Jul 24, 2025', merchant:'CARD-PAYMENT-7295', amount:'-$41.77', points:0, category:'Payment', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-07-22-1', date:'Jul 22, 2025', merchant:'DD* DOORDASH DUNKIN', amount:'$11.34', points:11.34, category:'Food & Drink', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-07-17-1', date:'Jul 17, 2025', merchant:'CARD-PAYMENT-7295', amount:'-$35.28', points:0, category:'Payment', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-07-13-1', date:'Jul 13, 2025', merchant:'DD *DOORDASH TACO BELL', amount:'$10.43', points:10.43, category:'Food & Drink', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-07-11-1', date:'Jul 11, 2025', merchant:'AFFIRM.COM PAYMENTS', amount:'$20.00', points:20, category:'Services', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-07-08-1', date:'Jul 08, 2025', merchant:'Refund received for WL* STEAM PURCHASE', amount:'-$209.83', points:-629.49, category:'Online Shopping', cardEnding:'****7295', status:'Refunded' },
-    { id:'t-2025-07-07-1', date:'Jul 07, 2025', merchant:'CARD-PAYMENT-7295', amount:'-$40.00', points:0, category:'Payment', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-07-05-1', date:'Jul 05, 2025', merchant:'WL *STEAM PURCHASE', amount:'$209.83', points:629.49, category:'Online Shopping', cardEnding:'****7295', status:'Refunded' },
-
-    { id:'t-2025-06-22-1', date:'Jun 22, 2025', merchant:'FANATEC* Paypal', amount:'$18.38', points:55.14, category:'Online Shopping', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-06-20-1', date:'Jun 20, 2025', merchant:'Amazon', amount:'$53.24', points:159.72, category:'Online Shopping', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-06-20-2', date:'Jun 20, 2025', merchant:'CARD-PAYMENT-7295', amount:'-$5.15', points:0, category:'Payment', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-06-19-1', date:'Jun 19, 2025', merchant:'CARD-PAYMENT-7295', amount:'-$184.51', points:0, category:'Payment', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-06-13-1', date:'Jun 13, 2025', merchant:'CHASE TRVL (MLR-LCA)', amount:'$515.37', points:2576.85, category:'Travel', cardEnding:'****7295', status:'Posted' },
-
-    { id:'t-2025-06-06-1', date:'Jun 06, 2025', merchant:'CHASE TRVL (SAU-MLR)', amount:'-$16,163.97', points:-80819.85, category:'Travel', cardEnding:'****7295', status:'Refunded' },
-    { id:'t-2025-06-05-1', date:'Jun 05, 2025', merchant:'CHASE TRVL (RFD-SAU)', amount:'$660.97', points:3304.85, category:'Travel', cardEnding:'****7295', status:'Posted' },
-
-    { id:'t-2025-05-07-1', date:'May 07, 2025', merchant:'CARD-PAYMENT-7295', amount:'-$40.00', points:0, category:'Payment', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-04-29-1', date:'Apr 29, 2025', merchant:'CARD-PAYMENT-7295', amount:'-$48.60', points:0, category:'Payment', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-04-26-1', date:'Apr 26, 2025', merchant:'CHASE TRVL* SINGAPORE AIRLINES (GRA - TKO)', amount:'$1,162.92', points:5814.60, category:'Travel', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-04-24-1', date:'Apr 24, 2025', merchant:'CHASE TRVL (PER - LCA - GRA)', amount:'$1,034.36', points:5171.80, category:'Travel', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-04-24-2', date:'Apr 24, 2025', merchant:'CHASE TRVL (TKO - SAU - GRI)', amount:'$2,327.31', points:11636.55, category:'Travel', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-04-23-1', date:'Apr 23, 2025', merchant:'AMERICAN AIRLINES (IZO-GRA)', amount:'$147.32', points:736.60, category:'Travel', cardEnding:'****7295', status:'Posted' },
-
-    { id:'t-2025-04-14-1', date:'Apr 14, 2025', merchant:'AMAZON MKTPLACE PMTS', amount:'-$27.74', points:-83.22, category:'Online Shopping', cardEnding:'****7295', status:'Refunded' },
-    { id:'t-2025-04-13-1', date:'Apr 13, 2025', merchant:'APPLE.COM/BILL', amount:'$11.73', points:35.19, category:'Streaming', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-04-12-1', date:'Apr 12, 2025', merchant:'Printify, Inc', amount:'$12.28', points:36.84, category:'Online Shopping', cardEnding:'****7295', status:'Posted' },
-
-    { id:'t-2025-04-11-1', date:'Apr 11, 2025', merchant:'GOOGLE *YT Primetime', amount:'$13.87', points:41.61, category:'Streaming', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-04-11-2', date:'Apr 11, 2025', merchant:'APPLE.COM/BILL', amount:'$21.31', points:63.93, category:'Streaming', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-04-11-3', date:'Apr 11, 2025', merchant:'Amazon.com', amount:'$15.81', points:47.43, category:'Online Shopping', cardEnding:'****7295', status:'Posted' },
-
-    { id:'t-2025-04-10-1', date:'Apr 10, 2025', merchant:'AMAZON MKTPLACE PMTS', amount:'$27.74', points:83.22, category:'Online Shopping', cardEnding:'****7295', status:'Refunded' },
-    { id:'t-2025-04-10-2', date:'Apr 10, 2025', merchant:'AMAZON MKTPLACE PMTS', amount:'$12.27', points:36.81, category:'Online Shopping', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-04-10-3', date:'Apr 10, 2025', merchant:'Printify, Inc', amount:'$19.92', points:59.76, category:'Online Shopping', cardEnding:'****7295', status:'Posted' },
-
-    { id:'t-2025-04-08-1', date:'Apr 08, 2025', merchant:'AFFIRM.COM PAYMENTS', amount:'$25.00', points:25, category:'Services', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-04-08-2', date:'Apr 08, 2025', merchant:'DISCORD* GIFT-NITRO-MO', amount:'$10.66', points:31.98, category:'Chatting', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-04-08-3', date:'Apr 08, 2025', merchant:'APPLE.COM/BILL', amount:'$16.04', points:48.12, category:'Streaming', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-04-08-4', date:'Apr 08, 2025', merchant:'SP BACONS DESIGNS', amount:'$31.00', points:93, category:'Online Shopping', cardEnding:'****7295', status:'Posted' },
-
-    { id:'t-2025-04-07-1', date:'Apr 07, 2025', merchant:'DISCORD* GIFT-NITRO-MO', amount:'$10.66', points:31.98, category:'Chatting', cardEnding:'****7295', status:'Posted' },
-    { id:'t-2025-04-07-2', date:'Apr 07, 2025', merchant:'DISCORD* GIFT-NITRO-MO', amount:'$10.66', points:31.98, category:'Chatting', cardEnding:'****7295', status:'Posted' }
-  ]
-};
-
-const aadv = {
-  id:'aadv',
-  name:'AAdvantage',
-  gradient:'grad-2',
-  number:'4042 1902 7823 8126',
-  exp:'07/30',
-  cvv:'872',
-  zip:'28104',
-  holder:'Shloak Patel',
-  billing:sapphire.billing,
-  limit:325.00,
-  balance:0.00,
-  available:325.00,
-  transactions:[
-    { id:'t-2025-07-27-1', date:'Jul 27, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$7.65', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-07-26-1', date:'Jul 26, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$78.35', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-07-17-1', date:'Jul 17, 2025', merchant:'AFFIRM.COM PAYMENTS', amount:'$58.51', points:58.51, category:'Other', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-07-15-1', date:'Jul 15, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$37.83', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-07-14-1', date:'Jul 14, 2025', merchant:'Disney Plus', amount:'$21.32', points:42.64, category:'Streaming', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-07-10-1', date:'Jul 10, 2025', merchant:'Credit Transfer to TOTAL CHECKING (...6750)', amount:'$24.01', points:0, category:'Transfer', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-07-09-1', date:'Jul 09, 2025', merchant:'ROBLOX 1.888.858.2569', amount:'$19.99', points:39.98, category:'Online Shopping', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-07-08-1', date:'Jul 08, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$44.34', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-07-07-1', date:'Jul 07, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$40.00', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
-
-    { id:'t-2025-06-30-1', date:'Jun 30, 2025', merchant:'DD* DOORDASH TACOBELL', amount:'$17.26', points:17.26, category:'Food & Drink', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-06-23-1', date:'Jun 23, 2025', merchant:'Affirm BNPL', amount:'$27.66', points:27.66, category:'Other', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-06-20-1', date:'Jun 20, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$10.09', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-06-19-1', date:'Jun 19, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$122.49', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-06-17-1', date:'Jun 17, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$38.86', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-06-14-1', date:'Jun 14, 2025', merchant:'CHASE TRVL (HND-IZO)', amount:'4,273.66mi', points:0, category:'Travel (Miles)', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-06-10-1', date:'Jun 10, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$70.06', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
-
-    { id:'t-2025-06-03-1', date:'Jun 03, 2025', merchant:'APPLE.COM/BILL', amount:'$21.31', points:42.62, category:'Streaming', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-06-03-2', date:'Jun 03, 2025', merchant:'CAROWINDS FOOD', amount:'$0.25', points:0.25, category:'Other', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-06-03-3', date:'Jun 03, 2025', merchant:'CAROWINDS FOOD', amount:'$8.65', points:8.65, category:'Other', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-06-03-4', date:'Jun 03, 2025', merchant:'CAROWINDS FOOD', amount:'$20.56', points:20.56, category:'Other', cardEnding:'****8126', status:'Posted' },
-
-    { id:'t-2025-06-02-1', date:'Jun 02, 2025', merchant:'DISCORD* GIFT-NITRO-MO', amount:'$10.66', points:21.32, category:'Chatting', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-06-01-1', date:'Jun 01, 2025', merchant:'CHASE TRVL (IZO - RFD)', amount:'$703.92', points:703.92, category:'Travel', cardEnding:'****8126', status:'Posted' },
-
-    { id:'t-2025-05-30-1', date:'May 30, 2025', merchant:'Pay in 4* Paypal Printify loan', amount:'$12.27', points:12.27, category:'Other', cardEnding:'****8126', status:'Posted' },
-
-    { id:'t-2025-05-29-1', date:'May 29, 2025', merchant:'PTFS RESERVATIONS', amount:'$14.90', points:14.90, category:'Other', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-05-29-2', date:'May 29, 2025', merchant:'CHASE TRVL (HND - IZO)* AMERICAN', amount:'5,457.50mi', points:0, category:'Travel (Miles)', cardEnding:'****8126', status:'Posted' },
-
-    { id:'t-2025-05-19-1', date:'May 19, 2025', merchant:'CHASE TRVL (IZO - LCA)* AMERICAN', amount:'$453.57', points:1360.71, category:'Travel (American Airlines)', cardEnding:'****8126', status:'Posted' },
-
-    { id:'t-2025-05-18-1', date:'May 18, 2025', merchant:'CHASE TRVL (HND - GVK - IZO)* LUFTHANSA', amount:'$2,688.93', points:2688.93, category:'Travel', cardEnding:'****8126', status:'Posted' },
-
-    { id:'t-2025-05-17-1', date:'May 17, 2025', merchant:'CHASE TRVL (RFD - TKO)* QATAR AIRWAYS', amount:'5,675.00mi', points:0, category:'Travel (Miles)', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-05-17-2', date:'May 17, 2025', merchant:'CHASE TRVL (IZO - GRA)* AMERICAN AIRLINES', amount:'$620.16', points:1860.48, category:'Travel (American Airlines)', cardEnding:'****8126', status:'Posted' },
-
-    { id:'t-2025-05-12-1', date:'May 12, 2025', merchant:'AMAZON GROCERY AMZN.CO', amount:'$21.86', points:43.72, category:'Online Shopping', cardEnding:'****8126', status:'Posted' },
-
-    { id:'t-2025-05-10-1', date:'May 10, 2025', merchant:'Printify, Inc* Paypal loan', amount:'$12.28', points:24.56, category:'Online Shopping', cardEnding:'****8126', status:'Posted' },
-
-    { id:'t-2025-05-07-1', date:'May 07, 2025', merchant:'CARD PAYMENT* 8126', amount:'-$40.00', points:0, category:'Payment', cardEnding:'****8126', status:'Posted' },
-
-    { id:'t-2025-04-25-1', date:'Apr 25, 2025', merchant:'CHASE TRVL* AMERICAN AIRLINES (MLL > GRA)', amount:'$132.13', points:396.39, category:'Travel (American Airlines)', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-04-25-2', date:'Apr 25, 2025', merchant:'CHASE TRVL* AMERICAN AIRLINES (TKO > IZO > MLL)', amount:'$1,042.51', points:3127.53, category:'Travel (American Airlines)', cardEnding:'****8126', status:'Posted' },
-
-    { id:'t-2025-04-24-1', date:'Apr 24, 2025', merchant:'CHASE TRVL (GRA - PHP - MLL)', amount:'$344.79', points:344.79, category:'Travel', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-04-24-2', date:'Apr 24, 2025', merchant:'CHASE TRVL (GRI - IZO - PER)', amount:'$1,551.54', points:1551.54, category:'Travel', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-04-24-3', date:'Apr 24, 2025', merchant:'QATAR AIRWAYS (GRA - TKO)', amount:'$927.42', points:1854.84, category:'Travel (Oneworld)', cardEnding:'****8126', status:'Posted' },
-
-    { id:'t-2025-04-23-1', date:'Apr 23, 2025', merchant:'AMERICAN AIRLINES (TKO - GRA - IZO)', amount:'$1,256.27', points:3768.81, category:'Travel (American Airlines)', cardEnding:'****8126', status:'Posted' },
-
-    { id:'t-2025-04-16-1', date:'Apr 16, 2025', merchant:'DISCORD* 5XSERVERBOOST', amount:'$29.29', points:58.58, category:'Chatting', cardEnding:'****8126', status:'Posted' },
-
-    { id:'t-2025-04-15-1', date:'Apr 15, 2025', merchant:'Cathay Pacific (GRA - TKO)', amount:'$1,052.79', points:2105.58, category:'Travel (Oneworld)', cardEnding:'****8126', status:'Posted' },
-
-    { id:'t-2025-04-13-1', date:'Apr 13, 2025', merchant:'Disney Plus', amount:'$21.32', points:42.64, category:'Streaming', cardEnding:'****8126', status:'Posted' },
-    { id:'t-2025-04-13-2', date:'Apr 13, 2025', merchant:'AMERICAN AIRLINES (LCA - GRA)', amount:'$267.50', points:802.50, category:'Travel (American Airlines)', cardEnding:'****8126', status:'Posted' }
-  ]
-};
-
-/* =========================
-   State & persistence
-   ========================= */
-const LS_KEY='walletCardsV1';
-let cards = load();
-
-function load(){
-  const raw = localStorage.getItem(LS_KEY);
-  if(!raw) return { sapphire, aadv };
-  try{
-    const parsed = JSON.parse(raw);
-    // merge transactions + static fields if needed
-    return { sapphire: {...sapphire, ...parsed.sapphire}, aadv: {...aadv, ...parsed.aadv} };
-  }catch{return { sapphire, aadv }}
-}
-function save(){ localStorage.setItem(LS_KEY, JSON.stringify(cards)); }
-
-/* =========================
-   Helpers
-   ========================= */
-const $ = (sel,root=document)=>root.querySelector(sel);
-const $$ = (sel,root=document)=>Array.from(root.querySelectorAll(sel));
-const fmt = n => '$' + Number(n).toFixed(2);
-const todayMDY = ()=> new Date().toLocaleDateString('en-US',{year:'numeric',month:'short',day:'2-digit'}).replace(',','');
-const daysUntil = (iso)=> {
-  const d = new Date(iso), now=new Date();
-  const ms = d - new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  return Math.ceil(ms/86400000);
-};
-
-/* =========================
-   Wallet stack render
-   ========================= */
-const stack = $('#stack');
-function renderStack(){
-  stack.innerHTML='';
-  [cards.sapphire, cards.aadv].forEach((c,i)=>{
-    const btn = document.createElement('button');
-    btn.className='card-btn'; btn.setAttribute('data-id', c.id);
-    btn.innerHTML = `
-      <div class="card-visual ${c.gradient}">
-        <div class="visa">VISA</div>
-      </div>
-      <div class="card-caption">
-        <div>
-          <div class="caption-title">${c.name}</div>
-          <div class="caption-sub">Due ${new Date(DUE_DATE_STR).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
-        </div>
-        <div style="text-align:right">
-          <div class="caption-title">${fmt(c.balance)}</div>
-          <div class="caption-sub">${fmt(c.available)} Available</div>
-        </div>
-      </div>`;
-    btn.addEventListener('click', ()=>openCard(c.id));
-    stack.appendChild(btn);
+  /* Navigation handling */
+  document.querySelectorAll('.openCard').forEach(card => {
+    card.addEventListener('click', () => app.className = 'app pos-1');
+    card.addEventListener('keypress', e => { if(e.key==='Enter') app.className='app pos-1' });
   });
-}
-renderStack();
+  document.getElementById('doneBtn').addEventListener('click', () => app.className = 'app pos-0');
 
-/* =========================
-   Card detail
-   ========================= */
-const pageWallet = $('#page-wallet');
-const pageCard = $('#page-card');
-const numbers = $('#numlist');
-const txList = $('#tx-list');
+  /* Pay Sheet open/close */
+  const sheet = document.getElementById('sheet');
+  const dim = document.getElementById('dim');
+  const openPay = document.getElementById('openPay');
+  const closeSheet = () => sheet.classList.remove('active');
+  openPay.addEventListener('click', () => sheet.classList.add('active'));
+  dim.addEventListener('click', closeSheet);
+  document.addEventListener('keydown', e => { if(e.key==='Escape') closeSheet() });
 
-let current = null;
+  /* Amount + ring logic */
+  const fullBalance = 181.43;
+  const minPayment  = 149.36; // "Pay June Balance"
+  let amount = fullBalance;
 
-function openCard(id){
-  current = id==='sapphire'? cards.sapphire : cards.aadv;
+  const amountLabel = document.getElementById('amountLabel');
+  const payNowBtn = document.getElementById('payNowBtn');
+  const payInfo = document.getElementById('payInfo');
 
-  // tiny loading to mimic Wallet feel
-  showLoading('Opening card…');
-  setTimeout(()=>{
-    hideLoading();
-    pageWallet.classList.remove('active');
-    pageCard.classList.add('active');
+  const ringSvg = document.getElementById('ringSvg');
+  const progress = document.getElementById('progress');
+  const handle = document.getElementById('handle');
+  const ticksGroup = document.getElementById('ticks');
 
-    // Visual gradient
-    const vis = $('#detail-visual');
-    vis.className = 'big-card ' + current.gradient;
+  // Build small tick marks around the ring (every 12 degrees)
+  const center = {x:160, y:160}, r = 120;
+  for(let i=0;i<30;i++){
+    const a = (i/30) * Math.PI*2;
+    const x1 = center.x + Math.cos(a) * (r+18);
+    const y1 = center.y + Math.sin(a) * (r+18);
+    const x2 = center.x + Math.cos(a) * (r+8);
+    const y2 = center.y + Math.sin(a) * (r+8);
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',x1); line.setAttribute('y1',y1);
+    line.setAttribute('x2',x2); line.setAttribute('y2',y2);
+    line.setAttribute('stroke','#000'); line.setAttribute('stroke-opacity','.08');
+    line.setAttribute('stroke-width','4');
+    ticksGroup.appendChild(line);
+  }
 
-    // Top tiles
-    $('#detail-balance').textContent = fmt(current.balance);
-    $('#detail-available').textContent = `${fmt(current.available)} Available`;
-    const dueDays = daysUntil(DUE_DATE_STR);
-    $('#detail-duein').textContent = dueDays<=7? `${dueDays} Day${dueDays>1?'s':''}` : (dueDays<14?'1 Week': Math.round(dueDays/7)+' Weeks');
-    $('#card-due').textContent = 'Payment due ' + new Date(DUE_DATE_STR).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  const circ = 2*Math.PI*r;
+  progress.setAttribute('stroke-dasharray', String(circ));
 
-    // Numbers box
-    numbers.innerHTML = `
-      <div class="item"><div class="left"><div class="icon">••</div><div><div class="merch">Card Number</div><div class="sub">${current.number}</div></div></div><div></div></div>
-      <div class="item"><div class="left"><div class="icon">ID</div><div><div class="merch">Cardholder Name</div><div class="sub">${current.holder}</div></div></div><div></div></div>
-      <div class="item"><div class="left"><div class="icon">CVV</div><div><div class="merch">Security</div><div class="sub">${current.cvv}</div></div></div><div></div></div>
-      <div class="item"><div class="left"><div class="icon">📍</div><div><div class="merch">Billing Address</div><div class="sub">${current.billing}</div></div></div><div></div></div>
-      <div class="item"><div class="left"><div class="icon">⏳</div><div><div class="merch">Expiry</div><div class="sub">${current.exp} • ZIP ${current.zip}</div></div></div><div></div></div>
-    `;
+  function setAmount(v, fromDrag=false){
+    // clamp between min and full
+    v = Math.max(Math.min(v, fullBalance), minPayment);
+    amount = Number(v.toFixed(2));
 
-    // Transactions
-    renderTx(current.transactions, txList);
+    // fraction for ring between [min..full]
+    const frac = (amount - minPayment) / (fullBalance - minPayment);
+    const dash = circ * (1 - frac);
+    progress.style.transition = fromDrag ? 'none' : 'stroke-dashoffset 260ms ease, stroke 260ms ease';
+    progress.setAttribute('stroke-dashoffset', String(dash));
 
-  }, 250);
-}
+    // handle position
+    const ang = (-90 + 360*frac) * Math.PI/180;
+    const hx = center.x + Math.cos(ang) * r;
+    const hy = center.y + Math.sin(ang) * r;
+    handle.style.transition = fromDrag ? 'none' : 'transform 220ms ease, cx 220ms ease, cy 220ms ease';
+    handle.setAttribute('cx', hx.toFixed(2));
+    handle.setAttribute('cy', hy.toFixed(2));
 
-function renderTx(data, mount){
-  mount.innerHTML = '';
-  data.slice(0, 20).forEach(t=>{
-    const negative = /^\-/.test(t.amount);
-    const row = document.createElement('div');
-    row.className='item';
-    row.innerHTML = `
-      <div class="left">
-        <div class="icon">${t.merchant.startsWith('CARD')?'💳':'🛍️'}</div>
-        <div>
-          <div class="merch">${t.merchant}</div>
-          <div class="sub">${t.date} • ${t.status}</div>
-        </div>
-      </div>
-      <div class="${negative?'amt-neg':'amt-pos'}">${t.amount}</div>`;
-    mount.appendChild(row);
+    // center text
+    amountLabel.textContent = `$${amount.toFixed(2)}`;
+    payNowBtn.textContent = `Pay $${amount.toFixed(2)}`;
+
+    // color state (gray -> green -> blue)
+    // 0: at min (gray); 0.01..0.85 = green; >=0.85 = blue
+    let strokeRef = 'url(#gradGreen)';
+    let title = 'Pay More Toward Your Balance';
+    let desc  = "Paying more of your card balance helps free up your available credit and reduces the amount to pay next month.";
+    if (frac < 0.03) { strokeRef = 'url(#gradGray)'; title='Pay June Balance';
+      desc="Paying your monthly balance is recommended to help keep you financially healthy and avoid interest charges."; }
+    if (Math.abs(amount-fullBalance) < 0.01){ strokeRef = 'url(#gradBlue)'; title='Pay Card Balance';
+      desc="Paying the total amount you’ve spent is a great way to clear your balance and stay ahead on your finances."; }
+
+    progress.setAttribute('stroke', strokeRef);
+    payInfo.innerHTML = `${title}<br/><span style="color:#6f6f6f; font-weight:600">${desc}</span>`;
+  }
+
+  setAmount(fullBalance);
+
+  // Dragging logic
+  let dragging = false;
+  const wrap = document.getElementById('ringWrap');
+
+  const point = (evt) => {
+    const r = wrap.getBoundingClientRect();
+    const x = (evt.touches ? evt.touches[0].clientX : evt.clientX) - r.left;
+    const y = (evt.touches ? evt.touches[0].clientY : evt.clientY) - r.top;
+    const cx = r.width/2, cy = r.height/2;
+    const dx = x - cx, dy = y - cy;
+    let theta = Math.atan2(dy, dx); // -PI..PI, 0 is to the right
+    theta = (theta + Math.PI/2); // rotate so -90 is top
+    if(theta < 0) theta += Math.PI*2;
+    const frac = theta/(Math.PI*2);
+    const v = minPayment + frac*(fullBalance - minPayment);
+    return v;
+  };
+
+  const startDrag = (e)=>{ dragging=true; setAmount(point(e), true); e.preventDefault(); }
+  const moveDrag  = (e)=>{ if(!dragging) return; setAmount(point(e), true); }
+  const endDrag   = ()=>{ dragging=false; setAmount(amount, false); }
+
+  handle.addEventListener('mousedown', startDrag);
+  handle.addEventListener('touchstart', startDrag, {passive:false});
+  ringSvg.addEventListener('mousedown', startDrag);
+  ringSvg.addEventListener('touchstart', startDrag, {passive:false});
+  window.addEventListener('mousemove', moveDrag);
+  window.addEventListener('touchmove', moveDrag, {passive:false});
+  window.addEventListener('mouseup', endDrag);
+  window.addEventListener('touchend', endDrag);
+
+  // "Other Amount" prompt
+  document.getElementById('otherAmountBtn').addEventListener('click', () => {
+    const raw = prompt("Enter a payment amount between $" + minPayment.toFixed(2) + " and $" + fullBalance.toFixed(2), amount.toFixed(2));
+    if(!raw) return;
+    const v = parseFloat(raw.replace(/[^\d.]/g,''));
+    if(isFinite(v)) setAmount(v);
   });
-}
 
-$('#btn-back').addEventListener('click', ()=>{
-  pageCard.classList.remove('active');
-  pageWallet.classList.add('active');
-});
-
-/* =========================
-   Choose Amount (ring slider)
-   ========================= */
-const sheet = $('#sheet');
-const ringSvg = $('#ring-svg');
-const ringProg = $('#ring-progress');
-const ringHandle = $('#ring-handle');
-const ringAmount = $('#ring-amount');
-const btnPayNow = $('#btn-pay-now');
-const sheetDeadline = $('#sheet-deadline');
-
-let maxPay = 0;
-let chosen = 0;   // value in dollars
-const R = 120;    // radius used in SVG
-const CX = 150, CY = 150;
-
-function openSheet(){
-  if(!current) return;
-  sheetDeadline.textContent = new Date(DUE_DATE_STR).toLocaleDateString('en-US',{month:'long', day:'numeric'});
-  maxPay = Math.max(0, Number(current.balance));
-  chosen = maxPay; // preselect full balance
-  sheet.classList.add('show');
-  updateRingByValue(chosen);
-}
-function closeSheet(){ sheet.classList.remove('show'); }
-
-$('#btn-pay').addEventListener('click', openSheet);
-$('#sheet-cancel').addEventListener('click', closeSheet);
-$('#btn-schedule').addEventListener('click', ()=>alert('Scheduling not included in this demo.'));
-
-function updateRing(progress){  // progress in [0..1]
-  const len = 2*Math.PI*R;
-  ringProg.setAttribute('stroke-dasharray', `${len*progress} ${len*(1-progress)}`);
-  // angle for handle (start top, clockwise)
-  const ang = -Math.PI/2 + progress*2*Math.PI;
-  const hx = CX + R*Math.cos(ang);
-  const hy = CY + R*Math.sin(ang);
-  ringHandle.style.left = hx+'px';
-  ringHandle.style.top  = hy+'px';
-}
-function updateRingByValue(val){
-  val = Math.min(maxPay, Math.max(0, val));
-  chosen = val;
-  const pct = maxPay ? val/maxPay : 0;
-  updateRing(pct);
-  ringAmount.textContent = fmt(val);
-  btnPayNow.textContent = 'Pay ' + fmt(val);
-  $('#sheet-copy').textContent = (val === maxPay) ? 'Pay Card Balance' : (val >= maxPay*0.8 ? 'Pay More Toward Your Balance' : 'Pay June Balance');
-}
-
-/* Pointer/drag on ring */
-function pointToValue(clientX, clientY){
-  const rect = ringSvg.getBoundingClientRect();
-  const x = clientX - (rect.left + rect.width/2);
-  const y = clientY - (rect.top + rect.height/2);
-  let ang = Math.atan2(y,x);           // -PI..PI from +X axis
-  ang = (ang + Math.PI/2 + 2*Math.PI)%(2*Math.PI); // start at top, clockwise
-  const pct = ang/(2*Math.PI);
-  return pct*maxPay;
-}
-let dragging=false;
-['pointerdown','mousedown','touchstart'].forEach(ev=>{
-  ringSvg.addEventListener(ev, (e)=>{
-    dragging=true;
-    const c = e.touches? e.touches[0]: e;
-    updateRingByValue(pointToValue(c.clientX, c.clientY));
+  // Fake “Schedule / Pay” actions
+  document.getElementById('scheduleBtn').addEventListener('click', () => {
+    alert('Scheduling is a demo in this build 👍');
   });
-  ringHandle.addEventListener(ev, (e)=>{
-    dragging=true;
-    const c = e.touches? e.touches[0]: e;
-    updateRingByValue(pointToValue(c.clientX, c.clientY));
+  payNowBtn.addEventListener('click', () => {
+    alert(`Paid $${amount.toFixed(2)} (demo).`);
+    closeSheet();
   });
-});
-['pointermove','mousemove','touchmove'].forEach(ev=>{
-  window.addEventListener(ev, (e)=>{
-    if(!dragging) return;
-    const c = e.touches? e.touches[0]: e;
-    updateRingByValue(pointToValue(c.clientX, c.clientY));
-  }, {passive:true});
-});
-['pointerup','mouseup','touchend','touchcancel','blur'].forEach(ev=>{
-  window.addEventListener(ev, ()=>dragging=false);
-});
-
-/* Pay now */
-btnPayNow.addEventListener('click', ()=>{
-  if(!current || chosen<=0) return;
-  closeSheet();
-  showLoading('Processing payment…');
-  setTimeout(()=>{
-    // Apply payment
-    current.balance = Math.max(0, Number((current.balance - chosen).toFixed(2)));
-    current.available = Number((current.limit - current.balance).toFixed(2));
-
-    // Add a posted transaction
-    const last4 = current.number.slice(-4);
-    current.transactions.unshift({
-      id:'t-pay-'+Date.now(),
-      date: todayMDY(),
-      merchant: `CARD-PAYMENT-${last4}`,
-      amount: '-'+fmt(chosen).replace('$',''),
-      points:0,
-      category:'Payment',
-      cardEnding:'****'+last4,
-      status:'Posted'
-    });
-
-    // Save + re-render
-    if(current.id==='sapphire'){ cards.sapphire=current; } else { cards.aadv=current; }
-    save();
-    renderStack();
-    openCard(current.id); // refresh details
-    hideLoading();
-  }, 1200);
-});
-
-/* =========================
-   Loading overlay
-   ========================= */
-const loading = $('#loading');
-function showLoading(msg){ $('#loading-text').textContent = msg||'Loading…'; loading.classList.add('show'); }
-function hideLoading(){ loading.classList.remove('show'); }
-
-/* Boot */
-renderStack();
+})();
 </script>
 </body>
 </html>
