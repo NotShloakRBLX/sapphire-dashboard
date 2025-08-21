@@ -176,7 +176,7 @@
   .cardFields{ padding:6px 12px 20px; }
 
 .visa svg, .visa img{
-  width:80px;
+  width:55px;
   height:auto;
   filter:drop-shadow(0 4px 12px rgba(0,0,0,.35));
 }
@@ -222,7 +222,7 @@
             <p class="dueHeader">Payment Due In</p>
             <div class="dueVal">
               <span class="num">1</span>
-              <span class="unit">Week</span>
+              <span class="unit">Month</span>
             </div>
             <button class="payBubble" id="openPay">Pay</button>
           </div>
@@ -236,7 +236,7 @@
           <!-- Savings Account -->
           <div class="tile full">
             <div class="kb">Savings Account</div>
-            <div class="val">$70.19</div>
+            <div class="val">$756.34</div>
           </div>
 
           <!-- Transactions -->
@@ -356,7 +356,7 @@
 
   /* === MANUAL DEFAULTS (edit; values persist via localStorage) === */
   const SETTINGS_DEFAULT = {
-    version: 2,                 // bump if you want to reset persisted balances
+    version: 3,                 // bump if you want to reset persisted balances
     cardBalance: 14.13,
     availableBalance: 310.87,
     cardNumber: '5278 6812 3931 7295',
@@ -570,8 +570,17 @@
       merchant: 'Apple Store',
       amount: 40.35,
       status: 'Refunded',
-      card: 'Apple Card',
+      card: 'Sapphire Reserve',
       iso: '2023-07-14T16:32:00'
+    },
+    {
+      id: rid(),
+      kind: 'purchase',
+      merchant: 'FANATEC',
+      amount: 277.41,
+      status: 'Approved',
+      card: 'Sapphire Reserve',
+      iso: '2025-04-23T13:04:00'
     }
   ];
 
@@ -676,6 +685,7 @@
 </script>
 </body>
 </html>
+
 
 
 
