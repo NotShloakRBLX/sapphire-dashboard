@@ -56,8 +56,17 @@
   /* Card gradients (purple/blue) */
   .grad1{
     background:
-      linear-gradient(180deg,#5d00bb 0%, #000000 100%);
+      radial-gradient(120% 120% at 95% 95%,
+                      rgba(0,0,0,0) 45%,
+                      rgba(0,0,0,0.75) 70%,
+                      #000 100%),
+      linear-gradient(110deg,
+                      #5d00bb 0%,
+                      #5d00bb 55%,
+                      #000 82%,
+                      #000 100%);
   }
+  
   .visa{position:absolute;right:29px;bottom:26px}
   .visa svg{width:150px;height:auto;filter:drop-shadow(0 4px 12px rgba(0,0,0,.35))}
 
@@ -667,6 +676,7 @@
 </script>
 </body>
 </html>
+
 
 
 
