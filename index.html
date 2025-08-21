@@ -185,7 +185,25 @@
   right:10px
   bottom:12px
 }
-  
+
+/* ===== Add Transaction sheets & inputs ===== */
+.form{padding:8px 14px 18px}
+.form label{display:block;font-weight:800;margin:12px 0 6px}
+.form input,.form select{
+  width:100%;padding:12px 12px;border-radius:12px;border:1px solid #d9d9d9;
+  font:inherit
+}
+.btn.green{background:#34c759;color:#000;font-weight:900}
+.smallIcon{display:inline-block;vertical-align:-3px;margin-right:8px}
+.summary{padding:0 14px 14px;color:#1d1d1d;font-weight:700}
+.summary b{color:#000}
+
+/* Delete on txn details */
+.deleteWrap{padding:0 12px 24px}
+.deleteBtn{
+  width:100%;border:0;border-radius:14px;padding:14px 18px;font-weight:900;
+  background:#ff3b30;color:#fff
+}
 </style>
 </head>
 <body>
@@ -198,7 +216,7 @@
         <h1>Sapphire Reserve</h1>
         <div class="iconrow">
           <div class="iconbtn" aria-label="Search"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
-          <div class="iconbtn" aria-label="List"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M4 4h16v2H4zM4 9h16v2H4zM4 14h11v2H4zM4 19h11v2H4z"/></svg></div>
+          <div class="iconbtn" id="openAddTxn" aria-label="List"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M4 4h16v2H4zM4 9h16v2H4zM4 14h11v2H4zM4 19h11v2H4z"/></svg></div>
           <div class="iconbtn" aria-label="More"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></div>
         </div>
       </div>
@@ -263,12 +281,16 @@
 
       <div class="tile block">
         <div class="statusLine" id="txnStatus"><strong>Status: Approved</strong></div>
-        <div class="micro" id="txnCard">Apple Card</div>
+        <div class="micro" id="txnCard">Sapphire Reserve</div>
       </div>
 
       <div class="row">
         <h3>Total</h3>
         <div class="right" id="txnTotal">$0.00</div>
+      </div>
+
+      <div class="deleteWrap">
+        <button class="deleteBtn" id="deleteTxnBtn">Delete Transaction</button>
       </div>
     </section>
 
@@ -345,6 +367,52 @@
     </div>
   </div>
 
+  <!-- Add Transaction sheet -->
+  <div class="sheet" id="addTxnSheet" aria-hidden="true">
+    <div class="dim" id="addTxnDim"></div>
+    <div class="panel">
+      <div class="panelHead"><button class="closeX" id="closeAddTxn" aria-label="Close">×</button></div>
+      <div class="title">Add Transaction</div>
+      <div class="form">
+        <label for="txMerchant">Merchant</label>
+        <input id="txMerchant" type="text" placeholder="e.g., Starbucks" />
+
+        <label for="txAmount">Amount</label>
+        <input id="txAmount" type="number" step="0.01" inputmode="decimal" placeholder="0.00" />
+
+        <label for="txWhen">Date &amp; Time</label>
+        <input id="txWhen" type="datetime-local" />
+
+        <label for="txStatus">Status</label>
+        <select id="txStatus">
+          <option>Approved</option>
+          <option>Refunded</option>
+          <option>Posted</option>
+        </select>
+      </div>
+      <div class="actions">
+        <button class="btn green" id="txContinue">
+          <span class="smallIcon">✔︎</span>Continue
+        </button>
+      </div>
+      <div class="other" id="txCancelFromForm">Cancel</div>
+    </div>
+  </div>
+
+  <!-- Confirm Transaction sheet -->
+  <div class="sheet" id="confirmTxnSheet" aria-hidden="true">
+    <div class="dim" id="confirmDim"></div>
+    <div class="panel">
+      <div class="panelHead"><button class="closeX" id="closeConfirm" aria-label="Close">×</button></div>
+      <div class="title">Confirm Transaction</div>
+      <div class="summary" id="confirmSummary"></div>
+      <div class="actions">
+        <button class="btn primary" id="confirmAddBtn">Add Transaction</button>
+      </div>
+      <div class="other" id="editTxnBtn">Go Back &amp; Edit</div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -371,7 +439,6 @@
       const s = JSON.parse(raw);
       if (typeof s.cardBalance==='number' && typeof s.availableBalance==='number' &&
           s.version === SETTINGS_DEFAULT.version){
-        // Merge in any new fields that weren’t previously stored
         return {...SETTINGS_DEFAULT, ...s};
       }
     }catch(e){}
@@ -424,24 +491,20 @@
     }
   }
 
-  // signed delta between two fractions in (-0.5, 0.5]
   const signedDelta = (a,b)=>(((a-b)+1.5)%1)-0.5;
 
   function applyFromFraction(fracRaw, fromDrag=false){
-    // Clamp into [0,1)
     let f = Math.max(0, Math.min(0.999999, fracRaw));
     const delta = signedDelta(f, lastFrac);
 
-    // When locked at max (blue), ignore clockwise attempts (delta>0).
     if (lockedAtMax){
       if (delta > 0){
-        f = 1; // stay pinned
+        f = 1;
       }else{
-        lockedAtMax = false; // CCW unlock
+        lockedAtMax = false;
       }
     }
 
-    // If we hit the end, lock there
     const NEAR_MAX = 0.995;
     if (!lockedAtMax && f >= NEAR_MAX){
       lockedAtMax = true;
@@ -449,7 +512,7 @@
     }
 
     lastFrac = f;
-    const fracForAmount = (f===1)?1:f; // 1 maps to MAX exactly
+    const fracForAmount = (f===1)?1:f;
     amount = +((MIN + fracForAmount*(MAX-MIN)).toFixed(2));
 
     const dash = C*(1-fracForAmount);
@@ -467,7 +530,6 @@
     setUI(amount);
   }
 
-  // Write numbers to UI and sync ring
   const cardBalanceEl = document.getElementById('cardBalance');
   const availableEl   = document.getElementById('availableBalance');
   const fmtUSD = n => n.toLocaleString(undefined,{style:'currency',currency:'USD'});
@@ -478,9 +540,9 @@
 
     MAX    = Math.max(0, SETTINGS.cardBalance);
     THRESH = +(MAX * 0.82).toFixed(2);
-    lockedAtMax = false;             // reset lock when limits change
+    lockedAtMax = false;
     lastFrac = 0;
-    applyFromFraction(0, false);     // knob at $0 with new limits
+    applyFromFraction(0, false);
   }
 
   function fractionFromPointer(evt){
@@ -491,7 +553,7 @@
     let theta=Math.atan2(y-cy,x-cx);
     theta+=Math.PI/2;
     if(theta<0) theta+=Math.PI*2;
-    return theta/(Math.PI*2); // 0..1 clockwise from top
+    return theta/(Math.PI*2);
   }
 
   const start=e=>{dragging=true; applyFromFraction(fractionFromPointer(e), true); e.preventDefault();}
@@ -526,20 +588,17 @@
   payBtn.addEventListener('click', ()=>{
     if (amount <= 0) { sheet.classList.remove('active'); return; }
 
-    // capture the time of payment
     const payIso = new Date().toISOString();
 
-    // update balances
     SETTINGS.cardBalance      = +Math.max(0, SETTINGS.cardBalance - amount).toFixed(2);
     SETTINGS.availableBalance = +(SETTINGS.availableBalance + amount).toFixed(2);
-    saveBalances();           // persist across reloads
+    saveBalances();
 
-    // add a transaction for this payment
     window.addPayment({ amount, iso: payIso });
 
-    applyBalances();          // refresh UI + ring limits
+    applyBalances();
     sheet.classList.remove('active');
-    showPaySuccess(amount);   // in-app confirmation
+    showPaySuccess(amount);
   });
 
   // Apply balances on load
@@ -548,7 +607,6 @@
   /* ---------- TRANSACTIONS ---------- */
   const txnListEl = document.getElementById('txnList');
 
-  /* Storage helpers for transactions */
   const TXN_STORE_KEY = 'demo_txns';
   function loadTransactions(){
     try{
@@ -586,7 +644,11 @@
 
   function rid(){ return 't_'+Math.random().toString(36).slice(2,9) }
 
-  function formatDisplay(t){ return (t.kind === 'purchase' ? '$' : '- $') + t.amount.toFixed(2); }
+  // Display rule by STATUS (not kind)
+  function formatDisplay(t){
+    const negative = (t.status==='Refunded' || t.status==='Posted');
+    return (negative?'- ':'') + '$' + Number(t.amount).toFixed(2);
+  }
   function formatMoneyAbs(n){ return '$' + Math.abs(n).toFixed(2) }
   function shortDate(iso){
     const d = new Date(iso);
@@ -599,7 +661,8 @@
   }
 
   function renderTransactions(){
-    transactions.sort((a,b)=> new Date(b.iso) - new Date(a.iso)); // newest first
+    // Earlier (older) on top
+    transactions.sort((a,b)=> new Date(a.iso) - new Date(b.iso));
     txnListEl.innerHTML = transactions.map(t => `
       <div class="txnRow" data-id="${t.id}" tabindex="0" role="button" aria-label="Open ${t.merchant} transaction">
         <div class="txnMain">
@@ -616,29 +679,44 @@
     });
   }
 
+  let currentTxnId = null;
   function openTxn(id){
     const t = transactions.find(x=>x.id===id);
     if(!t) return;
+    currentTxnId = id;
     document.getElementById('txnAmount').textContent = formatMoneyAbs(t.amount);
     document.getElementById('txnMerchant').textContent = t.merchant;
     document.getElementById('txnDate').textContent = fullDateTime(t.iso);
-    document.getElementById('txnStatus').innerHTML = `<strong>Status: ${t.status || (t.kind==='purchase'?'Approved':'Posted')}</strong>`;
-    document.getElementById('txnCard').textContent = t.card || 'Apple Card';
+    document.getElementById('txnStatus').innerHTML = `<strong>Status: ${t.status || 'Approved'}</strong>`;
+    document.getElementById('txnCard').textContent = t.card || 'Sapphire Reserve';
     document.getElementById('txnTotal').textContent = formatMoneyAbs(t.amount);
     app.className = 'app pos-1';
   }
 
-  window.addPurchase = ({merchant, amount, iso, card='Apple Card', status='Approved'})=>{
+  document.getElementById('deleteTxnBtn').addEventListener('click', ()=>{
+    if(!currentTxnId) return;
+    const i = transactions.findIndex(t=>t.id===currentTxnId);
+    if(i>-1){
+      transactions.splice(i,1);
+      saveTransactions();
+      renderTransactions();
+      currentTxnId = null;
+      app.className = 'app pos-0';
+    }
+  });
+
+  // Public helpers (defaults now Sapphire Reserve)
+  window.addPurchase = ({merchant, amount, iso, card='Sapphire Reserve', status='Approved'})=>{
     transactions.push({ id: rid(), kind:'purchase', merchant, amount:Number(amount), iso, status, card });
     saveTransactions();
     renderTransactions();
   };
-  window.addRefund = ({merchant, amount, iso, card='Apple Card', status='Refunded'})=>{
+  window.addRefund = ({merchant, amount, iso, card='Sapphire Reserve', status='Refunded'})=>{
     transactions.push({ id: rid(), kind:'refund', merchant, amount:Number(amount), iso, status, card });
     saveTransactions();
     renderTransactions();
   };
-  window.addPayment = ({amount, iso, card='Apple Card', merchant='Card Payment', status='Posted'})=>{
+  window.addPayment = ({amount, iso, card='Sapphire Reserve', merchant='Card Payment', status='Posted'})=>{
     transactions.push({ id: rid(), kind:'payment', merchant, amount:Number(amount), iso, status, card });
     saveTransactions();
     renderTransactions();
@@ -681,21 +759,73 @@
     bigCardEl.style.cursor='pointer';
     bigCardEl.addEventListener('click', openCardSheet);
   }
+
+  /* ===== Add Transaction flow ===== */
+  const addTxnSheet = document.getElementById('addTxnSheet');
+  const addTxnDim   = document.getElementById('addTxnDim');
+  const openAddTxn  = document.getElementById('openAddTxn');
+  const closeAddTxn = document.getElementById('closeAddTxn');
+  const txMerchant  = document.getElementById('txMerchant');
+  const txAmount    = document.getElementById('txAmount');
+  const txWhen      = document.getElementById('txWhen');
+  const txStatus    = document.getElementById('txStatus');
+  const txContinue  = document.getElementById('txContinue');
+  const txCancelFromForm = document.getElementById('txCancelFromForm');
+
+  const confirmSheet = document.getElementById('confirmTxnSheet');
+  const confirmDim   = document.getElementById('confirmDim');
+  const closeConfirm = document.getElementById('closeConfirm');
+  const confirmSummary = document.getElementById('confirmSummary');
+  const confirmAddBtn  = document.getElementById('confirmAddBtn');
+  const editTxnBtn     = document.getElementById('editTxnBtn');
+
+  function openAddSheet(){ addTxnSheet.classList.add('active'); }
+  function closeAddSheet(){ addTxnSheet.classList.remove('active'); }
+  function openConfirm(){ confirmSheet.classList.add('active'); }
+  function closeConfirmSheet(){ confirmSheet.classList.remove('active'); }
+
+  openAddTxn.addEventListener('click', openAddSheet);
+  addTxnDim.addEventListener('click', closeAddSheet);
+  closeAddTxn.addEventListener('click', closeAddSheet);
+  txCancelFromForm.addEventListener('click', closeAddSheet);
+
+  confirmDim.addEventListener('click', closeConfirmSheet);
+  closeConfirm.addEventListener('click', closeConfirmSheet);
+  editTxnBtn.addEventListener('click', ()=>{ closeConfirmSheet(); openAddSheet(); });
+
+  let pendingTxn = null;
+  txContinue.addEventListener('click', ()=>{
+    const m = (txMerchant.value||'').trim();
+    const a = parseFloat(txAmount.value);
+    const w = txWhen.value ? new Date(txWhen.value) : new Date();
+    const s = txStatus.value || 'Approved';
+    if(!m || !isFinite(a)){ return; }
+    pendingTxn = { merchant:m, amount: +a.toFixed(2), iso: w.toISOString(), status:s };
+    confirmSummary.innerHTML = `
+      <p><b>Merchant:</b> ${m}</p>
+      <p><b>Amount:</b> $${pendingTxn.amount.toFixed(2)}</p>
+      <p><b>Date &amp; Time:</b> ${fullDateTime(pendingTxn.iso)}</p>
+      <p><b>Status:</b> ${s}</p>
+    `;
+    closeAddSheet();
+    openConfirm();
+  });
+
+  confirmAddBtn.addEventListener('click', ()=>{
+    if(!pendingTxn) return;
+    const {merchant, amount, iso, status} = pendingTxn;
+    if(status==='Approved'){
+      window.addPurchase({merchant, amount, iso, status, card:'Sapphire Reserve'});
+    }else if(status==='Refunded'){
+      window.addRefund({merchant, amount, iso, status, card:'Sapphire Reserve'});
+    }else{
+      window.addPayment({amount, iso, status, card:'Sapphire Reserve', merchant});
+    }
+    pendingTxn = null;
+    closeConfirmSheet();
+  });
+
 })();
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
