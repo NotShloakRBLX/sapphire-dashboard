@@ -661,8 +661,8 @@
   }
 
   function renderTransactions(){
-    // Earlier (older) on top
-    transactions.sort((a,b)=> new Date(a.iso) - new Date(b.iso));
+    // Newest (later) on top
+    transactions.sort((a,b)=> new Date(b.iso) - new Date(a.iso));
     txnListEl.innerHTML = transactions.map(t => `
       <div class="txnRow" data-id="${t.id}" tabindex="0" role="button" aria-label="Open ${t.merchant} transaction">
         <div class="txnMain">
@@ -794,6 +794,11 @@
   editTxnBtn.addEventListener('click', ()=>{ closeConfirmSheet(); openAddSheet(); });
 
   let pendingTxn = null;
+  function fullDateTime(iso){
+    const d = new Date(iso);
+    return d.toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit'}) + ', ' +
+           d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+  }
   txContinue.addEventListener('click', ()=>{
     const m = (txMerchant.value||'').trim();
     const a = parseFloat(txAmount.value);
