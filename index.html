@@ -15,14 +15,27 @@
     --t:.35s cubic-bezier(.2,.8,.2,1);
     --radiusCard:28px;
     --radiusTile:8px;
+
+    /* Apple SF stack */
+    --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+                 system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
   }
+
+  /* Force SF everywhere */
+  *, *::before, *::after { font-family: var(--font-sans) !important; }
+
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
     margin:0;background:#000;color:var(--text);
-    font:15px -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    -webkit-font-smoothing:antialiased
+    font-size:15px; line-height:1.45;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
   }
+
+  /* Money/amounts use tabular numerals like iOS */
+  .val, .amt, .txnAmount, .dueVal .num, .dueVal .unit, .right, .txnAmt,
+  #cardBalance, #availableBalance { font-variant-numeric: tabular-nums; }
+
   .app{max-width:430px;height:100svh;margin:0 auto;position:relative;overflow:hidden;background:var(--bg)}
   .views{display:flex;width:200%;height:100%;transition:transform var(--t)}
   .view{width:100%;height:100%;overflow:auto;padding-bottom:28px;background:linear-gradient(#0b0b0b,#0b0b0b 50%,#0a0a0a)}
@@ -48,7 +61,7 @@
   /* Sharper credit card corners (still slightly rounded) */
   .bigCard{
     height:212px;
-    border-radius:7px; /* sharper than before */
+    border-radius:7px;
     overflow:hidden;box-shadow:var(--shadow);position:relative
   }
   .bigCard .visa{right:22px;bottom:18px}
@@ -175,36 +188,35 @@
   /* Card details sheet tiny helper */
   .cardFields{ padding:6px 12px 20px; }
 
-.visa svg, .visa img{
-  width:55px;
-  height:auto;
-  filter:drop-shadow(0 4px 12px rgba(0,0,0,.35));
-}
+  .visa svg, .visa img{
+    width:55px;
+    height:auto;
+    filter:drop-shadow(0 4px 12px rgba(0,0,0,.35));
+  }
 
-.bigCard .visa{
-  right:10px
-  bottom:12px
-}
+  .bigCard .visa{
+    right:10px;
+    bottom:12px;
+  }
 
-/* ===== Add Transaction sheets & inputs ===== */
-.form{padding:8px 14px 18px}
-.form label{display:block;font-weight:800;margin:12px 0 6px}
-.form input,.form select{
-  width:100%;padding:12px 12px;border-radius:12px;border:1px solid #d9d9d9;
-  font:inherit
-}
-.btn.green{background:#34c759;color:#000;font-weight:900}
-.smallIcon{display:inline-block;vertical-align:-3px;margin-right:8px}
-.summary{padding:0 14px 14px;color:#1d1d1d;font-weight:700}
-.summary b{color:#000}
+  /* ===== Add Transaction sheets & inputs ===== */
+  .form{padding:8px 14px 18px}
+  .form label{display:block;font-weight:800;margin:12px 0 6px}
+  .form input,.form select{
+    width:100%;padding:12px 12px;border-radius:12px;border:1px solid #d9d9d9;
+    font:inherit
+  }
+  .btn.green{background:#34c759;color:#000;font-weight:900}
+  .smallIcon{display:inline-block;vertical-align:-3px;margin-right:8px}
+  .summary{padding:0 14px 14px;color:#1d1d1d;font-weight:700}
+  .summary b{color:#000}
 
-/* Delete on txn details */
-.deleteWrap{padding:0 12px 24px}
-.deleteBtn{
-  width:100%;border:0;border-radius:14px;padding:14px 18px;font-weight:900;
-  background:#ff3b30;color:#fff
-}
-  
+  /* Delete on txn details */
+  .deleteWrap{padding:0 12px 24px}
+  .deleteBtn{
+    width:100%;border:0;border-radius:14px;padding:14px 18px;font-weight:900;
+    background:#ff3b30;color:#fff
+  }
 </style>
 </head>
 <body>
@@ -418,7 +430,6 @@
 </div>
 
 <script>
-  
 (()=> {
   const app=document.getElementById('app');
 
@@ -837,5 +848,3 @@
 </script>
 </body>
 </html>
-
-
