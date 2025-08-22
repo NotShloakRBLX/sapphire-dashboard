@@ -204,27 +204,10 @@
   width:100%;border:0;border-radius:14px;padding:14px 18px;font-weight:900;
   background:#ff3b30;color:#fff
 }
-
-  body.gated .app{filter:blur(14px) saturate(.7);pointer-events:none}
-  #gate{position:fixed;insert:0;display:grid;place-items:center;background:rgba(0,0,0,.62);backdrop-filter:blur(6px);z-index:9999}
-  #gate .box{width:86%;max-width:360px;background:#111;border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:18px;text-align:center;color:#fff}
-  #gate h2{margin:0 0 8px;font:700 20px/1.2 -apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-  #gate p{margin:4px 0 14px;color:rgba(255,255,255,.7);font-weight:600}
-  #signInGoogle{border:0;border-radius:12px;padding:12px 16px;font-weight:900;background:#fff;color:#000;cursor:pointer}
-  #signOut{margin-top:10px;background:transparent;border:0;color:#9aa0a6;font-weight:800;cursor:pointer}
   
 </style>
 </head>
 <body>
-  <body class="gated">
-    <div id="gate">
-      <div class="box">
-        <h2>Sign in required</h2>
-        <p>This page is restricted</p>
-        <button id="signInGoogle">Sign in with Google</button>
-        <button id="signOut" style="display:none">Sign out</button>
-      </div>
-    </div>
     
 <div class="app pos-0" id="app">
   <div class="views">
@@ -435,60 +418,6 @@
 </div>
 
 <script>
-
-(async ()=>{
-  const gate = document.getElementByID('gate');
-  const btnSignIn = document.getElementByID('signInGoogle');
-  const btnSignOut= document.getElementbyID('signOut');
-
-  const appMod = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
-  const authMod = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js')
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyAq6oqD--m9Iy5gfC1LnoWKn_aE-bC8hHo",
-    authDomain: "sapphire-dashboard.firebaseapp.com",
-    projectId: "sapphire-dashboard",
-    storageBucket: "sapphire-dashboard.firebasestorage.app",
-    messagingSenderId: "97011020819",
-    appId: "1:97011020819:web:750352ab64a926793cbbe6",
-    measurementId: "G-P2CSNX0XX3"
-  };
-
-  const fbApp = appMod.initializeApp(firebaseConfig);
-  const auth = authMod.getAuth9(fbApp);
-  auth.useDeviceLanguage();
-  const provider = new authMod.GoogleAuthProvider();
-
-  const ALLOW_EMAIL = "shloakpatel46@gmail.com";
-
-  function showGate(){ document.body.classList.add('gated'); gate.style.display='grid'; }
-  function hideGate() { document.body.classList.remove('gated'); gate.style.display='none'; }
-
-  authMod.onAuthStateChanged(auth, user=>{
-    if(user && user.email === ALLOW_EMAIL){
-      hideGate(); btnSignOut.style.display='inline-block';
-    }else{
-      showGate(); btnSignOut.style.display='none';
-    }
-  });
-
-  btnSignIn.onclick = async ()=>{
-    try{ await authMod.signInWithPopup(auth, provider); }
-    catch(e){ alert('Sign-in failed'); console.warn(e); }
-  };
-  btnSignOut.onclick = ()=> authMod.signOut();
-
-})();
-
-  rules_version = '2';
-  service cloud.firestore {
-    match /databases/{database}/documents {
-      match /{document=**} {
-        allow read, write: if request.auth != null
-                           && request.auth.token.email == "shloakpatel46@gmail.com";
-       }
-    }
- }
   
 (()=> {
   const app=document.getElementById('app');
@@ -908,4 +837,5 @@
 </script>
 </body>
 </html>
+
 
