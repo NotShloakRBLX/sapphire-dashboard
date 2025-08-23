@@ -703,19 +703,24 @@ ensureCbv();
     setTimeout(hide, 1600);
   }
 
-  // Pay -> update balances (persist) -> success pop-up + add transaction
+  /* ===================== BALANCE ADJUST HELPERS ===================== */
+  function applyBalanceDelta(cardDelta, availDelta){
+    const nextCard = +(SETTINGS.cardBalance + cardDelta).toFixed(2);
+    SETTINGS.cardBalance = nextCard < 0 ? 0 : nextCard; // never below 0
+    SETTINGS.availableBalance = +(SETTINGS.availableBalance + availDelta).toFixed(2);
+    saveBalances();
+    applyBalances();
+  }
+  /* ================================================================== */
+
+  // Pay -> use addPayment to both record txn AND adjust balances
   payBtn.addEventListener('click', ()=>{
     if (amount <= 0) { sheet.classList.remove('active'); return; }
 
     const payIso = new Date().toISOString();
-
-    SETTINGS.cardBalance      = +Math.max(0, SETTINGS.cardBalance - amount).toFixed(2);
-    SETTINGS.availableBalance = +(SETTINGS.availableBalance + amount).toFixed(2);
-    saveBalances();
-
+    // addPayment will adjust balances now
     window.addPayment({ amount, iso: payIso });
 
-    applyBalances();
     sheet.classList.remove('active');
     showPaySuccess(amount);
   });
@@ -872,24 +877,34 @@ ensureCbv();
 
   // Public helpers (defaults now Sapphire Reserve)
   window.addPurchase = ({merchant, amount, iso, card='Sapphire Reserve', status='Approved'})=>{
-  const amt = Number(amount);
-  transactions.push({
-    id: rid(), kind:'purchase', merchant, amount: amt, iso, status, card,
-    cashback: calcCashback(amt), cbv: currentCbv()
-  });
-  saveTransactions(); renderTransactions();
+    const amt = Number(amount);
+    transactions.push({
+      id: rid(), kind:'purchase', merchant, amount: amt, iso, status, card,
+      cashback: calcCashback(amt), cbv: currentCbv()
+    });
+    saveTransactions(); renderTransactions();
+    // Balance effects: purchase increases card balance and reduces available
+    applyBalanceDelta(+amt, -amt);
   };
     
   window.addRefund = ({merchant, amount, iso, card='Sapphire Reserve', status='Refunded'})=>{
-    transactions.push({ id: rid(), kind:'refund', merchant, amount:Number(amount), iso, status, card, cashback: 0 });
+    const amt = Number(amount);
+    transactions.push({ id: rid(), kind:'refund', merchant, amount: amt, iso, status, card, cashback: 0 });
     saveTransactions();
     renderTransactions();
+    // Balance effects: refund decreases card balance and increases available
+    applyBalanceDelta(-amt, +amt);
   };
+
   window.addPayment = ({amount, iso, card='Sapphire Reserve', merchant='Card Payment', status='Posted'})=>{
-    transactions.push({ id: rid(), kind:'payment', merchant, amount:Number(amount), iso, status, card, cashback: 0 });
+    const amt = Number(amount);
+    transactions.push({ id: rid(), kind:'payment', merchant, amount: amt, iso, status, card, cashback: 0 });
     saveTransactions();
     renderTransactions();
+    // Balance effects: payment decreases card balance and increases available
+    applyBalanceDelta(-amt, +amt);
   };
+
   window.addCashbackDeposit = ({amount, iso, card='Sapphire Reserve', status='Posted', account, routing})=>{
     transactions.push({
       id: rid(),
@@ -900,7 +915,9 @@ ensureCbv();
       account, routing, acctLast4: (account||'').slice(-4)
     });
     saveTransactions(); renderTransactions();
+    // No card balance effect for cashback deposit
   };
+
   window.removeTransaction = (id)=>{
     const i = transactions.findIndex(t=>t.id===id);
     if(i>-1){ transactions.splice(i,1); saveTransactions(); renderTransactions(); }
@@ -1146,5 +1163,3 @@ ensureCbv();
 </script>
 </body>
 </html>
-
-
