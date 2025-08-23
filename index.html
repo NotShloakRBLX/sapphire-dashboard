@@ -247,7 +247,7 @@
             <button class="payBubble" id="openPay">Pay</button>
           </div>
 
-          <!-- REPLACED: Weekly Activity -> Cashback (card balance style, no "available") -->
+          <!-- Cashback tile -->
           <div class="tile compact">
             <div class="kb">Cashback</div>
             <p class="val" id="cashback">$0.00</p>
@@ -289,6 +289,12 @@
       <div class="row">
         <h3>Total</h3>
         <div class="right" id="txnTotal">$0.00</div>
+      </div>
+
+      <!-- NEW: Cashback row below Total -->
+      <div class="row">
+        <h3>Cashback</h3>
+        <div class="right" id="txnCashback">$0.00</div>
       </div>
 
       <div class="deleteWrap">
@@ -430,7 +436,7 @@
     version: 6,                 // bump if you want to reset persisted balances
     cardBalance: 49.46,
     availableBalance: 275.54,
-    cashback: 0.00,             // <— added for Cashback tile
+    cashback: 0.00,             // dashboard Cashback tile (auto from transactions)
     cardNumber: '5278 6812 3931 7295',
     cardExpiry: '07/30',
     cardCvv: '528'
@@ -610,7 +616,7 @@
   // Apply balances on load
   applyBalances();
 
-  /* ---------- TRANSACTIONS ---------- */
+  /* ---------- TRANSACTIONS + CASHBACK ---------- */
   const txnListEl = document.getElementById('txnList');
 
   const TXN_STORE_KEY = 'demo_txns';
@@ -625,7 +631,17 @@
   }
   function saveTransactions(){
     try{ localStorage.setItem(TXN_STORE_KEY, JSON.stringify(transactions)); }catch(e){}
+    // after any save, recompute cashback tile
+    refreshCashbackTile();
   }
+
+  function rid(){ return 't_'+Math.random().toString(36).slice(2,9) }
+
+  // Cashback helpers
+  const round2 = n => Math.round(n*100)/100;
+  const calcCashback = amt => round2(amt * 0.05);                // 5% on purchases only
+  const getTxnCashback = t => (typeof t.cashback==='number') ? t.cashback :
+                              (t.kind==='purchase' ? calcCashback(Number(t.amount)||0) : 0);
 
   let transactions = loadTransactions() || [
     {
@@ -635,7 +651,8 @@
       amount: 40.35,
       status: 'Refunded',
       card: 'Sapphire Reserve',
-      iso: '2023-07-14T16:32:00'
+      iso: '2023-07-14T16:32:00',
+      cashback: 0
     },
     {
       id: rid(),
@@ -644,11 +661,10 @@
       amount: 277.41,
       status: 'Approved',
       card: 'Sapphire Reserve',
-      iso: '2025-04-23T13:04:00'
+      iso: '2025-04-23T13:04:00',
+      cashback: calcCashback(277.41)
     }
   ];
-
-  function rid(){ return 't_'+Math.random().toString(36).slice(2,9) }
 
   // Display rule by STATUS (not kind)
   function formatDisplay(t){
@@ -685,6 +701,14 @@
     });
   }
 
+  // update dashboard cashback tile from all transactions
+  function refreshCashbackTile(){
+    const total = round2(transactions.reduce((sum,t)=> sum + getTxnCashback(t), 0));
+    SETTINGS.cashback = total;
+    saveBalances();
+    if (cashbackEl) cashbackEl.textContent = fmtUSD(total);
+  }
+
   let currentTxnId = null;
   function openTxn(id){
     const t = transactions.find(x=>x.id===id);
@@ -696,6 +720,9 @@
     document.getElementById('txnStatus').innerHTML = `<strong>Status: ${t.status || 'Approved'}</strong>`;
     document.getElementById('txnCard').textContent = t.card || 'Sapphire Reserve';
     document.getElementById('txnTotal').textContent = formatMoneyAbs(t.amount);
+    // Show cashback earned for this transaction (5% on purchases only; none on payments/refunds)
+    const cb = getTxnCashback(t);
+    document.getElementById('txnCashback').textContent = '$' + cb.toFixed(2);
     app.className = 'app pos-1';
   }
 
@@ -713,17 +740,18 @@
 
   // Public helpers (defaults now Sapphire Reserve)
   window.addPurchase = ({merchant, amount, iso, card='Sapphire Reserve', status='Approved'})=>{
-    transactions.push({ id: rid(), kind:'purchase', merchant, amount:Number(amount), iso, status, card });
+    const amt = Number(amount);
+    transactions.push({ id: rid(), kind:'purchase', merchant, amount:amt, iso, status, card, cashback: calcCashback(amt) });
     saveTransactions();
     renderTransactions();
   };
   window.addRefund = ({merchant, amount, iso, card='Sapphire Reserve', status='Refunded'})=>{
-    transactions.push({ id: rid(), kind:'refund', merchant, amount:Number(amount), iso, status, card });
+    transactions.push({ id: rid(), kind:'refund', merchant, amount:Number(amount), iso, status, card, cashback: 0 });
     saveTransactions();
     renderTransactions();
   };
   window.addPayment = ({amount, iso, card='Sapphire Reserve', merchant='Card Payment', status='Posted'})=>{
-    transactions.push({ id: rid(), kind:'payment', merchant, amount:Number(amount), iso, status, card });
+    transactions.push({ id: rid(), kind:'payment', merchant, amount:Number(amount), iso, status, card, cashback: 0 });
     saveTransactions();
     renderTransactions();
   };
@@ -737,6 +765,7 @@
   };
 
   renderTransactions();
+  refreshCashbackTile(); // ensure tile reflects seeded/loaded data on first load
 
   /* --- Card details sheet wiring (tap big card to open) --- */
   const cardSheet = document.getElementById('cardSheet');
@@ -800,7 +829,7 @@
   editTxnBtn.addEventListener('click', ()=>{ closeConfirmSheet(); openAddSheet(); });
 
   let pendingTxn = null;
-  function fullDateTime(iso){
+  function fullDateTime2(iso){
     const d = new Date(iso);
     return d.toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit'}) + ', ' +
            d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
@@ -815,7 +844,7 @@
     confirmSummary.innerHTML = `
       <p><b>Merchant:</b> ${m}</p>
       <p><b>Amount:</b> $${pendingTxn.amount.toFixed(2)}</p>
-      <p><b>Date &amp; Time:</b> ${fullDateTime(pendingTxn.iso)}</p>
+      <p><b>Date &amp; Time:</b> ${fullDateTime2(pendingTxn.iso)}</p>
       <p><b>Status:</b> ${s}</p>
     `;
     closeAddSheet();
