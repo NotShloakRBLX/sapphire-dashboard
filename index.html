@@ -307,6 +307,12 @@
         <div class="right" id="txnCashback">$0.00</div>
       </div>
 
+      <!-- Deposited-to row (only for cashback deposit) -->
+      <div class="row hidden" id="depositTargetRow">
+        <h3>Deposited To</h3>
+        <div class="right" id="depositTargetValue">•••• 0000</div>
+      </div>
+
       <div class="deleteWrap">
         <button class="deleteBtn" id="deleteTxnBtn">Delete Transaction</button>
       </div>
@@ -840,6 +846,15 @@ ensureCbv();
     } else {
       cbRow.classList.add('hidden');
     }
+    // Show "Deposited To" only for cashback deposits
+    const depRow = document.getElementById('depositTargetRow');
+    if (t.kind === 'cashback_deposit') {
+      const last4 = t.acctLast4 || (t.account||'').slice(-4) || '';
+      document.getElementById('depositTargetValue').textContent = '•••• ' + last4;
+      depRow.classList.remove('hidden');
+    } else {
+      depRow.classList.add('hidden');
+    }
     app.className = 'app pos-1';
   }
 
@@ -875,13 +890,17 @@ ensureCbv();
     saveTransactions();
     renderTransactions();
   };
-  window.addCashbackDeposit = ({amount, iso, card='Sapphire Reserve', status='Posted'})=>{
-  transactions.push({
-    id: rid(), kind:'cashback_deposit', merchant:'Cashback deposited',
-    amount:Number(amount), iso, status, card, cashback: 0, cbv: currentCbv()
-  });
-  saveTransactions(); renderTransactions();
-};
+  window.addCashbackDeposit = ({amount, iso, card='Sapphire Reserve', status='Posted', account, routing})=>{
+    transactions.push({
+      id: rid(),
+      kind:'cashback_deposit',
+      merchant:'Cashback deposited',
+      amount:Number(amount),
+      iso, status, card, cashback: 0, cbv: currentCbv(),
+      account, routing, acctLast4: (account||'').slice(-4)
+    });
+    saveTransactions(); renderTransactions();
+  };
   window.removeTransaction = (id)=>{
     const i = transactions.findIndex(t=>t.id===id);
     if(i>-1){ transactions.splice(i,1); saveTransactions(); renderTransactions(); }
@@ -1053,7 +1072,7 @@ ensureCbv();
     const delta = cbSignedDelta(f, cbLastFrac);
 
     if (cbLockedAtMax){
-      if (delta > 0){ f = 1; } else { cbLockedAtMax=false; }
+      if (delta > 0){ cbLockedAtMax=true; f = 1; } else { cbLockedAtMax=false; }
     }
     const NEAR_MAX = 0.995;
     if (!cbLockedAtMax && f >= NEAR_MAX){ cbLockedAtMax=true; f=1; }
@@ -1107,28 +1126,30 @@ ensureCbv();
   });
 
   cbSubmit.addEventListener('click', ()=>{
-  const acct=(cbAcct.value||'').trim();
-  const routing=(cbRouting.value||'').trim();
-  if(!acct || !routing || cbAmount<=0) return;
+    const acct=(cbAcct.value||'').trim();
+    const routing=(cbRouting.value||'').trim();
+    if(!acct || !routing || cbAmount<=0) return;
 
-  const nowIso = new Date().toISOString();
+    const nowIso = new Date().toISOString();
 
-  // 1) Write to the card ledger (your current behavior)
-  window.addCashbackDeposit({ amount: cbAmount, iso: nowIso });
+    // 1) Record locally (removes cashback and posts "Cashback deposited")
+    window.addCashbackDeposit({ amount: cbAmount, iso: nowIso, account: acct, routing });
 
-  // 2) Emit a cross-app event so the bank app can add its own transaction
-  emitLedgerEvent({
-    id: crypto.randomUUID(),                 // for dedupe
-    type: 'cashback_deposit',
-    amount: cbAmount,
-    iso: nowIso,
-    toAccountId: 'checking-123'              // <- set your real account id here
+    // 2) Emit a cross-app event so the bank app can add its own transaction
+    emitLedgerEvent({
+      id: crypto.randomUUID(),                 // for dedupe
+      type: 'cashback_deposit',
+      amount: cbAmount,
+      iso: nowIso,
+      routing,
+      account: acct,
+      merchant: 'Sapphire Reserve cashback'    // what the bank app should show
+    });
+
+    // reset & close
+    cbAmount=0; cbApplyFromFraction(0,false);
+    closeCbSheet();
   });
-
-  // reset & close
-  cbAmount=0; cbApplyFromFraction(0,false);
-  closeCbSheet();
-});
 
   /* END Cashback sheet logic */
 
@@ -1136,6 +1157,3 @@ ensureCbv();
 </script>
 </body>
 </html>
-
-
-
