@@ -1135,16 +1135,20 @@ ensureCbv();
     // 1) Record locally (removes cashback and posts "Cashback deposited")
     window.addCashbackDeposit({ amount: cbAmount, iso: nowIso, account: acct, routing });
 
-    // 2) Emit a cross-app event so the bank app can add its own transaction
+    const entId = (window.crypto && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : 'evt_' + Math.random().toString(36).slice(2);
+
     emitLedgerEvent({
-      id: crypto.randomUUID(),                 // for dedupe
+      id: evtId,
       type: 'cashback_deposit',
       amount: cbAmount,
       iso: nowIso,
-      routing,
-      account: acct,
-      merchant: 'Sapphire Reserve cashback'    // what the bank app should show
-    });
+      toAccountId: 'checking-123',
+      accountNumber: acct,
+      accountLast4 (acct || '').slice(-4),
+      routing: routing
+  });
 
     // reset & close
     cbAmount=0; cbApplyFromFraction(0,false);
@@ -1157,3 +1161,4 @@ ensureCbv();
 </script>
 </body>
 </html>
+
