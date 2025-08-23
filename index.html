@@ -137,7 +137,7 @@
   .row .right{font-weight:900;font-size:18px}
   .statusLine{font-size:18px;margin-bottom:4px}
 
-  /* Bottom sheet */
+  /* Bottom sheet (shared) */
   .sheet{position:fixed;inset:0;display:grid;place-items:end center;pointer-events:none;z-index:9}
   .sheet.active{pointer-events:auto}
   .dim{position:absolute;inset:0;background:rgba(0,0,0,.45);opacity:0;transition:opacity var(--t)}
@@ -154,8 +154,10 @@
   .info{padding:0 14px 8px;text-align:center;font-weight:900;color:#1d1d1d}
   .info small{display:block;margin-top:4px;color:#6a6a6a;font-weight:600}
   .actions{display:flex;justify-content:center;padding:0 14px 18px}
-  .btn{border-radius:14px;padding:14px 22px;font-weight:900;border:0}
+  .btn{border-radius:14px;padding:14px 22px;font-weight:900;border:0;cursor:pointer}
   .primary{background:#000;color:#fff;min-width:65%}
+  .btn.green{background:#34c759;color:#000;font-weight:900}
+  .btn.gray{background:#efefef;color:#000;font-weight:900}
   .other{text-align:center;padding-bottom:20px;color:#007aff;font-weight:900}
 
   /* Payment success pop-up */
@@ -170,7 +172,7 @@
     display:grid;place-items:center;font-weight:900;background:#34c759;color:#000;box-shadow:0 8px 20px rgba(0,0,0,.35)
   }
   .success .title{font-weight:900;font-size:20px;margin:6px 0 4px}
-  .success .sub{color:var(--muted);font-weight:700}
+  .success .sub{color:#bbb;font-weight:700}
 
   /* Card details sheet tiny helper */
   .cardFields{ padding:6px 12px 20px; }
@@ -193,7 +195,6 @@
   width:100%;padding:12px 12px;border-radius:12px;border:1px solid #d9d9d9;
   font:inherit
 }
-.btn.green{background:#34c759;color:#000;font-weight:900}
 .smallIcon{display:inline-block;vertical-align:-3px;margin-right:8px}
 .summary{padding:0 14px 14px;color:#1d1d1d;font-weight:700}
 .summary b{color:#000}
@@ -204,6 +205,15 @@
   width:100%;border:0;border-radius:14px;padding:14px 18px;font-weight:900;
   background:#ff3b30;color:#fff
 }
+
+/* Cashback sheet subviews */
+.subviews{display:flex;width:200%;transition:transform var(--t)}
+.page{width:100%}
+.divider{height:1px;background:#e9e9e9;margin:6px 14px 10px}
+.subtle{color:#6a6a6a;font-weight:700;margin:0 14px 10px}
+
+/* Hide helper */
+.hidden{display:none !important}
   
 </style>
 </head>
@@ -247,8 +257,8 @@
             <button class="payBubble" id="openPay">Pay</button>
           </div>
 
-          <!-- Cashback tile -->
-          <div class="tile compact">
+          <!-- Cashback tile (clickable) -->
+          <div class="tile compact" id="cashbackTile" style="cursor:pointer">
             <div class="kb">Cashback</div>
             <p class="val" id="cashback">$0.00</p>
           </div>
@@ -291,8 +301,8 @@
         <div class="right" id="txnTotal">$0.00</div>
       </div>
 
-      <!-- NEW: Cashback row below Total -->
-      <div class="row">
+      <!-- Cashback earned for purchases only -->
+      <div class="row" id="cashbackRow">
         <h3>Cashback</h3>
         <div class="right" id="txnCashback">$0.00</div>
       </div>
@@ -338,6 +348,64 @@
         <button class="btn primary" id="payNowBtn">Pay $0.00</button>
       </div>
       <div class="other" id="otherAmountBtn">Other Amount</div>
+    </div>
+  </div>
+
+  <!-- Cashback deposit sheet (2-step inside same pop-up) -->
+  <div class="sheet" id="cashbackSheet" aria-hidden="true">
+    <div class="dim" id="cbDim"></div>
+    <div class="panel">
+      <div class="subviews" id="cbViews">
+        <!-- Step 1: Pick amount -->
+        <div class="page">
+          <div class="panelHead"><button class="closeX" id="cbClose1" aria-label="Close">×</button></div>
+          <div class="title">Choose amount to deposit</div>
+
+          <div class="ringWrap" id="cbRingWrap">
+            <svg viewBox="0 0 320 320" id="cbRingSvg" aria-hidden="true">
+              <defs>
+                <linearGradient id="cbGradGreen" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#b8ffb9"/><stop offset="100%" stop-color="#34c759"/></linearGradient>
+                <linearGradient id="cbGradGray"  x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#e9ecef"/><stop offset="100%" stop-color="#cfd8dc"/></linearGradient>
+              </defs>
+              <circle cx="160" cy="160" r="120" stroke="#e9e9ef" stroke-opacity=".65" stroke-width="26" fill="none"/>
+              <circle id="cbProgress" cx="160" cy="160" r="120" stroke="url(#cbGradGray)" stroke-width="26" fill="none"
+                      stroke-linecap="round" transform="rotate(-90 160 160)" />
+              <circle id="cbHandle" cx="160" cy="40" r="12" fill="#fff" stroke="#e6e6e6" stroke-width="2"/>
+            </svg>
+
+            <div class="centerText" aria-live="polite" aria-atomic="true">
+              <div class="amt" id="cbAmountLabel">$0.00</div>
+            </div>
+          </div>
+
+          <div class="info">
+            Choose amount to deposit
+            <small>Choose amount of cashback to deposit.</small>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" id="cbDepositBtn" disabled>Deposit $0.00</button>
+          </div>
+        </div>
+
+        <!-- Step 2: Deposit details -->
+        <div class="page">
+          <div class="panelHead"><button class="closeX" id="cbClose2" aria-label="Close">×</button></div>
+          <div class="title">Deposit</div>
+          <div class="divider"></div>
+          <p class="subtle">Deposit via ACH</p>
+          <div class="form" style="padding-top:0">
+            <label>Account Number</label>
+            <input id="cbAcct" inputmode="numeric" placeholder="0000000000" />
+            <label>Routing Number</label>
+            <input id="cbRouting" inputmode="numeric" placeholder="000000000" />
+          </div>
+          <div class="actions" style="gap:10px">
+            <button class="btn green" id="cbSubmit">Deposit</button>
+            <button class="btn gray" id="cbCancel">Cancel</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -399,7 +467,7 @@
         </select>
       </div>
       <div class="actions">
-        <button class="btn green" id="txContinue">
+        <button class="btn" style="background:#34c759;color:#000;font-weight:900" id="txContinue">
           <span class="smallIcon">✔︎</span>Continue
         </button>
       </div>
@@ -433,7 +501,7 @@
 
   /* === MANUAL DEFAULTS (edit; values persist via localStorage) === */
   const SETTINGS_DEFAULT = {
-    version: 7,                 // bump if you want to reset persisted balances
+    version: 6,                 // bump if you want to reset persisted balances
     cardBalance: 49.46,
     availableBalance: 275.54,
     cashback: 0.00,             // dashboard Cashback tile (auto from transactions)
@@ -701,9 +769,16 @@
     });
   }
 
-  // update dashboard cashback tile from all transactions
+  // available cashback = sum(earned) - sum(deposited)
+  function computeCashbackAvailable(){
+    return round2(transactions.reduce((sum,t)=>{
+      if(t.kind==='purchase') return sum + getTxnCashback(t);
+      if(t.kind==='cashback_deposit') return sum - (Number(t.amount)||0);
+      return sum;
+    },0));
+  }
   function refreshCashbackTile(){
-    const total = round2(transactions.reduce((sum,t)=> sum + getTxnCashback(t), 0));
+    const total = Math.max(0, computeCashbackAvailable());
     SETTINGS.cashback = total;
     saveBalances();
     if (cashbackEl) cashbackEl.textContent = fmtUSD(total);
@@ -720,9 +795,15 @@
     document.getElementById('txnStatus').innerHTML = `<strong>Status: ${t.status || 'Approved'}</strong>`;
     document.getElementById('txnCard').textContent = t.card || 'Sapphire Reserve';
     document.getElementById('txnTotal').textContent = formatMoneyAbs(t.amount);
-    // Show cashback earned for this transaction (5% on purchases only; none on payments/refunds)
-    const cb = getTxnCashback(t);
-    document.getElementById('txnCashback').textContent = '$' + cb.toFixed(2);
+    // Show cashback row only for purchases (not for payments or cashback deposits)
+    const cbRow = document.getElementById('cashbackRow');
+    if (t.kind === 'purchase'){
+      const cb = getTxnCashback(t);
+      document.getElementById('txnCashback').textContent = '$' + cb.toFixed(2);
+      cbRow.classList.remove('hidden');
+    } else {
+      cbRow.classList.add('hidden');
+    }
     app.className = 'app pos-1';
   }
 
@@ -752,6 +833,11 @@
   };
   window.addPayment = ({amount, iso, card='Sapphire Reserve', merchant='Card Payment', status='Posted'})=>{
     transactions.push({ id: rid(), kind:'payment', merchant, amount:Number(amount), iso, status, card, cashback: 0 });
+    saveTransactions();
+    renderTransactions();
+  };
+  window.addCashbackDeposit = ({amount, iso, card='Sapphire Reserve', status='Posted'})=>{
+    transactions.push({ id: rid(), kind:'cashback_deposit', merchant:'Cashback deposited', amount:Number(amount), iso, status, card, cashback: 0 });
     saveTransactions();
     renderTransactions();
   };
@@ -865,8 +951,134 @@
     closeConfirmSheet();
   });
 
+  /* ======= CASHBACK SHEET LOGIC ======= */
+  const cashbackTile = document.getElementById('cashbackTile');
+  const cbSheet = document.getElementById('cashbackSheet');
+  const cbDim = document.getElementById('cbDim');
+  const cbViews = document.getElementById('cbViews');
+  const cbClose1 = document.getElementById('cbClose1');
+  const cbClose2 = document.getElementById('cbClose2');
+  const cbDepositBtn = document.getElementById('cbDepositBtn');
+  const cbSubmit = document.getElementById('cbSubmit');
+  const cbCancel = document.getElementById('cbCancel');
+  const cbAcct = document.getElementById('cbAcct');
+  const cbRouting = document.getElementById('cbRouting');
+
+  function openCbSheet(){
+    // reset to step 1 and zero amount
+    cbViews.style.transform = 'translateX(0%)';
+    cbAmount = 0;
+    cbLockedAtMax=false; cbLastFrac=0;
+    cbApplyFromFraction(0,false);
+    cbSheet.classList.add('active');
+  }
+  function closeCbSheet(){ cbSheet.classList.remove('active'); }
+  cashbackTile.addEventListener('click', openCbSheet);
+  cbDim.addEventListener('click', closeCbSheet);
+  cbClose1.addEventListener('click', closeCbSheet);
+  cbClose2.addEventListener('click', closeCbSheet);
+  cbCancel.addEventListener('click', closeCbSheet);
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeCbSheet(); });
+
+  // Ring for cashback
+  const cbRingWrap = document.getElementById('cbRingWrap');
+  const cbRingSvg = document.getElementById('cbRingSvg');
+  const cbProgress = document.getElementById('cbProgress');
+  const cbHandle = document.getElementById('cbHandle');
+  const cbAmountLabel = document.getElementById('cbAmountLabel');
+
+  const CB_R = 120;
+  const CB_C = 2*Math.PI*CB_R;
+  cbProgress.setAttribute('stroke-dasharray', `${CB_C}`);
+  cbProgress.setAttribute('stroke-dashoffset', `${CB_C}`);
+
+  let CB_MAX = 0;
+  let cbAmount = 0;
+  let cbDragging=false, cbLastFrac=0, cbLockedAtMax=false;
+
+  function cbSetMax(){
+    CB_MAX = Math.max(0, computeCashbackAvailable());
+  }
+
+  function cbSetUI(v){
+    cbProgress.setAttribute('stroke', v>0 ? 'url(#cbGradGreen)' : 'url(#cbGradGray)');
+  }
+
+  function cbSignedDelta(a,b){ return (((a-b)+1.5)%1)-0.5; }
+
+  function cbApplyFromFraction(fracRaw, fromDrag=false){
+    cbSetMax(); // in case cashback changed
+    let f = Math.max(0, Math.min(0.999999, fracRaw));
+    const delta = cbSignedDelta(f, cbLastFrac);
+
+    if (cbLockedAtMax){
+      if (delta > 0){ f = 1; } else { cbLockedAtMax=false; }
+    }
+    const NEAR_MAX = 0.995;
+    if (!cbLockedAtMax && f >= NEAR_MAX){ cbLockedAtMax=true; f=1; }
+
+    cbLastFrac = f;
+    const fracForAmount = (f===1)?1:f;
+    cbAmount = +((0 + fracForAmount*(CB_MAX-0)).toFixed(2));
+
+    const dash = CB_C*(1-fracForAmount);
+    cbProgress.style.transition = fromDrag ? 'none' : 'stroke-dashoffset 220ms ease, stroke 220ms ease';
+    cbProgress.setAttribute('stroke-dashoffset', `${dash}`);
+
+    const ang=(-90 + 360*fracForAmount)*Math.PI/180;
+    const hx=160 + CB_R*Math.cos(ang), hy=160 + CB_R*Math.sin(ang);
+    cbHandle.style.transition = fromDrag ? 'none' : 'cx 180ms ease, cy 180ms ease';
+    cbHandle.setAttribute('cx',hx.toFixed(2));
+    cbHandle.setAttribute('cy',hy.toFixed(2));
+
+    cbAmountLabel.textContent='$'+cbAmount.toFixed(2);
+    cbDepositBtn.textContent='Deposit $'+cbAmount.toFixed(2);
+    cbDepositBtn.disabled = !(cbAmount > 0);
+    cbSetUI(cbAmount);
+  }
+
+  function cbFracFromPointer(evt){
+    const rect=cbRingWrap.getBoundingClientRect();
+    const x=(evt.touches?evt.touches[0].clientX:evt.clientX)-rect.left;
+    const y=(evt.touches?evt.touches[0].clientY:evt.clientY)-rect.top;
+    const cx=rect.width/2, cy=rect.height/2;
+    let theta=Math.atan2(y-cy,x-cx);
+    theta+=Math.PI/2;
+    if(theta<0) theta+=Math.PI*2;
+    return theta/(Math.PI*2);
+  }
+
+  const cbStart=e=>{cbDragging=true; cbApplyFromFraction(cbFracFromPointer(e), true); e.preventDefault();}
+  const cbMove =e=>{if(!cbDragging) return; cbApplyFromFraction(cbFracFromPointer(e), true);}
+  const cbEnd  =()=>{cbDragging=false;}
+
+  cbHandle.addEventListener('mousedown',cbStart); cbHandle.addEventListener('touchstart',cbStart,{passive:false});
+  cbRingSvg.addEventListener('mousedown',cbStart); cbRingSvg.addEventListener('touchstart',cbStart,{passive:false});
+  window.addEventListener('mousemove',cbMove,{passive:false}); window.addEventListener('touchmove',cbMove,{passive:false});
+  window.addEventListener('mouseup',cbEnd); window.addEventListener('touchend',cbEnd);
+
+  cbDepositBtn.addEventListener('click', ()=>{
+    if(cbAmount<=0) return;
+    // move to step 2
+    cbViews.style.transform = 'translateX(-50%)';
+    // prefill fields blank
+    cbAcct.value=''; cbRouting.value='';
+  });
+
+  cbSubmit.addEventListener('click', ()=>{
+    const acct=(cbAcct.value||'').trim();
+    const routing=(cbRouting.value||'').trim();
+    if(!acct || !routing || cbAmount<=0) return;
+    const nowIso = new Date().toISOString();
+    window.addCashbackDeposit({ amount: cbAmount, iso: nowIso });
+    // reset & close
+    cbAmount=0; cbApplyFromFraction(0,false);
+    closeCbSheet();
+  });
+
+  /* END Cashback sheet logic */
+
 })();
 </script>
 </body>
 </html>
-
