@@ -525,6 +525,26 @@
   let SETTINGS = loadBalances();
   const saveBalances = () => localStorage.setItem('demo_balances', JSON.stringify(SETTINGS));
 
+  // === Cross-app ledger event emitter (same-origin) ===
+const LEDGER_CHANNEL_NAME = 'ledger';
+const LEDGER_LOG_KEY = 'global_event_log';
+
+function emitLedgerEvent(evt) {
+  try {
+    // 1) live broadcast to any open tabs/apps
+    const ch = new BroadcastChannel(LEDGER_CHANNEL_NAME);
+    ch.postMessage(evt);
+    ch.close?.();
+
+    // 2) persist so apps opened later can replay
+    const log = JSON.parse(localStorage.getItem(LEDGER_LOG_KEY) || '[]');
+    log.push(evt);
+    localStorage.setItem(LEDGER_LOG_KEY, JSON.stringify(log));
+  } catch (e) {
+    // no-op for demo
+  }
+}
+
   // === Cashback version gate (bump to reset tile & slider without deleting txns) ===
 const CASHBACK_VERSION = 1;                 // <— bump this to 2, 3, ... to start fresh
 const CBV_KEY = 'cbv_current';
@@ -1087,15 +1107,28 @@ ensureCbv();
   });
 
   cbSubmit.addEventListener('click', ()=>{
-    const acct=(cbAcct.value||'').trim();
-    const routing=(cbRouting.value||'').trim();
-    if(!acct || !routing || cbAmount<=0) return;
-    const nowIso = new Date().toISOString();
-    window.addCashbackDeposit({ amount: cbAmount, iso: nowIso });
-    // reset & close
-    cbAmount=0; cbApplyFromFraction(0,false);
-    closeCbSheet();
+  const acct=(cbAcct.value||'').trim();
+  const routing=(cbRouting.value||'').trim();
+  if(!acct || !routing || cbAmount<=0) return;
+
+  const nowIso = new Date().toISOString();
+
+  // 1) Write to the card ledger (your current behavior)
+  window.addCashbackDeposit({ amount: cbAmount, iso: nowIso });
+
+  // 2) Emit a cross-app event so the bank app can add its own transaction
+  emitLedgerEvent({
+    id: crypto.randomUUID(),                 // for dedupe
+    type: 'cashback_deposit',
+    amount: cbAmount,
+    iso: nowIso,
+    toAccountId: 'checking-123'              // <- set your real account id here
   });
+
+  // reset & close
+  cbAmount=0; cbApplyFromFraction(0,false);
+  closeCbSheet();
+});
 
   /* END Cashback sheet logic */
 
@@ -1103,5 +1136,6 @@ ensureCbv();
 </script>
 </body>
 </html>
+
 
 
