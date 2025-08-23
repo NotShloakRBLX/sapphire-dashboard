@@ -1135,21 +1135,6 @@ ensureCbv();
     // 1) Record locally (removes cashback and posts "Cashback deposited")
     window.addCashbackDeposit({ amount: cbAmount, iso: nowIso, account: acct, routing });
 
-    const entId = (window.crypto && crypto.randomUUID)
-      ? crypto.randomUUID()
-      : 'evt_' + Math.random().toString(36).slice(2);
-
-    emitLedgerEvent({
-      id: evtId,
-      type: 'cashback_deposit',
-      amount: cbAmount,
-      iso: nowIso,
-      toAccountId: 'checking-123',
-      accountNumber: acct,
-      accountLast4 (acct || '').slice(-4),
-      routing: routing
-  });
-
     // reset & close
     cbAmount=0; cbApplyFromFraction(0,false);
     closeCbSheet();
@@ -1161,4 +1146,5 @@ ensureCbv();
 </script>
 </body>
 </html>
+
 
