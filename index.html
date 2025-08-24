@@ -16,6 +16,25 @@
     --radiusCard:28px;
     --radiusTile:8px;
   }
+
+body.light{
+  --bg:#f5f6f8;
+  --title:#ffffff;
+  --tileBorder:rgba(0,0,0,.12);
+  --text:#111;
+  --muted:#5f6368;
+  --shadow:0 14px 34px rgba(0,0,0,.12);
+}
+
+  body.light .view{
+    background:linear-gradient(#fff,#fafafa 50%,#f2f2f2);
+  }
+  body.light .nav{
+    background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,255,255,.55) 40%,transparent);
+  }
+  body.light .iconbtn{ background:#fff; border-color:rgba(0,0,0,.12); }
+  body.light .tile{ background:#fff; border-color:rgba(0,0,0,.12); }
+  
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
@@ -214,10 +233,14 @@
 
 /* Hide helper */
 .hidden{display:none !important}
+
+  #cardBalTile{ padding-bottom:8px; }
+  #cardBalTile > :last-child{ margin-bottom:0; }
   
 </style>
 </head>
 <body>
+  <body class="light">
     
 <div class="app pos-0" id="app">
   <div class="views">
@@ -241,7 +264,7 @@
         </div>
 
         <div class="grid">
-          <div class="tile compact">
+          <div class="tile compact" id="cardBalTile">
             <div class="kb">Card Balance</div>
             <p class="val" id="cardBalance">$0.00</p>
             <p class="micro" id="availableBalance">$0.00 Available</p>
@@ -1163,3 +1186,4 @@ ensureCbv();
 </script>
 </body>
 </html>
+
