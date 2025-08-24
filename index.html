@@ -173,23 +173,57 @@
   .btn.gray{background:#efefef;color:#000;font-weight:900}
   .other{text-align:center;padding-bottom:20px;color:#007aff;font-weight:900}
 
-  /* Payment / deposit success pop-up (dark; ring + text) */
+  /* Payment success pop-up (dark) INSIDE the payment sheet */
+  .sheet.success{place-items:center}
+  .sheet.success .panel{background:transparent;color:#fff;box-shadow:none}
+  .sheet.success .panelHead,
+  .sheet.success .title,
+  .sheet.success .ringWrap,
+  .sheet.success .info,
+  .sheet.success .actions,
+  .sheet.success .other{display:none}
+
+  .payReceipt{
+    display:none;
+    width:86%;
+    max-width:420px;
+    background:#111;
+    color:#fff;
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    padding:22px 18px 18px;
+    text-align:center
+  }
+  .sheet.success .payReceipt{display:block}
+
+  .payCheck{
+    width:124px;height:124px;border-radius:50%;
+    background:conic-gradient(#b8ffb9, #34c759);
+    padding:10px;margin:2px auto 12px
+  }
+  .payCheck .inner{
+    width:100%;height:100%;border-radius:50%;background:#111;
+    display:grid;place-items:center
+  }
+  .payCheck svg{width:60px;height:60px}
+
+  .payTitle{font-size:32px;font-weight:900;margin:6px 0 8px}
+  .paySub{color:#cfcfcf;font-weight:800;line-height:1.35}
+
+  /* Success overlay (kept but unused now) */
   .success{position:fixed;inset:0;display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .25s var(--t);z-index:10}
   .success.active{opacity:1;pointer-events:auto}
-  .success .pane{
-    width:86%;max-width:440px;background:#1b1b1b;color:#fff;
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:18px;box-shadow:0 18px 40px rgba(0,0,0,.5);
-    padding:22px 20px 22px;text-align:center
+  .success .box{
+    width:86%;max-width:360px;background:#111;color:#fff;border:1px solid rgba(255,255,255,.14);
+    border-radius:18px;box-shadow:var(--shadow);padding:18px 18px 16px;text-align:center
   }
-  .sRing{width:112px;height:112px;margin:4px auto 12px;position:relative}
-  .sRing svg{width:100%;height:100%}
-  .sCheck{
-    position:absolute;inset:0;display:grid;place-items:center;
-    font-size:44px;line-height:1
+  .success .check{
+    width:56px;height:56px;border-radius:50%;margin:2px auto 10px;
+    display:grid;place-items:center;font-weight:900;background:#34c759;color:#000;box-shadow:0 8px 20px rgba(0,0,0,.35)
   }
-  .paidTitle{font-weight:900;font-size:28px;margin:4px 0 6px}
-  .paidSub{color:#d0d0d0;font-weight:700;line-height:1.35}
+  .success .title{font-weight:900;font-size:20px;margin:6px 0 4px}
+  .success .sub{color:#bbb;font-weight:700}
 
   /* Card details sheet tiny helper */
   .cardFields{ padding:6px 12px 20px; }
@@ -374,6 +408,19 @@
         <button class="btn primary" id="payNowBtn">Pay $0.00</button>
       </div>
       <div class="other" id="otherAmountBtn">Other Amount</div>
+
+      <!-- Success state (dark) that shows in the SAME popup -->
+      <div class="payReceipt" id="payReceipt" aria-live="polite" aria-atomic="true">
+        <div class="payCheck">
+          <div class="inner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+        </div>
+        <div class="payTitle">You Paid <span id="receiptAmt">$0.00</span></div>
+        <div class="paySub">Your payment has been received and will be reflected in your balance within 24 hours.</div>
+      </div>
     </div>
   </div>
 
@@ -435,23 +482,12 @@
     </div>
   </div>
 
-  <!-- Success popup (dark, ring, no extra card) -->
+  <!-- Success popup (kept; no longer used for payments) -->
   <div class="success" id="paySuccess" aria-live="polite" aria-atomic="true">
-    <div class="pane">
-      <div class="sRing" aria-hidden="true">
-        <svg viewBox="0 0 120 120">
-          <defs>
-            <linearGradient id="sucGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#b8ffb9"/><stop offset="100%" stop-color="#34c759"/>
-            </linearGradient>
-          </defs>
-          <circle cx="60" cy="60" r="46" stroke="#2a2a2a" stroke-width="10" fill="none"/>
-          <circle cx="60" cy="60" r="46" stroke="url(#sucGrad)" stroke-width="10" fill="none" />
-        </svg>
-        <div class="sCheck">✓</div>
-      </div>
-      <div class="paidTitle">You Paid <span id="paidAmt">$0.00</span></div>
-      <div class="paidSub">Your payment has been received and will be reflected in your balance within 24 hours.</div>
+    <div class="box">
+      <div class="check">✓</div>
+      <div class="title">Payment Successful</div>
+      <div class="sub" id="paySuccessMsg">$0.00 has been applied to your card.</div>
     </div>
   </div>
 
@@ -568,22 +604,17 @@ const LEDGER_LOG_KEY = 'global_event_log';
 
 function emitLedgerEvent(evt) {
   try {
-    // 1) live broadcast to any open tabs/apps
     const ch = new BroadcastChannel(LEDGER_CHANNEL_NAME);
     ch.postMessage(evt);
     ch.close?.();
-
-    // 2) persist so apps opened later can replay
     const log = JSON.parse(localStorage.getItem(LEDGER_LOG_KEY) || '[]');
     log.push(evt);
     localStorage.setItem(LEDGER_LOG_KEY, JSON.stringify(log));
-  } catch (e) {
-    // no-op for demo
-  }
+  } catch (e) {}
 }
 
-  // === Cashback version gate (bump to reset tile & slider without deleting txns) ===
-const CASHBACK_VERSION = 1;                 // <— bump this to 2, 3, ... to start fresh
+  // === Cashback version gate ===
+const CASHBACK_VERSION = 1;
 const CBV_KEY = 'cbv_current';
 const ensureCbv = () => {
   const stored = Number(localStorage.getItem(CBV_KEY) || '0');
@@ -599,13 +630,14 @@ ensureCbv();
   const sheet=document.getElementById('sheet');
   const dim=document.getElementById('dim');
   const openPay=document.getElementById('openPay');
-  const closeSheet=()=>sheet.classList.remove('active');
-  openPay.addEventListener('click',()=>sheet.classList.add('active'));
+  const closeSheetBtn=document.getElementById('closeSheet');
+  const closeSheet=()=>{ sheet.classList.remove('active','success'); };
+  openPay.addEventListener('click',()=>{ sheet.classList.remove('success'); sheet.classList.add('active'); });
   dim.addEventListener('click',closeSheet);
-  document.getElementById('closeSheet').addEventListener('click',closeSheet);
+  closeSheetBtn.addEventListener('click',closeSheet);
   document.addEventListener('keydown',e=>{if(e.key==='Escape') closeSheet()});
 
-  /* ----- Circular slider (locks at max; clockwise disabled when locked) ----- */
+  /* ----- Circular slider ----- */
   const MIN = 0.00;
   let   MAX = SETTINGS.cardBalance;
   let   THRESH = +(MAX * 0.82).toFixed(2);
@@ -723,11 +755,11 @@ ensureCbv();
     }
   });
 
-  // SUCCESS POPUP
+  // SUCCESS (overlay kept for other uses)
   const successEl = document.getElementById('paySuccess');
-  const paidAmtEl = document.getElementById('paidAmt');
+  const successMsg = document.getElementById('paySuccessMsg');
   function showPaySuccess(n){
-    paidAmtEl.textContent = fmtUSD(n);
+    successMsg.textContent = `${fmtUSD(n)} has been applied to your card.`;
     successEl.classList.add('active');
     const hide = ()=>successEl.classList.remove('active');
     successEl.addEventListener('click', hide, {once:true});
@@ -737,23 +769,26 @@ ensureCbv();
   /* ===================== BALANCE ADJUST HELPERS ===================== */
   function applyBalanceDelta(cardDelta, availDelta){
     const nextCard = +(SETTINGS.cardBalance + cardDelta).toFixed(2);
-    SETTINGS.cardBalance = nextCard < 0 ? 0 : nextCard; // never below 0
+    SETTINGS.cardBalance = nextCard < 0 ? 0 : nextCard;
     SETTINGS.availableBalance = +(SETTINGS.availableBalance + availDelta).toFixed(2);
     saveBalances();
     applyBalances();
   }
   /* ================================================================== */
 
-  // Pay -> use addPayment to both record txn AND adjust balances
+  // Pay -> record txn, adjust balances, then show success INSIDE the sheet
+  const receiptAmt = document.getElementById('receiptAmt');
+  const payReceipt = document.getElementById('payReceipt');
+
   payBtn.addEventListener('click', ()=>{
-    if (amount <= 0) { sheet.classList.remove('active'); return; }
+    if (amount <= 0) { sheet.classList.remove('active','success'); return; }
 
     const payIso = new Date().toISOString();
-    // addPayment will adjust balances now
     window.addPayment({ amount, iso: payIso });
 
-    sheet.classList.remove('active');
-    showPaySuccess(amount);
+    // show success screen in the SAME popup
+    receiptAmt.textContent = '$' + amount.toFixed(2);
+    sheet.classList.add('success'); // switches panel to dark success card
   });
 
   // Apply balances on load
@@ -774,7 +809,6 @@ ensureCbv();
   }
   function saveTransactions(){
     try{ localStorage.setItem(TXN_STORE_KEY, JSON.stringify(transactions)); }catch(e){}
-    // after any save, recompute cashback tile
     refreshCashbackTile();
   }
 
@@ -782,7 +816,7 @@ ensureCbv();
 
   // Cashback helpers
   const round2 = n => Math.round(n*100)/100;
-  const calcCashback = amt => round2(amt * 0.05);                // 5% on purchases only
+  const calcCashback = amt => round2(amt * 0.05);
   const getTxnCashback = t => (typeof t.cashback==='number') ? t.cashback :
                               (t.kind==='purchase' ? calcCashback(Number(t.amount)||0) : 0);
 
@@ -809,7 +843,6 @@ ensureCbv();
     }
   ];
 
-  // Display rule by STATUS (not kind)
   function formatDisplay(t){
     const negative = (t.status==='Refunded' || t.status==='Posted');
     return (negative?'- ':'') + '$' + Number(t.amount).toFixed(2);
@@ -826,7 +859,6 @@ ensureCbv();
   }
 
   function renderTransactions(){
-    // Newest (later) on top
     transactions.sort((a,b)=> new Date(b.iso) - new Date(a.iso));
     txnListEl.innerHTML = transactions.map(t => `
       <div class="txnRow" data-id="${t.id}" tabindex="0" role="button" aria-label="Open ${t.merchant} transaction">
@@ -844,17 +876,15 @@ ensureCbv();
     });
   }
 
-  // available cashback = sum(earned) - sum(deposited)
   function computeCashbackAvailable(){
-  const cv = currentCbv();
-  return round2(transactions.reduce((sum,t)=>{
-    // Only include entries tagged with the current cashback version
-    if ((t.cbv || 0) !== cv) return sum;
-    if (t.kind === 'purchase')          return sum + getTxnCashback(t);
-    if (t.kind === 'cashback_deposit')  return sum - (Number(t.amount)||0);
-    return sum;
-  }, 0));
-}
+    const cv = currentCbv();
+    return round2(transactions.reduce((sum,t)=>{
+      if ((t.cbv || 0) !== cv) return sum;
+      if (t.kind === 'purchase')          return sum + getTxnCashback(t);
+      if (t.kind === 'cashback_deposit')  return sum - (Number(t.amount)||0);
+      return sum;
+    }, 0));
+  }
   function refreshCashbackTile(){
     const total = Math.max(0, computeCashbackAvailable());
     SETTINGS.cashback = total;
@@ -873,7 +903,6 @@ ensureCbv();
     document.getElementById('txnStatus').innerHTML = `<strong>Status: ${t.status || 'Approved'}</strong>`;
     document.getElementById('txnCard').textContent = t.card || 'Sapphire Reserve';
     document.getElementById('txnTotal').textContent = formatMoneyAbs(t.amount);
-    // Show cashback row only for purchases (not for payments or cashback deposits)
     const cbRow = document.getElementById('cashbackRow');
     if (t.kind === 'purchase'){
       const cb = getTxnCashback(t);
@@ -882,7 +911,6 @@ ensureCbv();
     } else {
       cbRow.classList.add('hidden');
     }
-    // Show "Deposited To" only for cashback deposits
     const depRow = document.getElementById('depositTargetRow');
     if (t.kind === 'cashback_deposit') {
       const last4 = t.acctLast4 || (t.account||'').slice(-4) || '';
@@ -914,7 +942,6 @@ ensureCbv();
       cashback: calcCashback(amt), cbv: currentCbv()
     });
     saveTransactions(); renderTransactions();
-    // Balance effects: purchase increases card balance and reduces available
     applyBalanceDelta(+amt, -amt);
   };
     
@@ -923,7 +950,6 @@ ensureCbv();
     transactions.push({ id: rid(), kind:'refund', merchant, amount: amt, iso, status, card, cashback: 0 });
     saveTransactions();
     renderTransactions();
-    // Balance effects: refund decreases card balance and increases available
     applyBalanceDelta(-amt, +amt);
   };
 
@@ -932,7 +958,6 @@ ensureCbv();
     transactions.push({ id: rid(), kind:'payment', merchant, amount: amt, iso, status, card, cashback: 0 });
     saveTransactions();
     renderTransactions();
-    // Balance effects: payment decreases card balance and increases available
     applyBalanceDelta(-amt, +amt);
   };
 
@@ -946,7 +971,6 @@ ensureCbv();
       account, routing, acctLast4: (account||'').slice(-4)
     });
     saveTransactions(); renderTransactions();
-    // No card balance effect for cashback deposit
   };
 
   window.removeTransaction = (id)=>{
@@ -959,7 +983,7 @@ ensureCbv();
   };
 
   renderTransactions();
-  refreshCashbackTile(); // ensure tile reflects seeded/loaded data on first load
+  refreshCashbackTile();
 
   /* --- Card details sheet wiring (tap big card to open) --- */
   const cardSheet = document.getElementById('cardSheet');
@@ -1073,7 +1097,6 @@ ensureCbv();
   const cbRouting = document.getElementById('cbRouting');
 
   function openCbSheet(){
-    // reset to step 1 and zero amount
     cbViews.style.transform = 'translateX(0%)';
     cbAmount = 0;
     cbLockedAtMax=false; cbLastFrac=0;
@@ -1088,7 +1111,6 @@ ensureCbv();
   cbCancel.addEventListener('click', closeCbSheet);
   document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeCbSheet(); });
 
-  // Ring for cashback
   const cbRingWrap = document.getElementById('cbRingWrap');
   const cbRingSvg = document.getElementById('cbRingSvg');
   const cbProgress = document.getElementById('cbProgress');
@@ -1115,7 +1137,7 @@ ensureCbv();
   function cbSignedDelta(a,b){ return (((a-b)+1.5)%1)-0.5; }
 
   function cbApplyFromFraction(fracRaw, fromDrag=false){
-    cbSetMax(); // in case cashback changed
+    cbSetMax();
     let f = Math.max(0, Math.min(0.999999, fracRaw));
     const delta = cbSignedDelta(f, cbLastFrac);
 
@@ -1167,9 +1189,7 @@ ensureCbv();
 
   cbDepositBtn.addEventListener('click', ()=>{
     if(cbAmount<=0) return;
-    // move to step 2
     cbViews.style.transform = 'translateX(-50%)';
-    // prefill fields blank
     cbAcct.value=''; cbRouting.value='';
   });
 
@@ -1180,10 +1200,8 @@ ensureCbv();
 
     const nowIso = new Date().toISOString();
 
-    // 1) Record locally (removes cashback and posts "Cashback deposited")
     window.addCashbackDeposit({ amount: cbAmount, iso: nowIso, account: acct, routing });
 
-    // reset & close
     cbAmount=0; cbApplyFromFraction(0,false);
     closeCbSheet();
   });
