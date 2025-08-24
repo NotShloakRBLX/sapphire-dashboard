@@ -561,7 +561,7 @@ function iconForTransaction(t){
     transactions.sort((a,b)=>new Date(b.iso)-new Date(a.iso));
     const rows=transactions.map(t=>`
       <div class="txnRow" data-id="${t.id}" tabindex="0" role="button" aria-label="Open ${t.merchant} transaction">
-        <div class="txnIcon"><img src="./${iconForTransaction(t)} alt="" /></div>
+        <div class="txnIcon"><img src="./${iconForTransaction(t)}" alt="" /></div>
         <div class="txnMain">
           <div class="txnTitle">${t.merchant}${t.status?` <span style="opacity:.6">• ${t.status}</span>`:''}</div>
           <div class="txnSub">${shortDate(t.iso)}</div>
@@ -741,5 +741,6 @@ function iconForTransaction(t){
 </script>
 </body>
 </html>
+
 
 
