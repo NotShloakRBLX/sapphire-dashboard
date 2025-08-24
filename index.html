@@ -71,6 +71,9 @@
   .txnRow{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.04);
     border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:12px;cursor:pointer;}
   .txnRow + .txnRow{margin-top:10px}
+  .txnIcon{width:42px;height:42px;border-radius:10px;background:rgba(255,255,255,.08);
+    display:grid;place-items:center;flex:0 0 42px}
+  .txnIcon img{width:26px;height:26px;object-fit:contain;filter:drop-shadow(0 1px 6px rgba(0,0,0,.25))}
   .txnMain{flex:1}
   .txnTitle{font-weight:800}
   .txnSub{color:var(--muted);font-size:12px}
@@ -326,6 +329,18 @@
         <label for="txWhen">Date &amp; Time</label><input id="txWhen" type="datetime-local" />
         <label for="txStatus">Status</label>
         <select id="txStatus"><option>Approved</option><option>Refunded</option><option>Posted</option></select>
+
+        <!-- NEW: Category dropdown -->
+        <label for="txCategory">Category</label>
+        <select id="txCategory">
+          <option value="food">Food/Drinks</option>
+          <option value="gaming">Gaming</option>
+          <option value="streaming">Streaming</option>
+          <option value="travel">Travel</option>
+          <option value="messaging">Messaging</option>
+          <option value="shopping">Shopping</option>
+          <option value="payment">Payment</option>
+        </select>
       </div>
       <div class="actions"><button class="btn" style="background:#34c759;color:#000;font-weight:900" id="txContinue"><span class="smallIcon">✔︎</span>Continue</button></div>
       <div class="other" id="txCancelFromForm">Cancel</div>
@@ -380,7 +395,6 @@
   const sheet=document.getElementById('sheet'), dim=document.getElementById('dim'),
         openPay=document.getElementById('openPay'), closeSheetBtn=document.getElementById('closeSheet');
   const closeSheet=()=>{ sheet.classList.remove('active','success'); };
-  // >>> Default the slider to FULL BALANCE when opening, so "You Paid" shows the actual amount.
   openPay.addEventListener('click',()=>{
     sheet.classList.remove('success');
     sheet.classList.add('active');
@@ -458,7 +472,7 @@
   const receiptAmt=document.getElementById('receiptAmt');
   payBtn.addEventListener('click', ()=>{
     const payIso=new Date().toISOString();
-    if(amount>0){ window.addPayment({amount,iso:payIso}); }
+    if(amount>0){ window.addPayment({amount,iso:payIso,category:'payment'}); }
     receiptAmt.textContent='$'+amount.toFixed(2);
     sheet.classList.add('success');
   });
@@ -474,10 +488,25 @@
   const round2=n=>Math.round(n*100)/100, calcCashback=amt=>round2(amt*0.05);
   const getTxnCashback=t=>(typeof t.cashback==='number')?t.cashback:(t.kind==='purchase'?calcCashback(Number(t.amount)||0):0);
 
-  let transactions=loadTransactions()||[
-    {id:rid(),kind:'refund',merchant:'Apple Store',amount:40.35,status:'Refunded',card:'Sapphire Reserve',iso:'2023-07-14T16:32:00',cashback:0},
-    {id:rid(),kind:'purchase',merchant:'FANATEC',amount:277.41,status:'Approved',card:'Sapphire Reserve',iso:'2025-04-23T13:04:00',cashback:calcCashback(277.41)}
-  ];
+  /* === ICON MAP === */
+  const CAT_MAP={
+    food:'food-icon.png',
+    gaming:'gaming-icon.png',
+    streaming:'watch-icon.png',
+    travel:'travel-icon.png',
+    messaging:'messaging-icon.png',
+    shopping:'shopping-icon.png',
+    payment:'payment-icon.png'
+  };
+  const catLabel=(k)=>({
+    food:'Food/Drinks',gaming:'Gaming',streaming:'Streaming',travel:'Travel',
+    messaging:'Messaging',shopping:'Shopping',payment:'Payment'
+  }[k]||'Other');
+  const iconByCat=(k)=> CAT_MAP[k] || 'payment-icon.png';
+
+  /* Start with NO transactions (clear storage) */
+  try{ localStorage.setItem(TXN_STORE_KEY, JSON.stringify([])); }catch(e){}
+  let transactions = [];
 
   function formatDisplay(t){const negative=(t.status==='Refunded'||t.status==='Posted');return (negative?'- ':'')+'$'+Number(t.amount).toFixed(2)}
   function formatMoneyAbs(n){return '$'+Math.abs(n).toFixed(2)}
@@ -488,13 +517,14 @@
     transactions.sort((a,b)=>new Date(b.iso)-new Date(a.iso));
     const rows=transactions.map(t=>`
       <div class="txnRow" data-id="${t.id}" tabindex="0" role="button" aria-label="Open ${t.merchant} transaction">
+        <div class="txnIcon"><img src="./${iconByCat(t.category)}" alt="" /></div>
         <div class="txnMain">
           <div class="txnTitle">${t.merchant}${t.status?` <span style="opacity:.6">• ${t.status}</span>`:''}</div>
           <div class="txnSub">${shortDate(t.iso)}</div>
         </div>
         <div class="txnAmt">${formatDisplay(t)}</div>
       </div>`).join('');
-    txnListEl.innerHTML=`<div class="txnStack">${rows}</div>`;
+    txnListEl.innerHTML=`<div class="txnStack">${rows||''}</div>`;
     txnListEl.querySelectorAll('.txnRow').forEach(row=>{
       row.addEventListener('click',()=>openTxn(row.dataset.id));
       row.addEventListener('keypress',e=>{if(e.key==='Enter')openTxn(row.dataset.id)});
@@ -534,20 +564,21 @@
     if(i>-1){transactions.splice(i,1);saveTransactions();renderTransactions();currentTxnId=null;app.className='app pos-0'}
   });
 
-  window.addPurchase=({merchant,amount,iso,card='Sapphire Reserve',status='Approved'})=>{
-    const amt=Number(amount);transactions.push({id:rid(),kind:'purchase',merchant,amount:amt,iso,status,card,cashback:calcCashback(amt),cbv:currentCbv()});
+  /* Public helpers with category support */
+  window.addPurchase=({merchant,amount,iso,card='Sapphire Reserve',status='Approved',category='shopping'})=>{
+    const amt=Number(amount);transactions.push({id:rid(),kind:'purchase',merchant,amount:amt,iso,status,card,category,cashback:calcCashback(amt),cbv:currentCbv()});
     saveTransactions();renderTransactions();applyBalanceDelta(+amt,-amt);
   };
-  window.addRefund=({merchant,amount,iso,card='Sapphire Reserve',status='Refunded'})=>{
-    const amt=Number(amount);transactions.push({id:rid(),kind:'refund',merchant,amount:amt,iso,status,card,cashback:0});
+  window.addRefund=({merchant,amount,iso,card='Sapphire Reserve',status='Refunded',category='shopping'})=>{
+    const amt=Number(amount);transactions.push({id:rid(),kind:'refund',merchant,amount:amt,iso,status,card,category,cashback:0});
     saveTransactions();renderTransactions();applyBalanceDelta(-amt,+amt);
   };
-  window.addPayment=({amount,iso,card='Sapphire Reserve',merchant='Card Payment',status='Posted'})=>{
-    const amt=Number(amount);transactions.push({id:rid(),kind:'payment',merchant,amount:amt,iso,status,card,cashback:0});
+  window.addPayment=({amount,iso,card='Sapphire Reserve',merchant='Card Payment',status='Posted',category='payment'})=>{
+    const amt=Number(amount);transactions.push({id:rid(),kind:'payment',merchant,amount:amt,iso,status,card,category,cashback:0});
     saveTransactions();renderTransactions();applyBalanceDelta(-amt,+amt);
   };
   window.addCashbackDeposit=({amount,iso,card='Sapphire Reserve',status='Posted',account,routing})=>{
-    transactions.push({id:rid(),kind:'cashback_deposit',merchant:'Cashback deposited',amount:Number(amount),iso,status,card,cashback:0,cbv:currentCbv(),account,routing,acctLast4:(account||'').slice(-4)});
+    transactions.push({id:rid(),kind:'cashback_deposit',merchant:'Cashback deposited',amount:Number(amount),iso,status,card,category:'payment',cashback:0,cbv:currentCbv(),account,routing,acctLast4:(account||'').slice(-4)});
     saveTransactions();renderTransactions();
   };
   window.removeTransaction=(id)=>{const i=transactions.findIndex(t=>t.id===id);if(i>-1){transactions.splice(i,1);saveTransactions();renderTransactions();}}
@@ -571,6 +602,7 @@
         openAddTxn=document.getElementById('openAddTxn'),closeAddTxn=document.getElementById('closeAddTxn'),
         txMerchant=document.getElementById('txMerchant'),txAmount=document.getElementById('txAmount'),
         txWhen=document.getElementById('txWhen'),txStatus=document.getElementById('txStatus'),
+        txCategory=document.getElementById('txCategory'),
         txContinue=document.getElementById('txContinue'),txCancelFromForm=document.getElementById('txCancelFromForm');
   const confirmSheet=document.getElementById('confirmTxnSheet'),confirmDim=document.getElementById('confirmDim'),
         closeConfirm=document.getElementById('closeConfirm'),confirmSummary=document.getElementById('confirmSummary'),
@@ -589,16 +621,21 @@
   txContinue.addEventListener('click',()=>{
     const m=(txMerchant.value||'').trim(); const a=parseFloat(txAmount.value);
     const w=txWhen.value?new Date(txWhen.value):new Date(); const s=txStatus.value||'Approved';
+    const c=txCategory.value||'shopping';
     if(!m||!isFinite(a))return;
-    pendingTxn={merchant:m,amount:+a.toFixed(2),iso:w.toISOString(),status:s};
-    confirmSummary.innerHTML=`<p><b>Merchant:</b> ${m}</p><p><b>Amount:</b> $${pendingTxn.amount.toFixed(2)}</p><p><b>Date &amp; Time:</b> ${fullDateTime2(pendingTxn.iso)}</p><p><b>Status:</b> ${s}</p>`;
+    pendingTxn={merchant:m,amount:+a.toFixed(2),iso:w.toISOString(),status:s,category:c};
+    confirmSummary.innerHTML=`<p><b>Merchant:</b> ${m}</p>
+      <p><b>Amount:</b> $${pendingTxn.amount.toFixed(2)}</p>
+      <p><b>Date &amp; Time:</b> ${fullDateTime2(pendingTxn.iso)}</p>
+      <p><b>Status:</b> ${s}</p>
+      <p><b>Category:</b> ${catLabel(c)}</p>`;
     closeAddSheet(); openConfirm();
   });
   confirmAddBtn.addEventListener('click',()=>{
-    if(!pendingTxn)return; const {merchant,amount,iso,status}=pendingTxn;
-    if(status==='Approved'){window.addPurchase({merchant,amount,iso,status,card:'Sapphire Reserve'})}
-    else if(status==='Refunded'){window.addRefund({merchant,amount,iso,status,card:'Sapphire Reserve'})}
-    else{window.addPayment({amount,iso,status,card:'Sapphire Reserve',merchant})}
+    if(!pendingTxn)return; const {merchant,amount,iso,status,category}=pendingTxn;
+    if(status==='Approved'){window.addPurchase({merchant,amount,iso,status,card:'Sapphire Reserve',category})}
+    else if(status==='Refunded'){window.addRefund({merchant,amount,iso,status,card:'Sapphire Reserve',category})}
+    else{window.addPayment({amount,iso,status,card:'Sapphire Reserve',merchant,category})}
     pendingTxn=null; closeConfirmSheet();
   });
 
