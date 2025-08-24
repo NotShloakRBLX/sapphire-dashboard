@@ -107,6 +107,25 @@
     filter:drop-shadow(0 2px 8px rgba(0,0,0,.30));
   }
 
+  .txnHeaderIcon{
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+
+    display: block;
+    margin: 6px auto 4px;
+    padding: 0;
+  }
+  .txnHeaderIcon img{
+    display: block;
+    margin: 0 auto;
+    width: clamp(96px, 28vw, 140px);
+    height: clamp(96px, 28vw, 140px);
+    object-fit: contain;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,.35));
+  }
+
   /* Bottom sheet */
   .sheet{position:fixed;inset:0;display:grid;place-items:end center;pointer-events:none;z-index:9}
   .sheet.active{pointer-events:auto}
@@ -755,6 +774,7 @@ function iconForTransaction(t){
 </script>
 </body>
 </html>
+
 
 
 
