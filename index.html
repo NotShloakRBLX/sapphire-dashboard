@@ -466,18 +466,31 @@
     cardNumber:'5278 6812 3931 7295',cardExpiry:'07/30',cardCvv:'528'};
 
   function loadBalances(){
-    try{
-      const raw = localStorage.getItem('demo_balances');
-      if(raw){
-        const s = JSON.parse(raw);
-        return {
-          ...SETTINGS_DEFAULT,
-          ...s,
-          cardBalance: isFinite(+s.cardBalance) ? +s.cardBalance : SETTINGS_DEFAULT.cardBalance,
-          availableBalance: isFinite(+s.availableBalance) ? +s.availableBalance : SETTINGS_DEFAULT.availableBalance,
-          cashback: isFinite(+s.cashback) ? +s.cashback : SETTINGS_DEFAULT.cashback,
-          version: SETTINGS_DEFAULT.version
-        };
+  try{
+    const raw = localStorage.getItem('demo_balances');
+    if(raw){
+      const s = JSON.parse(raw);
+      // If version changed, replace saved balances with new defaults
+      if (+s.version !== +SETTINGS_DEFAULT.version){
+        localStorage.setItem('demo_balances', JSON.stringify(SETTINGS_DEFAULT));
+        return { ...SETTINGS_DEFAULT };
+      }
+      // Otherwise use saved values (with number safety)
+      return {
+        ...SETTINGS_DEFAULT,
+        ...s,
+        cardBalance: isFinite(+s.cardBalance) ? +s.cardBalance : SETTINGS_DEFAULT.cardBalance,
+        availableBalance: isFinite(+s.availableBalance) ? +s.availableBalance : SETTINGS_DEFAULT.availableBalance,
+        cashback: isFinite(+s.cashback) ? +s.cashback : SETTINGS_DEFAULT.cashback,
+        version: SETTINGS_DEFAULT.version
+      };
+    }
+  }catch(e){}
+  // First run: persist defaults
+  localStorage.setItem('demo_balances', JSON.stringify(SETTINGS_DEFAULT));
+  return { ...SETTINGS_DEFAULT };
+}
+
       }
     }catch(e){}
     return {...SETTINGS_DEFAULT};
@@ -863,6 +876,7 @@ function iconForTransaction(t){
 </script>
 </body>
 </html>
+
 
 
 
