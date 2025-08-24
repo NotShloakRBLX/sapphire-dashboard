@@ -117,7 +117,7 @@
   .payBubble:focus{ outline:none; }
   .payBubble::-moz-focus-inner{ border:0; }
 
-  /* Transaction list rows (original pill style; we'll override below for stack) */
+  /* Transaction list rows (stack look defined later) */
   .txnRow{
     display:flex;gap:12px;align-items:center;
     background:rgba(255,255,255,.04);
@@ -173,7 +173,7 @@
   .btn.gray{background:#efefef;color:#000;font-weight:900}
   .other{text-align:center;padding-bottom:20px;color:#007aff;font-weight:900}
 
-  /* Payment success pop-up */
+  /* Payment success pop-up (already dark) */
   .success{position:fixed;inset:0;display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .25s var(--t);z-index:10}
   .success.active{opacity:1;pointer-events:auto}
   .success .box{
@@ -231,7 +231,7 @@
   #cardBalTile{ padding-bottom:8px; }
   #cardBalTile > :last-child{ margin-bottom:0; }
 
-/* === NEW: Stacked transaction list (thin separators, dark mode) === */
+/* === Stacked transaction list (thin separators, dark mode) === */
 #txnList{
   background:rgba(255,255,255,.03);
   border:1px solid var(--tileBorder);
@@ -241,15 +241,27 @@
 #txnList .txnRow{
   background:transparent;
   border:none;
-  border-bottom:1px solid rgba(255,255,255,.085); /* thin hairline */
+  border-bottom:1px solid rgba(255,255,255,.085);
   border-radius:0;
   padding:14px 16px;
-  margin:0;               /* remove gaps between rows */
+  margin:0;
 }
 #txnList .txnRow:last-child{ border-bottom:0; }
 #txnList .txnRow:active{ background:rgba(255,255,255,.04); }
 #txnList .txnTitle{ font-weight:900; }
 #txnList .txnAmt{ font-weight:900; }
+
+/* === NEW: Dark mode panels only for selected popups === */
+.panel.dark{ background:#111; color:#fff; }
+.panel.dark .closeX{ background:#1f1f1f; color:#fff; border:1px solid #333; }
+.panel.dark .info{ color:#e6e6e6; }
+.panel.dark .info small{ color:#a6a6a6; }
+.panel.dark .divider{ background:#2a2a2a; }
+.panel.dark .form input,
+.panel.dark .form select{
+  background:#1b1b1b; border:1px solid #333; color:#fff;
+}
+.panel.dark .subtle{ color:#9a9a9a; }
 </style>
 </head>
 <body>
@@ -355,10 +367,10 @@
 
   </div>
 
-  <!-- Payment sheet -->
+  <!-- Payment sheet (DARK) -->
   <div class="sheet" id="sheet">
     <div class="dim" id="dim"></div>
-    <div class="panel">
+    <div class="panel dark">
       <div class="panelHead"><button class="closeX" id="closeSheet" aria-label="Close">×</button></div>
       <div class="title">Choose Amount</div>
 
@@ -392,10 +404,10 @@
     </div>
   </div>
 
-  <!-- Cashback deposit sheet (2-step inside same pop-up) -->
+  <!-- Cashback deposit sheet (DARK; 2-step inside same pop-up) -->
   <div class="sheet" id="cashbackSheet" aria-hidden="true">
     <div class="dim" id="cbDim"></div>
-    <div class="panel">
+    <div class="panel dark">
       <div class="subviews" id="cbViews">
         <!-- Step 1: Pick amount -->
         <div class="page">
@@ -454,8 +466,8 @@
   <div class="success" id="paySuccess" aria-live="polite" aria-atomic="true">
     <div class="box">
       <div class="check">✓</div>
-      <div class="title">Payment Successful</div>
-      <div class="sub" id="paySuccessMsg">$0.00 has been applied to your card.</div>
+      <div class="title" id="paySuccessTitle">You Paid $0.00</div>
+      <div class="sub" id="paySuccessMsg">Your payment has been received and will be reflected in your balance within 24 hours.</div>
     </div>
   </div>
 
@@ -730,8 +742,10 @@ ensureCbv();
   // SUCCESS POPUP
   const successEl = document.getElementById('paySuccess');
   const successMsg = document.getElementById('paySuccessMsg');
+  const successTitle = document.getElementById('paySuccessTitle');
   function showPaySuccess(n){
-    successMsg.textContent = `${fmtUSD(n)} has been applied to your card.`;
+    successTitle.textContent = `You Paid ${fmtUSD(n)}`;
+    successMsg.textContent = 'Your payment has been received and will be reflected in your balance within 24 hours.';
     successEl.classList.add('active');
     const hide = ()=>successEl.classList.remove('active');
     successEl.addEventListener('click', hide, {once:true});
