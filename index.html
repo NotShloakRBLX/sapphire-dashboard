@@ -117,7 +117,7 @@
   .payBubble:focus{ outline:none; }
   .payBubble::-moz-focus-inner{ border:0; }
 
-  /* Transaction list rows (stack look defined later) */
+  /* Transaction list rows */
   .txnRow{
     display:flex;gap:12px;align-items:center;
     background:rgba(255,255,255,.04);
@@ -173,19 +173,23 @@
   .btn.gray{background:#efefef;color:#000;font-weight:900}
   .other{text-align:center;padding-bottom:20px;color:#007aff;font-weight:900}
 
-  /* Payment success pop-up (already dark) */
+  /* Payment / deposit success pop-up (dark; ring + text) */
   .success{position:fixed;inset:0;display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .25s var(--t);z-index:10}
   .success.active{opacity:1;pointer-events:auto}
-  .success .box{
-    width:86%;max-width:360px;background:#111;color:#fff;border:1px solid rgba(255,255,255,.14);
-    border-radius:18px;box-shadow:var(--shadow);padding:18px 18px 16px;text-align:center
+  .success .pane{
+    width:86%;max-width:440px;background:#1b1b1b;color:#fff;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:18px;box-shadow:0 18px 40px rgba(0,0,0,.5);
+    padding:22px 20px 22px;text-align:center
   }
-  .success .check{
-    width:56px;height:56px;border-radius:50%;margin:2px auto 10px;
-    display:grid;place-items:center;font-weight:900;background:#34c759;color:#000;box-shadow:0 8px 20px rgba(0,0,0,.35)
+  .sRing{width:112px;height:112px;margin:4px auto 12px;position:relative}
+  .sRing svg{width:100%;height:100%}
+  .sCheck{
+    position:absolute;inset:0;display:grid;place-items:center;
+    font-size:44px;line-height:1
   }
-  .success .title{font-weight:900;font-size:20px;margin:6px 0 4px}
-  .success .sub{color:#bbb;font-weight:700}
+  .paidTitle{font-weight:900;font-size:28px;margin:4px 0 6px}
+  .paidSub{color:#d0d0d0;font-weight:700;line-height:1.35}
 
   /* Card details sheet tiny helper */
   .cardFields{ padding:6px 12px 20px; }
@@ -230,38 +234,7 @@
 
   #cardBalTile{ padding-bottom:8px; }
   #cardBalTile > :last-child{ margin-bottom:0; }
-
-/* === Stacked transaction list (thin separators, dark mode) === */
-#txnList{
-  background:rgba(255,255,255,.03);
-  border:1px solid var(--tileBorder);
-  border-radius:12px;
-  overflow:hidden;
-}
-#txnList .txnRow{
-  background:transparent;
-  border:none;
-  border-bottom:1px solid rgba(255,255,255,.085);
-  border-radius:0;
-  padding:14px 16px;
-  margin:0;
-}
-#txnList .txnRow:last-child{ border-bottom:0; }
-#txnList .txnRow:active{ background:rgba(255,255,255,.04); }
-#txnList .txnTitle{ font-weight:900; }
-#txnList .txnAmt{ font-weight:900; }
-
-/* === NEW: Dark mode panels only for selected popups === */
-.panel.dark{ background:#111; color:#fff; }
-.panel.dark .closeX{ background:#1f1f1f; color:#fff; border:1px solid #333; }
-.panel.dark .info{ color:#e6e6e6; }
-.panel.dark .info small{ color:#a6a6a6; }
-.panel.dark .divider{ background:#2a2a2a; }
-.panel.dark .form input,
-.panel.dark .form select{
-  background:#1b1b1b; border:1px solid #333; color:#fff;
-}
-.panel.dark .subtle{ color:#9a9a9a; }
+  
 </style>
 </head>
 <body>
@@ -367,10 +340,10 @@
 
   </div>
 
-  <!-- Payment sheet (DARK) -->
+  <!-- Payment sheet -->
   <div class="sheet" id="sheet">
     <div class="dim" id="dim"></div>
-    <div class="panel dark">
+    <div class="panel">
       <div class="panelHead"><button class="closeX" id="closeSheet" aria-label="Close">×</button></div>
       <div class="title">Choose Amount</div>
 
@@ -404,10 +377,10 @@
     </div>
   </div>
 
-  <!-- Cashback deposit sheet (DARK; 2-step inside same pop-up) -->
+  <!-- Cashback deposit sheet (2-step inside same pop-up) -->
   <div class="sheet" id="cashbackSheet" aria-hidden="true">
     <div class="dim" id="cbDim"></div>
-    <div class="panel dark">
+    <div class="panel">
       <div class="subviews" id="cbViews">
         <!-- Step 1: Pick amount -->
         <div class="page">
@@ -462,12 +435,23 @@
     </div>
   </div>
 
-  <!-- Success popup -->
+  <!-- Success popup (dark, ring, no extra card) -->
   <div class="success" id="paySuccess" aria-live="polite" aria-atomic="true">
-    <div class="box">
-      <div class="check">✓</div>
-      <div class="title" id="paySuccessTitle">You Paid $0.00</div>
-      <div class="sub" id="paySuccessMsg">Your payment has been received and will be reflected in your balance within 24 hours.</div>
+    <div class="pane">
+      <div class="sRing" aria-hidden="true">
+        <svg viewBox="0 0 120 120">
+          <defs>
+            <linearGradient id="sucGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#b8ffb9"/><stop offset="100%" stop-color="#34c759"/>
+            </linearGradient>
+          </defs>
+          <circle cx="60" cy="60" r="46" stroke="#2a2a2a" stroke-width="10" fill="none"/>
+          <circle cx="60" cy="60" r="46" stroke="url(#sucGrad)" stroke-width="10" fill="none" />
+        </svg>
+        <div class="sCheck">✓</div>
+      </div>
+      <div class="paidTitle">You Paid <span id="paidAmt">$0.00</span></div>
+      <div class="paidSub">Your payment has been received and will be reflected in your balance within 24 hours.</div>
     </div>
   </div>
 
@@ -741,11 +725,9 @@ ensureCbv();
 
   // SUCCESS POPUP
   const successEl = document.getElementById('paySuccess');
-  const successMsg = document.getElementById('paySuccessMsg');
-  const successTitle = document.getElementById('paySuccessTitle');
+  const paidAmtEl = document.getElementById('paidAmt');
   function showPaySuccess(n){
-    successTitle.textContent = `You Paid ${fmtUSD(n)}`;
-    successMsg.textContent = 'Your payment has been received and will be reflected in your balance within 24 hours.';
+    paidAmtEl.textContent = fmtUSD(n);
     successEl.classList.add('active');
     const hide = ()=>successEl.classList.remove('active');
     successEl.addEventListener('click', hide, {once:true});
