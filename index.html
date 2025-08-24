@@ -117,7 +117,7 @@
   .payBubble:focus{ outline:none; }
   .payBubble::-moz-focus-inner{ border:0; }
 
-  /* Transaction list rows */
+  /* Transaction list rows (original pill style; we'll override below for stack) */
   .txnRow{
     display:flex;gap:12px;align-items:center;
     background:rgba(255,255,255,.04);
@@ -230,7 +230,26 @@
 
   #cardBalTile{ padding-bottom:8px; }
   #cardBalTile > :last-child{ margin-bottom:0; }
-  
+
+/* === NEW: Stacked transaction list (thin separators, dark mode) === */
+#txnList{
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--tileBorder);
+  border-radius:12px;
+  overflow:hidden;
+}
+#txnList .txnRow{
+  background:transparent;
+  border:none;
+  border-bottom:1px solid rgba(255,255,255,.085); /* thin hairline */
+  border-radius:0;
+  padding:14px 16px;
+  margin:0;               /* remove gaps between rows */
+}
+#txnList .txnRow:last-child{ border-bottom:0; }
+#txnList .txnRow:active{ background:rgba(255,255,255,.04); }
+#txnList .txnTitle{ font-weight:900; }
+#txnList .txnAmt{ font-weight:900; }
 </style>
 </head>
 <body>
@@ -1179,5 +1198,3 @@ ensureCbv();
 </script>
 </body>
 </html>
-
-
