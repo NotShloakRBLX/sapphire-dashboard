@@ -117,7 +117,7 @@
   .payBubble:focus{ outline:none; }
   .payBubble::-moz-focus-inner{ border:0; }
 
-  /* Transaction list rows */
+  /* ---------- Stacked transaction list (thin separators) ---------- */
   .txnRow{
     display:flex;gap:12px;align-items:center;
     background:rgba(255,255,255,.04);
@@ -129,6 +129,23 @@
   .txnTitle{font-weight:800}
   .txnSub{color:var(--muted);font-size:12px}
   .txnAmt{font-weight:800}
+
+  /* Stack container + row overrides to match iOS-style list */
+  .txnStack{
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:16px;
+    overflow:hidden;
+    background:rgba(255,255,255,.035);
+  }
+  .txnStack .txnRow{
+    margin:0;
+    border:0;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    border-radius:0;
+    background:transparent;
+    padding:14px 16px;
+  }
+  .txnStack .txnRow:last-child{ border-bottom:0; }
 
   /* Page positions (2 views) */
   .pos-0 .views{transform:translateX(0%)}        /* Card */
@@ -173,30 +190,25 @@
   .btn.gray{background:#efefef;color:#000;font-weight:900}
   .other{text-align:center;padding-bottom:20px;color:#007aff;font-weight:900}
 
-  /* Payment success pop-up (dark) INSIDE the payment sheet */
-  .sheet.success{place-items:center}
-  .sheet.success .panel{background:transparent;color:#fff;box-shadow:none}
-  .sheet.success .panelHead,
+  /* Make payment + cashback sheets dark (not other sheets) */
+  .sheet.dark .panel{background:#111;color:#fff}
+  .sheet.dark .closeX{background:#1f1f1f;color:#fff;border:1px solid #2a2a2a}
+  .sheet.dark .info{color:#dcdcdc}
+  .sheet.dark .info small{color:#9a9a9a}
+
+  /* Payment success INSIDE the same sheet (no separate overlay) */
   .sheet.success .title,
   .sheet.success .ringWrap,
   .sheet.success .info,
   .sheet.success .actions,
   .sheet.success .other{display:none}
-
   .payReceipt{
     display:none;
-    width:86%;
-    max-width:420px;
-    background:#111;
     color:#fff;
-    border:1px solid rgba(255,255,255,.14);
-    border-radius:18px;
-    box-shadow:var(--shadow);
-    padding:22px 18px 18px;
-    text-align:center
+    text-align:center;
+    padding:14px 16px 28px;
   }
   .sheet.success .payReceipt{display:block}
-
   .payCheck{
     width:124px;height:124px;border-radius:50%;
     background:conic-gradient(#b8ffb9, #34c759);
@@ -207,11 +219,10 @@
     display:grid;place-items:center
   }
   .payCheck svg{width:60px;height:60px}
-
   .payTitle{font-size:32px;font-weight:900;margin:6px 0 8px}
   .paySub{color:#cfcfcf;font-weight:800;line-height:1.35}
 
-  /* Success overlay (kept but unused now) */
+  /* Old success overlay (kept for other uses) */
   .success{position:fixed;inset:0;display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .25s var(--t);z-index:10}
   .success.active{opacity:1;pointer-events:auto}
   .success .box{
@@ -374,8 +385,8 @@
 
   </div>
 
-  <!-- Payment sheet -->
-  <div class="sheet" id="sheet">
+  <!-- Payment sheet (DARK) -->
+  <div class="sheet dark" id="sheet">
     <div class="dim" id="dim"></div>
     <div class="panel">
       <div class="panelHead"><button class="closeX" id="closeSheet" aria-label="Close">×</button></div>
@@ -409,7 +420,7 @@
       </div>
       <div class="other" id="otherAmountBtn">Other Amount</div>
 
-      <!-- Success state (dark) that shows in the SAME popup -->
+      <!-- Success (inside same popup) -->
       <div class="payReceipt" id="payReceipt" aria-live="polite" aria-atomic="true">
         <div class="payCheck">
           <div class="inner">
@@ -424,8 +435,8 @@
     </div>
   </div>
 
-  <!-- Cashback deposit sheet (2-step inside same pop-up) -->
-  <div class="sheet" id="cashbackSheet" aria-hidden="true">
+  <!-- Cashback deposit sheet (DARK) -->
+  <div class="sheet dark" id="cashbackSheet" aria-hidden="true">
     <div class="dim" id="cbDim"></div>
     <div class="panel">
       <div class="subviews" id="cbViews">
@@ -482,7 +493,7 @@
     </div>
   </div>
 
-  <!-- Success popup (kept; no longer used for payments) -->
+  <!-- Success overlay (kept; unused for payments) -->
   <div class="success" id="paySuccess" aria-live="polite" aria-atomic="true">
     <div class="box">
       <div class="check">✓</div>
@@ -574,10 +585,10 @@
 
   /* === MANUAL DEFAULTS (edit; values persist via localStorage) === */
   const SETTINGS_DEFAULT = {
-    version: 7,                 // bump if you want to reset persisted balances
+    version: 7,
     cardBalance: 49.46,
     availableBalance: 275.54,
-    cashback: 0.00,             // dashboard Cashback tile (auto from transactions)
+    cashback: 0.00,
     cardNumber: '5278 6812 3931 7295',
     cardExpiry: '07/30',
     cardCvv: '528'
@@ -613,7 +624,7 @@ function emitLedgerEvent(evt) {
   } catch (e) {}
 }
 
-  // === Cashback version gate ===
+  // === Cashback version gate (bump to reset tile) ===
 const CASHBACK_VERSION = 1;
 const CBV_KEY = 'cbv_current';
 const ensureCbv = () => {
@@ -755,7 +766,7 @@ ensureCbv();
     }
   });
 
-  // SUCCESS (overlay kept for other uses)
+  // Old SUCCESS overlay (kept for other uses)
   const successEl = document.getElementById('paySuccess');
   const successMsg = document.getElementById('paySuccessMsg');
   function showPaySuccess(n){
@@ -778,17 +789,13 @@ ensureCbv();
 
   // Pay -> record txn, adjust balances, then show success INSIDE the sheet
   const receiptAmt = document.getElementById('receiptAmt');
-  const payReceipt = document.getElementById('payReceipt');
 
-  payBtn.addEventListener('click', ()=>{
+  document.getElementById('payNowBtn').addEventListener('click', ()=>{
     if (amount <= 0) { sheet.classList.remove('active','success'); return; }
-
     const payIso = new Date().toISOString();
     window.addPayment({ amount, iso: payIso });
-
-    // show success screen in the SAME popup
     receiptAmt.textContent = '$' + amount.toFixed(2);
-    sheet.classList.add('success'); // switches panel to dark success card
+    sheet.classList.add('success');            // switch panel content to success view (same popup)
   });
 
   // Apply balances on load
@@ -855,12 +862,12 @@ ensureCbv();
   function fullDateTime(iso){
     const d = new Date(iso);
     return d.toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit'}) + ', ' +
-           d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+           d.toLocaleTimeString(undefined,{hour:'numeric',minute:'two-digit'});
   }
 
   function renderTransactions(){
     transactions.sort((a,b)=> new Date(b.iso) - new Date(a.iso));
-    txnListEl.innerHTML = transactions.map(t => `
+    const rows = transactions.map(t => `
       <div class="txnRow" data-id="${t.id}" tabindex="0" role="button" aria-label="Open ${t.merchant} transaction">
         <div class="txnMain">
           <div class="txnTitle">${t.merchant}${t.status ? ` <span style="opacity:.6">• ${t.status}</span>` : ''}</div>
@@ -869,6 +876,7 @@ ensureCbv();
         <div class="txnAmt">${formatDisplay(t)}</div>
       </div>
     `).join('');
+    txnListEl.innerHTML = `<div class="txnStack">${rows}</div>`;
 
     txnListEl.querySelectorAll('.txnRow').forEach(row=>{
       row.addEventListener('click',()=>openTxn(row.dataset.id));
