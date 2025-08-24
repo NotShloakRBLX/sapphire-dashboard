@@ -470,10 +470,14 @@
   }
 
   const receiptAmt=document.getElementById('receiptAmt');
+  /* === FIX: capture amount before balances refresh === */
   payBtn.addEventListener('click', ()=>{
-    const payIso=new Date().toISOString();
-    if(amount>0){ window.addPayment({amount,iso:payIso,category:'payment'}); }
-    receiptAmt.textContent='$'+amount.toFixed(2);
+    const payIso = new Date().toISOString();
+    const paid = amount;                // capture current slider amount first
+    if (paid > 0){
+      window.addPayment({amount: paid, iso: payIso, category:'payment'});
+    }
+    receiptAmt.textContent = '$' + paid.toFixed(2);   // use captured value
     sheet.classList.add('success');
   });
 
@@ -488,7 +492,6 @@
   const round2=n=>Math.round(n*100)/100, calcCashback=amt=>round2(amt*0.05);
   const getTxnCashback=t=>(typeof t.cashback==='number')?t.cashback:(t.kind==='purchase'?calcCashback(Number(t.amount)||0):0);
 
-  /* === ICON MAP === */
   const CAT_MAP={
     food:'food-icon.png',
     gaming:'gaming-icon.png',
@@ -533,12 +536,12 @@
 
   function computeCashbackAvailable(){
     const cv=currentCbv();
-    return round2(transactions.reduce((sum,t)=>{
+    return Math.round(transactions.reduce((sum,t)=>{
       if((t.cbv||0)!==cv) return sum;
       if(t.kind==='purchase') return sum+getTxnCashback(t);
       if(t.kind==='cashback_deposit') return sum-(Number(t.amount)||0);
       return sum;
-    },0));
+    },0)*100)/100;
   }
   function refreshCashbackTile(){const total=Math.max(0,computeCashbackAvailable());SETTINGS.cashback=total;saveBalances();if(cashbackEl) cashbackEl.textContent=fmtUSD(total)}
 
