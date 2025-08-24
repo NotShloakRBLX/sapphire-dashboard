@@ -508,10 +508,38 @@
   const iconByCat=(k)=> CAT_MAP[k] || 'payment-icon.png';
 
   /* Keyword → icon rules (simple "AI-ish" matcher) */
-  const KEYWORD_ICON_RULES = [
-    // Add more rules as you like; only Doordash is required per your note
-    { patterns: [/doordash/i, /dd\*/i, /dashpass/i], icon: 'doordash-icon.png' },
-  ];
+  // Keyword → icon rules (brand detection by merchant name)
+const KEYWORD_ICON_RULES = [
+  // existing example
+  { patterns: [/doordash/i, /dd\*/i, /dashpass/i], icon: 'doordash-icon.png' },
+
+  // NEW rules you asked for:
+  { patterns: [/affirm/i],                                                     icon: 'affirm-icon.png' },
+  { patterns: [/amazon/i, /\bamzn\b/i, /amzn\s*mk?tp/i, /prime\b/i],           icon: 'amazon-icon.png' },
+  { patterns: [/discord/i, /nitro/i],                                          icon: 'discord-icon.png' },
+  { patterns: [/\bapple\b/i, /apple\.?com\/bill/i, /itunes/i, /app\s*store/i, /apple\s*pay/i],
+                                                                                icon: 'apple-icon.png' },
+  { patterns: [/\bgoogle\b/i, /google\s*play/i, /(gpay|google\s*pay)/i],       icon: 'google-icon.png' },
+  { patterns: [/american\s+air(lines)?/i, /\baadvantage\b/i, /\baa\s?(?:#|flight|tkt|ticket)?/i],
+                                                                                icon: 'aa-icon.png' },
+  { patterns: [/singapore\s+air(lines)?/i, /\bkrisflyer\b/i, /\bsia\b/i],      icon: 'sing-icon.png' },
+];
+
+// Pick icon from merchant keywords first, then fall back to category icon
+function chooseIconForMerchant(name){
+  if (!name) return null;
+  const s = String(name); // patterns above already use /i for case-insensitive
+  for (const rule of KEYWORD_ICON_RULES){
+    for (const rx of rule.patterns){
+      if (rx.test(s)) return rule.icon;
+    }
+  }
+  return null;
+}
+function iconForTransaction(t){
+  return chooseIconForMerchant(t.merchant) || iconByCat(t.category);
+}
+
   const iconFromMerchant = (merchant='') => {
     const m = String(merchant || '');
     for (const rule of KEYWORD_ICON_RULES){
@@ -713,3 +741,4 @@
 </script>
 </body>
 </html>
+
