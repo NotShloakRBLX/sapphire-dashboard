@@ -184,6 +184,59 @@
   .subtle{color:#6a6a6a;font-weight:700;margin:0 14px 10px}
   .hidden{display:none !important}
   #cardBalTile{padding-bottom:8px} #cardBalTile>:last-child{margin-bottom:0}
+
+/* === Paste at end of your <style> === */
+:root{
+  --iconSize: 36px;
+  --iconGap: 12px;
+  --listPadX: 16px;
+}
+
+/* List icons — no background box */
+.txnIcon{
+  width:var(--iconSize);
+  height:var(--iconSize);
+  flex:0 0 var(--iconSize);
+  display:grid;
+  place-items:center;
+  background:transparent;
+  border-radius:0;
+  box-shadow:none;
+}
+.txnIcon img{
+  width:var(--iconSize);
+  height:var(--iconSize);
+  object-fit:contain;
+  filter:none;
+}
+
+/* Keep row padding consistent */
+.txnStack .txnRow{padding:16px var(--listPadX);}
+
+/* Inset separators after the icon */
+.txnStack .txnRow + .txnRow::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:calc(var(--listPadX) + var(--iconSize) + var(--iconGap));
+  right:var(--listPadX);
+  height:1px;
+  background:rgba(255,255,255,.08);
+}
+
+/* Transaction detail icon — bigger, no box */
+.txnDetailIcon{
+  width:auto;height:auto;
+  background:transparent;
+  border:0;border-radius:0;box-shadow:none;
+  margin:0 auto 14px;
+}
+.txnDetailIcon img{
+  width:72px;height:72px;
+  object-fit:contain;
+  filter:none;
+}
+  
 </style>
 </head>
 <body>
