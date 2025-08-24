@@ -570,8 +570,20 @@
   function loadTransactions(){try{const raw=localStorage.getItem(TXN_STORE_KEY);if(!raw)return null;const arr=JSON.parse(raw);if(Array.isArray(arr))return arr}catch(e){}return null}
   function saveTransactions(){try{localStorage.setItem(TXN_STORE_KEY,JSON.stringify(transactions))}catch(e){} refreshCashbackTile();}
   function rid(){return 't_'+Math.random().toString(36).slice(2,9)}
-  const round2=n=>Math.round(n*100)/100, calcCashback=amt=>round2(amt*0.05);
-  const getTxnCashback=t=>(typeof t.cashback==='number')?t.cashback:(t.kind==='purchase'?calcCashback(Number(t.amount)||0):0);
+
+  /* === CASHBACK LOGIC (as requested) === */
+  const round2=n=>Math.round(n*100)/100;
+  const CASHBACK_RATES={
+    shopping:0.05,
+    food:0.04, travel:0.04, streaming:0.04,
+    gaming:0.03, messaging:0.03
+  };
+  const rateForCategory = cat => CASHBACK_RATES[cat] ?? 0;
+  const calcCashback=(amt,cat)=>round2((Number(amt)||0)*rateForCategory(cat));
+  const getTxnCashback=t=>
+    (typeof t.cashback==='number') ? t.cashback :
+    (t.kind==='purchase' ? calcCashback(t.amount, t.category) : 0);
+  /* ===================================== */
 
   const CAT_MAP={
     food:'food-icon.png',
@@ -690,7 +702,11 @@ function iconForTransaction(t){
 
   /* Public helpers with category support */
   window.addPurchase=({merchant,amount,iso,card='Sapphire Reserve',status='Approved',category='shopping'})=>{
-    const amt=Number(amount);transactions.push({id:rid(),kind:'purchase',merchant,amount:amt,iso,status,card,category,cashback:calcCashback(amt),cbv:currentCbv()});
+    const amt=Number(amount);
+    transactions.push({
+      id:rid(),kind:'purchase',merchant,amount:amt,iso,status,card,category,
+      cashback:calcCashback(amt,category),cbv:currentCbv()
+    });
     saveTransactions();renderTransactions();applyBalanceDelta(+amt,-amt);
   };
   window.addRefund=({merchant,amount,iso,card='Sapphire Reserve',status='Refunded',category='shopping'})=>{
