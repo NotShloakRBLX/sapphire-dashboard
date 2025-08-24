@@ -134,7 +134,7 @@
   .payReceipt{display:none;color:#fff;text-align:center;padding:14px 16px 28px}
   .sheet.success .payReceipt{display:block}
   .payCheck{width:124px;height:124px;border-radius:50%;background:conic-gradient(#b8ffb9,#34c759);padding:10px;margin:2px auto 12px}
-  .payCheck .inner{width:100%;height:100%;border-radius:50%;background:#111;display/grid;place-items:center}
+  .payCheck .inner{width:100%;height:100%;border-radius:50%;background:#111;display:grid;place-items:center}
   .payCheck svg{width:60px;height:60px}
   .payTitle{font-size:40px;font-weight:900;margin:6px 0 8px}
   .paySub{color:#cfcfcf;font-weight:800;line-height:1.35}
@@ -470,6 +470,7 @@
   }
 
   const receiptAmt=document.getElementById('receiptAmt');
+  /* Use the captured slider amount so receipt isn't $0.00 */
   payBtn.addEventListener('click', ()=>{
     const payIso = new Date().toISOString();
     const paid = amount;
@@ -506,6 +507,20 @@
   }[k]||'Other');
   const iconByCat=(k)=> CAT_MAP[k] || 'payment-icon.png';
 
+  /* Keyword → icon rules (simple "AI-ish" matcher) */
+  const KEYWORD_ICON_RULES = [
+    // Add more rules as you like; only Doordash is required per your note
+    { patterns: [/doordash/i, /dd\*/i, /dashpass/i], icon: 'doordash-icon.png' },
+  ];
+  const iconFromMerchant = (merchant='') => {
+    const m = String(merchant || '');
+    for (const rule of KEYWORD_ICON_RULES){
+      if (rule.patterns.some(re => re.test(m))) return rule.icon;
+    }
+    return null;
+  };
+  const iconForTxn = (t) => iconFromMerchant(t.merchant) || iconByCat(t.category);
+
   /* Load transactions from storage (persist across reloads) */
   let transactions = loadTransactions() || [];
 
@@ -518,7 +533,7 @@
     transactions.sort((a,b)=>new Date(b.iso)-new Date(a.iso));
     const rows=transactions.map(t=>`
       <div class="txnRow" data-id="${t.id}" tabindex="0" role="button" aria-label="Open ${t.merchant} transaction">
-        <div class="txnIcon"><img src="./${iconByCat(t.category)}" alt="" /></div>
+        <div class="txnIcon"><img src="./${iconForTxn(t)}" alt="" /></div>
         <div class="txnMain">
           <div class="txnTitle">${t.merchant}${t.status?` <span style="opacity:.6">• ${t.status}</span>`:''}</div>
           <div class="txnSub">${shortDate(t.iso)}</div>
