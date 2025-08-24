@@ -462,7 +462,7 @@
   const app=document.getElementById('app');
   document.getElementById('backTxn').addEventListener('click', ()=>{ app.className='app pos-0'; });
 
-  const SETTINGS_DEFAULT = {version:7,cardBalance:49.46,availableBalance:275.54,cashback:0.00,
+  const SETTINGS_DEFAULT = {version:8,cardBalance:69.45,availableBalance:255.55,cashback:0.00,
     cardNumber:'5278 6812 3931 7295',cardExpiry:'07/30',cardCvv:'528'};
 
   function loadBalances(){
@@ -485,7 +485,7 @@
   let SETTINGS=loadBalances();
   const saveBalances=()=>localStorage.setItem('demo_balances',JSON.stringify(SETTINGS));
 
-  const CASHBACK_VERSION=1, CBV_KEY='cbv_current';
+  const CASHBACK_VERSION=2, CBV_KEY='cbv_current';
   const ensureCbv=()=>{const stored=Number(localStorage.getItem(CBV_KEY)||'0');if(stored!==CASHBACK_VERSION){localStorage.setItem(CBV_KEY,String(CASHBACK_VERSION))}return CASHBACK_VERSION};
   const currentCbv=()=>Number(localStorage.getItem(CBV_KEY)||ensureCbv()); ensureCbv();
 
@@ -863,5 +863,6 @@ function iconForTransaction(t){
 </script>
 </body>
 </html>
+
 
 
