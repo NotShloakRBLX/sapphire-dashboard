@@ -236,6 +236,16 @@
   object-fit:contain;
   filter:none;
 }
+
+/* Cashback percentage chip under amount */
+.amtWrap{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.cbChip{
+  font-size:12px; line-height:1;
+  padding:3px 6px;
+  border-radius:6px;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.14);
+}
   
 </style>
 </head>
@@ -647,7 +657,11 @@ function iconForTransaction(t){
 
   function renderTransactions(){
     transactions.sort((a,b)=>new Date(b.iso)-new Date(a.iso));
-    const rows=transactions.map(t=>`
+
+    const rows=transactions.map(t=>{
+      const pct = Math.round(rateForCategory(t.category)*100);
+      const pctChip = (t.kind==='purchase' && pct>0) ? `<div class="cbChip">${pct}%</div>` : '';
+      return `
       <div class="txnRow" data-id="${t.id}" tabindex="0" role="button" aria-label="Open ${t.merchant} transaction">
         <div class="txnIcon"><img src="./${iconForTransaction(t)}" alt="" /></div>
         <div class="txnMain">
@@ -655,10 +669,15 @@ function iconForTransaction(t){
           <div class="txnSub">${shortDate(t.iso)}</div>
         </div>
         <div class="txnRight">
-          <div class="txnAmt">${formatDisplay(t)}</div>
+          <div class="amtWrap">
+            <div class="txnAmt">${formatDisplay(t)}</div>
+            ${pctChip}
+          </div>
           <div class="chev">›</div>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
+
     txnListEl.innerHTML=`<div class="txnStack">${rows||''}</div>`;
     txnListEl.querySelectorAll('.txnRow').forEach(row=>{
       row.addEventListener('click',()=>openTxn(row.dataset.id));
