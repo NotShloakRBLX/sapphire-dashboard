@@ -16,24 +16,6 @@
     --radiusCard:28px;
     --radiusTile:8px;
   }
-
-body.light{
-  --bg:#f5f6f8;
-  --title:#ffffff;
-  --tileBorder:rgba(0,0,0,.12);
-  --text:#111;
-  --muted:#5f6368;
-  --shadow:0 14px 34px rgba(0,0,0,.12);
-}
-
-  body.light .view{
-    background:linear-gradient(#fff,#fafafa 50%,#f2f2f2);
-  }
-  body.light .nav{
-    background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,255,255,.55) 40%,transparent);
-  }
-  body.light .iconbtn{ background:#fff; border-color:rgba(0,0,0,.12); }
-  body.light .tile{ background:#fff; border-color:rgba(0,0,0,.12); }
   
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -122,6 +104,18 @@ body.light{
     transition:transform var(--t),opacity var(--t)
   }
   .payBubble:active{transform:scale(.95)}
+
+  .payBubble{
+    width:56px;
+    height:56px;
+    border:none;
+    outline:none;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow:0 10px 24px rgba(0,0,0,.45);
+    font-size:14px;
+  }
+  .payBubble:focus{ outline:none; }
+  .payBubble::-moz-focus-inner{ border:0; }
 
   /* Transaction list rows */
   .txnRow{
@@ -240,7 +234,6 @@ body.light{
 </style>
 </head>
 <body>
-  <body class="light">
     
 <div class="app pos-0" id="app">
   <div class="views">
@@ -1186,4 +1179,5 @@ ensureCbv();
 </script>
 </body>
 </html>
+
 
