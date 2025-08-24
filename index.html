@@ -466,31 +466,18 @@
     cardNumber:'5278 6812 3931 7295',cardExpiry:'07/30',cardCvv:'528'};
 
   function loadBalances(){
-  try{
-    const raw = localStorage.getItem('demo_balances');
-    if(raw){
-      const s = JSON.parse(raw);
-      // If version changed, replace saved balances with new defaults
-      if (+s.version !== +SETTINGS_DEFAULT.version){
-        localStorage.setItem('demo_balances', JSON.stringify(SETTINGS_DEFAULT));
-        return { ...SETTINGS_DEFAULT };
-      }
-      // Otherwise use saved values (with number safety)
-      return {
-        ...SETTINGS_DEFAULT,
-        ...s,
-        cardBalance: isFinite(+s.cardBalance) ? +s.cardBalance : SETTINGS_DEFAULT.cardBalance,
-        availableBalance: isFinite(+s.availableBalance) ? +s.availableBalance : SETTINGS_DEFAULT.availableBalance,
-        cashback: isFinite(+s.cashback) ? +s.cashback : SETTINGS_DEFAULT.cashback,
-        version: SETTINGS_DEFAULT.version
-      };
-    }
-  }catch(e){}
-  // First run: persist defaults
-  localStorage.setItem('demo_balances', JSON.stringify(SETTINGS_DEFAULT));
-  return { ...SETTINGS_DEFAULT };
-}
-
+    try{
+      const raw = localStorage.getItem('demo_balances');
+      if(raw){
+        const s = JSON.parse(raw);
+        return {
+          ...SETTINGS_DEFAULT,
+          ...s,
+          cardBalance: isFinite(+s.cardBalance) ? +s.cardBalance : SETTINGS_DEFAULT.cardBalance,
+          availableBalance: isFinite(+s.availableBalance) ? +s.availableBalance : SETTINGS_DEFAULT.availableBalance,
+          cashback: isFinite(+s.cashback) ? +s.cashback : SETTINGS_DEFAULT.cashback,
+          version: SETTINGS_DEFAULT.version
+        };
       }
     }catch(e){}
     return {...SETTINGS_DEFAULT};
@@ -597,7 +584,7 @@
   /* Transactions & cashback */
   const txnListEl=document.getElementById('txnList');
   const TXN_STORE_KEY='demo_txns';
-  function loadTransactions(){try{const raw=localStorage.getItem(TXN_STORE_KEY);if(!raw)return null;const arr=JSON.parse(raw);if(Array.isArray(arr))return arr}catch(e){}return null}
+
   function saveTransactions(){try{localStorage.setItem(TXN_STORE_KEY,JSON.stringify(transactions))}catch(e){} refreshCashbackTile();}
   function rid(){return 't_'+Math.random().toString(36).slice(2,9)}
 
@@ -614,6 +601,33 @@
     (typeof t.cashback==='number') ? t.cashback :
     (t.kind==='purchase' ? calcCashback(t.amount, t.category) : 0);
   /* ===================================== */
+
+  /* Seed transactions (used only if nothing is in localStorage) */
+  const SEED_TXNS = (function(){
+    const cv = currentCbv();
+    return [
+      {id:'t_seed1',kind:'purchase',merchant:'DISCORD* GIFT-NITRO-MO',amount:10.66,iso:'2025-04-07T15:00:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'gaming',cashback:calcCashback(10.66,'gaming'),cbv:cv},
+      {id:'t_seed2',kind:'purchase',merchant:'DISCORD* GIFT-NITRO-MO',amount:10.66,iso:'2025-04-07T14:00:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'gaming',cashback:calcCashback(10.66,'gaming'),cbv:cv},
+      {id:'t_seed3',kind:'purchase',merchant:'Nike',amount:64.35,iso:'2025-08-24T17:10:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'shopping',cashback:calcCashback(64.35,'shopping'),cbv:cv},
+      {id:'t_seed4',kind:'purchase',merchant:"McDonald's PlayPlace",amount:31.29,iso:'2025-08-22T12:00:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'food',cashback:calcCashback(31.29,'food'),cbv:cv},
+      {id:'t_seed5',kind:'purchase',merchant:'State Farm Insurance',amount:156.34,iso:'2025-08-21T12:00:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'shopping',cashback:calcCashback(156.34,'shopping'),cbv:cv},
+      {id:'t_seed6',kind:'purchase',merchant:'Apple',amount:2.99,iso:'2025-08-20T12:00:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'messaging',cashback:calcCashback(2.99,'messaging'),cbv:cv},
+      {id:'t_seed7',kind:'payment',merchant:'From Apple Cash',amount:458.72,iso:'2025-08-19T12:00:00.000Z',status:'Posted',card:'Sapphire Reserve',category:'payment',cashback:0,cbv:cv},
+      {id:'t_seed8',kind:'purchase',merchant:'Delta Air Lines',amount:386.67,iso:'2025-04-28T12:00:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'travel',cashback:calcCashback(386.67,'travel'),cbv:cv},
+      {id:'t_seed9',kind:'purchase',merchant:'Amazon',amount:23.49,iso:'2025-08-24T10:30:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'shopping',cashback:calcCashback(23.49,'shopping'),cbv:cv}
+    ];
+  })();
+
+  function loadTransactions(){
+    try{
+      const raw=localStorage.getItem(TXN_STORE_KEY);
+      if(raw){
+        const arr=JSON.parse(raw);
+        if(Array.isArray(arr) && arr.length) return arr;
+      }
+    }catch(e){}
+    return SEED_TXNS.slice(); // fallback if nothing stored
+  }
 
   const CAT_MAP={
     food:'food-icon.png',
@@ -876,8 +890,3 @@ function iconForTransaction(t){
 </script>
 </body>
 </html>
-
-
-
-
-
