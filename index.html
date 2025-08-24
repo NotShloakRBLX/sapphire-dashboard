@@ -67,7 +67,7 @@
     border:none;outline:none;-webkit-tap-highlight-color:transparent;box-shadow:0 10px 24px rgba(0,0,0,.45);font-size:14px;}
   .payBubble:active{transform:scale(.95)}
 
-  /* ---------- iOS-style stacked transactions ---------- */
+  /* iOS-style stacked transactions */
   .txnRow{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.04);
     border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:12px;cursor:pointer;}
   .txnRow + .txnRow{margin-top:10px}
@@ -75,15 +75,12 @@
   .txnTitle{font-weight:800}
   .txnSub{color:var(--muted);font-size:12px}
   .txnAmt{font-weight:800}
-
   .txnStack{border:1px solid rgba(255,255,255,.10);border-radius:16px;overflow:hidden;background:rgba(255,255,255,.035);}
   .txnStack .txnRow{margin:0;border:0;border-bottom:1px solid rgba(255,255,255,.08);border-radius:0;background:transparent;padding:14px 16px;}
   .txnStack .txnRow:last-child{border-bottom:0;}
 
-  /* Two views */
   .pos-0 .views{transform:translateX(0%)} .pos-1 .views{transform:translateX(-50%)}
 
-  /* Txn detail */
   .txnHeader{padding:28px 18px 10px;text-align:center}
   .txnAmount{font-size:60px;font-weight:900;letter-spacing:-.5px}
   .txnMerchant{color:var(--muted);font-size:22px;font-weight:700;margin-top:6px}
@@ -317,7 +314,7 @@
     </div>
   </div>
 
-  <!-- Add / Confirm Txn sheets (unchanged) -->
+  <!-- Add / Confirm Txn sheets -->
   <div class="sheet" id="addTxnSheet" aria-hidden="true">
     <div class="dim" id="addTxnDim"></div>
     <div class="panel">
@@ -354,16 +351,32 @@
 
   const SETTINGS_DEFAULT = {version:7,cardBalance:49.46,availableBalance:275.54,cashback:0.00,
     cardNumber:'5278 6812 3931 7295',cardExpiry:'07/30',cardCvv:'528'};
-  function loadBalances(){try{const raw=localStorage.getItem('demo_balances');if(!raw)return {...SETTINGS_DEFAULT};
-    const s=JSON.parse(raw);if(typeof s.cardBalance==='number'&&typeof s.availableBalance==='number'&&s.version===SETTINGS_DEFAULT.version){return {...SETTINGS_DEFAULT,...s}}}catch(e){}return {...SETTINGS_DEFAULT}}
+
+  function loadBalances(){
+    try{
+      const raw = localStorage.getItem('demo_balances');
+      if(raw){
+        const s = JSON.parse(raw);
+        return {
+          ...SETTINGS_DEFAULT,
+          ...s,
+          cardBalance: isFinite(+s.cardBalance) ? +s.cardBalance : SETTINGS_DEFAULT.cardBalance,
+          availableBalance: isFinite(+s.availableBalance) ? +s.availableBalance : SETTINGS_DEFAULT.availableBalance,
+          cashback: isFinite(+s.cashback) ? +s.cashback : SETTINGS_DEFAULT.cashback,
+          version: SETTINGS_DEFAULT.version
+        };
+      }
+    }catch(e){}
+    return {...SETTINGS_DEFAULT};
+  }
   let SETTINGS=loadBalances();
   const saveBalances=()=>localStorage.setItem('demo_balances',JSON.stringify(SETTINGS));
 
-  const CASHBACK_VERSION=1,CBV_KEY='cbv_current';
+  const CASHBACK_VERSION=1, CBV_KEY='cbv_current';
   const ensureCbv=()=>{const stored=Number(localStorage.getItem(CBV_KEY)||'0');if(stored!==CASHBACK_VERSION){localStorage.setItem(CBV_KEY,String(CASHBACK_VERSION))}return CASHBACK_VERSION};
-  const currentCbv=()=>Number(localStorage.getItem(CBV_KEY)||ensureCbv());ensureCbv();
+  const currentCbv=()=>Number(localStorage.getItem(CBV_KEY)||ensureCbv()); ensureCbv();
 
-  /* Payment sheet wiring */
+  /* Payment sheet */
   const sheet=document.getElementById('sheet'), dim=document.getElementById('dim'),
         openPay=document.getElementById('openPay'), closeSheetBtn=document.getElementById('closeSheet');
   const closeSheet=()=>{ sheet.classList.remove('active','success'); };
@@ -371,7 +384,7 @@
   dim.addEventListener('click',closeSheet); closeSheetBtn.addEventListener('click',closeSheet);
   document.addEventListener('keydown',e=>{if(e.key==='Escape') closeSheet()});
 
-  /* Circular slider */
+  /* Slider */
   const MIN=0.00; let MAX=SETTINGS.cardBalance; let THRESH=+(MAX*0.82).toFixed(2);
   const ringWrap=document.getElementById('ringWrap'), ringSvg=document.getElementById('ringSvg'),
         progress=document.getElementById('progress'), handle=document.getElementById('handle'),
@@ -430,20 +443,18 @@
     if(!raw) return; const n=parseFloat(raw.replace(/[^\d.]/g,'')); if(isFinite(n)){applyFromFraction(Math.max(0,Math.min(1,n/Math.max(1,MAX))),false)}
   });
 
-  /* Balance helpers */
   function applyBalanceDelta(cardDelta,availDelta){
     const nextCard=+(SETTINGS.cardBalance+cardDelta).toFixed(2);
     SETTINGS.cardBalance=nextCard<0?0:nextCard; SETTINGS.availableBalance=+(SETTINGS.availableBalance+availDelta).toFixed(2);
     saveBalances(); applyBalances();
   }
 
-  /* Payment -> show success inside same sheet */
   const receiptAmt=document.getElementById('receiptAmt');
   payBtn.addEventListener('click', ()=>{
     const payIso=new Date().toISOString();
-    if(amount>0){ window.addPayment({amount,iso:payIso}); } // record only if > 0
+    if(amount>0){ window.addPayment({amount,iso:payIso}); }
     receiptAmt.textContent='$'+amount.toFixed(2);
-    sheet.classList.add('success'); // swap to receipt view INSIDE this popup
+    sheet.classList.add('success');
   });
 
   applyBalances();
@@ -600,7 +611,7 @@
         cbHandle=document.getElementById('cbHandle'),cbAmountLabel=document.getElementById('cbAmountLabel');
   const CB_R=120, CB_C=2*Math.PI*CB_R; cbProgress.setAttribute('stroke-dasharray',`${CB_C}`); cbProgress.setAttribute('stroke-dashoffset',`${CB_C}`);
   let CB_MAX=0, cbAmount=0, cbDragging=false, cbLastFrac=0, cbLockedAtMax=false;
-  const computeCashbackAvailable=(()=>{ /* already declared above, reuse via closure */ return window.computeCashbackAvailable || function(){const cv=currentCbv();return round2(transactions.reduce((sum,t)=>{if((t.cbv||0)!==cv)return sum; if(t.kind==='purchase')return sum+getTxnCashback(t); if(t.kind==='cashback_deposit')return sum-(Number(t.amount)||0); return sum;},0))};})();
+
   function cbSetMax(){CB_MAX=Math.max(0,computeCashbackAvailable())}
   function cbSetUI(v){cbProgress.setAttribute('stroke',v>0?'url(#cbGradGreen)':'url(#cbGradGray)')}
   function cbSignedDelta(a,b){return (((a-b)+1.5)%1)-0.5}
