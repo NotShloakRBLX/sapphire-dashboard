@@ -67,20 +67,35 @@
     border:none;outline:none;-webkit-tap-highlight-color:transparent;box-shadow:0 10px 24px rgba(0,0,0,.45);font-size:14px;}
   .payBubble:active{transform:scale(.95)}
 
-  /* iOS-style stacked transactions */
-  .txnRow{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.04);
-    border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:12px;cursor:pointer;}
-  .txnRow + .txnRow{margin-top:10px}
-  .txnIcon{width:42px;height:42px;border-radius:10px;background:rgba(255,255,255,.08);
-    display:grid;place-items:center;flex:0 0 42px}
-  .txnIcon img{width:26px;height:26px;object-fit:contain;filter:drop-shadow(0 1px 6px rgba(0,0,0,.25))}
+  /* iOS-style stacked transactions (updated to match Apple-style list) */
+  .txnRow{
+    display:flex;gap:12px;align-items:flex-start;
+    background:transparent;border:0;border-radius:12px;
+    padding:14px 16px;cursor:pointer;position:relative;
+  }
+  .txnRow + .txnRow{margin-top:0}
+  .txnIcon{
+    width:54px;height:54px;border-radius:12px;
+    background:rgba(255,255,255,.10);display:grid;place-items:center;flex:0 0 54px
+  }
+  .txnIcon img{width:30px;height:30px;object-fit:contain;filter:drop-shadow(0 1px 6px rgba(0,0,0,.25))}
   .txnMain{flex:1}
   .txnTitle{font-weight:800}
-  .txnSub{color:var(--muted);font-size:12px}
-  .txnAmt{font-weight:800}
-  .txnStack{border:1px solid rgba(255,255,255,.10);border-radius:16px;overflow:hidden;background:rgba(255,255,255,.035);}
-  .txnStack .txnRow{margin:0;border:0;border-bottom:1px solid rgba(255,255,255,.08);border-radius:0;background:transparent;padding:14px 16px;}
-  .txnStack .txnRow:last-child{border-bottom:0;}
+  .txnSub{color:var(--muted);font-size:12px;margin-top:2px}
+  .txnAmt{font-weight:600} /* not bold */
+  .txnRight{display:flex;align-items:flex-start;gap:8px}
+  .chev{opacity:.55;font-size:20px;line-height:1;margin-top:1px}
+
+  /* Group container with sharper corners; inset separators that don’t span full width */
+  .txnStack{
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:12px;overflow:hidden;background:rgba(255,255,255,.035);
+  }
+  .txnStack .txnRow{padding:16px 16px;background:transparent;border-radius:0}
+  .txnStack .txnRow + .txnRow::before{
+    content:"";position:absolute;left:92px;right:16px;top:0;height:1px;
+    background:rgba(255,255,255,.08)
+  }
 
   .pos-0 .views{transform:translateX(0%)} .pos-1 .views{transform:translateX(-50%)}
 
@@ -521,12 +536,8 @@
   const iconByCat=(k)=> CAT_MAP[k] || 'payment-icon.png';
 
   /* Keyword → icon rules (simple "AI-ish" matcher) */
-  // Keyword → icon rules (brand detection by merchant name)
 const KEYWORD_ICON_RULES = [
-  // existing example
   { patterns: [/doordash/i, /dd\*/i, /dashpass/i], icon: 'doordash-icon.png' },
-
-  // NEW rules you asked for:
   { patterns: [/affirm/i],                                                     icon: 'affirm-icon.png' },
   { patterns: [/amazon/i, /\bamzn\b/i, /amzn\s*mk?tp/i, /prime\b/i],           icon: 'amazon-icon.png' },
   { patterns: [/discord/i, /nitro/i],                                          icon: 'discord-icon.png' },
@@ -538,10 +549,9 @@ const KEYWORD_ICON_RULES = [
   { patterns: [/singapore\s+air(lines)?/i, /\bkrisflyer\b/i, /\bsia\b/i],      icon: 'sing-icon.png' },
 ];
 
-// Pick icon from merchant keywords first, then fall back to category icon
 function chooseIconForMerchant(name){
   if (!name) return null;
-  const s = String(name); // patterns above already use /i for case-insensitive
+  const s = String(name);
   for (const rule of KEYWORD_ICON_RULES){
     for (const rx of rule.patterns){
       if (rx.test(s)) return rule.icon;
@@ -579,7 +589,10 @@ function iconForTransaction(t){
           <div class="txnTitle">${t.merchant}${t.status?` <span style="opacity:.6">• ${t.status}</span>`:''}</div>
           <div class="txnSub">${shortDate(t.iso)}</div>
         </div>
-        <div class="txnAmt">${formatDisplay(t)}</div>
+        <div class="txnRight">
+          <div class="txnAmt">${formatDisplay(t)}</div>
+          <div class="chev">›</div>
+        </div>
       </div>`).join('');
     txnListEl.innerHTML=`<div class="txnStack">${rows||''}</div>`;
     txnListEl.querySelectorAll('.txnRow').forEach(row=>{
@@ -755,9 +768,3 @@ function iconForTransaction(t){
 </script>
 </body>
 </html>
-
-
-
-
-
-
