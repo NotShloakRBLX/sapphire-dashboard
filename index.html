@@ -380,7 +380,13 @@
   const sheet=document.getElementById('sheet'), dim=document.getElementById('dim'),
         openPay=document.getElementById('openPay'), closeSheetBtn=document.getElementById('closeSheet');
   const closeSheet=()=>{ sheet.classList.remove('active','success'); };
-  openPay.addEventListener('click',()=>{ sheet.classList.remove('success'); sheet.classList.add('active'); });
+  // >>> Default the slider to FULL BALANCE when opening, so "You Paid" shows the actual amount.
+  openPay.addEventListener('click',()=>{
+    sheet.classList.remove('success');
+    sheet.classList.add('active');
+    MAX = Math.max(0, SETTINGS.cardBalance);
+    if (MAX > 0) { lockedAtMax=false; lastFrac=0; applyFromFraction(1,false); } // set to full balance
+  });
   dim.addEventListener('click',closeSheet); closeSheetBtn.addEventListener('click',closeSheet);
   document.addEventListener('keydown',e=>{if(e.key==='Escape') closeSheet()});
 
