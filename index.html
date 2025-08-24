@@ -134,7 +134,7 @@
   .payReceipt{display:none;color:#fff;text-align:center;padding:14px 16px 28px}
   .sheet.success .payReceipt{display:block}
   .payCheck{width:124px;height:124px;border-radius:50%;background:conic-gradient(#b8ffb9,#34c759);padding:10px;margin:2px auto 12px}
-  .payCheck .inner{width:100%;height:100%;border-radius:50%;background:#111;display:grid;place-items:center}
+  .payCheck .inner{width:100%;height:100%;border-radius:50%;background:#111;display/grid;place-items:center}
   .payCheck svg{width:60px;height:60px}
   .payTitle{font-size:40px;font-weight:900;margin:6px 0 8px}
   .paySub{color:#cfcfcf;font-weight:800;line-height:1.35}
@@ -399,7 +399,7 @@
     sheet.classList.remove('success');
     sheet.classList.add('active');
     MAX = Math.max(0, SETTINGS.cardBalance);
-    if (MAX > 0) { lockedAtMax=false; lastFrac=0; applyFromFraction(1,false); } // set to full balance
+    if (MAX > 0) { lockedAtMax=false; lastFrac=0; applyFromFraction(1,false); }
   });
   dim.addEventListener('click',closeSheet); closeSheetBtn.addEventListener('click',closeSheet);
   document.addEventListener('keydown',e=>{if(e.key==='Escape') closeSheet()});
@@ -470,14 +470,13 @@
   }
 
   const receiptAmt=document.getElementById('receiptAmt');
-  /* === FIX: capture amount before balances refresh === */
   payBtn.addEventListener('click', ()=>{
     const payIso = new Date().toISOString();
-    const paid = amount;                // capture current slider amount first
+    const paid = amount;
     if (paid > 0){
       window.addPayment({amount: paid, iso: payIso, category:'payment'});
     }
-    receiptAmt.textContent = '$' + paid.toFixed(2);   // use captured value
+    receiptAmt.textContent = '$' + paid.toFixed(2);
     sheet.classList.add('success');
   });
 
@@ -507,9 +506,8 @@
   }[k]||'Other');
   const iconByCat=(k)=> CAT_MAP[k] || 'payment-icon.png';
 
-  /* Start with NO transactions (clear storage) */
-  try{ localStorage.setItem(TXN_STORE_KEY, JSON.stringify([])); }catch(e){}
-  let transactions = [];
+  /* Load transactions from storage (persist across reloads) */
+  let transactions = loadTransactions() || [];
 
   function formatDisplay(t){const negative=(t.status==='Refunded'||t.status==='Posted');return (negative?'- ':'')+'$'+Number(t.amount).toFixed(2)}
   function formatMoneyAbs(n){return '$'+Math.abs(n).toFixed(2)}
