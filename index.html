@@ -68,34 +68,22 @@
   .payBubble:active{transform:scale(.95)}
 
   /* iOS-style stacked transactions (updated to match Apple-style list) */
-  .txnRow{
-    display:flex;gap:12px;align-items:flex-start;
-    background:transparent;border:0;border-radius:12px;
-    padding:14px 16px;cursor:pointer;position:relative;
-  }
+  .txnRow{display:flex;gap:12px;align-items:flex-start;background:transparent;border:0;border-radius:12px;
+    padding:14px 16px;cursor:pointer;position:relative}
   .txnRow + .txnRow{margin-top:0}
-  .txnIcon{
-    width:54px;height:54px;border-radius:12px;
-    background:rgba(255,255,255,.10);display:grid;place-items:center;flex:0 0 54px
-  }
+  .txnIcon{width:54px;height:54px;border-radius:12px;background:rgba(255,255,255,.10);display:grid;place-items:center;flex:0 0 54px}
   .txnIcon img{width:30px;height:30px;object-fit:contain;filter:drop-shadow(0 1px 6px rgba(0,0,0,.25))}
   .txnMain{flex:1}
   .txnTitle{font-weight:800}
   .txnSub{color:var(--muted);font-size:12px;margin-top:2px}
-  .txnAmt{font-weight:600} /* not bold */
+  .txnAmt{font-weight:600}
   .txnRight{display:flex;align-items:flex-start;gap:8px}
   .chev{opacity:.55;font-size:20px;line-height:1;margin-top:1px}
 
   /* Group container with sharper corners; inset separators that don’t span full width */
-  .txnStack{
-    border:1px solid rgba(255,255,255,.10);
-    border-radius:12px;overflow:hidden;background:rgba(255,255,255,.035);
-  }
+  .txnStack{border:1px solid rgba(255,255,255,.10);border-radius:12px;overflow:hidden;background:rgba(255,255,255,.035)}
   .txnStack .txnRow{padding:16px 16px;background:transparent;border-radius:0}
-  .txnStack .txnRow + .txnRow::before{
-    content:"";position:absolute;left:92px;right:16px;top:0;height:1px;
-    background:rgba(255,255,255,.08)
-  }
+  .txnStack .txnRow + .txnRow::before{content:"";position:absolute;left:92px;right:16px;top:0;height:1px;background:rgba(255,255,255,.08)}
 
   .pos-0 .views{transform:translateX(0%)} .pos-1 .views{transform:translateX(-50%)}
 
@@ -110,17 +98,9 @@
   .row .right{font-weight:900;font-size:18px}
   .statusLine{font-size:18px;margin-bottom:4px}
 
-  .txnDetailIcon{
-    width:72px;height:72px;border-radius:0px;
-    background:rgba(255,255,255,.80);
-    border:0px solid rgba(255,255,255,.12);
-    display:grid;place-items:center;
-    margin:0 auto 10px
-  }
-  .txnDetailIcon img{
-    width:44px;height:44px;object-fit:contain;
-    filter:drop-shadow(0 2px 8px rgba(0,0,0,.30));
-  }
+  .txnDetailIcon{width:72px;height:72px;border-radius:0px;background:rgba(255,255,255,.80);border:0px solid rgba(255,255,255,.12);
+    display:grid;place-items:center;margin:0 auto 10px}
+  .txnDetailIcon img{width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,.30))}
 
   /* Bottom sheet */
   .sheet{position:fixed;inset:0;display:grid;place-items:end center;pointer-events:none;z-index:9}
@@ -153,11 +133,7 @@
   .sheet.dark .info small{color:#9a9a9a}
 
   /* SUCCESS VIEW inside same sheet */
-  .sheet.success .title,
-  .sheet.success .ringWrap,
-  .sheet.success .info,
-  .sheet.success .actions,
-  .sheet.success .other{display:none}
+  .sheet.success .title,.sheet.success .ringWrap,.sheet.success .info,.sheet.success .actions,.sheet.success .other{display:none}
   .payReceipt{display:none;color:#fff;text-align:center;padding:14px 16px 28px}
   .sheet.success .payReceipt{display:block}
   .payCheck{width:124px;height:124px;border-radius:50%;background:conic-gradient(#b8ffb9,#34c759);padding:10px;margin:2px auto 12px}
@@ -185,75 +161,19 @@
   .hidden{display:none !important}
   #cardBalTile{padding-bottom:8px} #cardBalTile>:last-child{margin-bottom:0}
 
-/* === Paste at end of your <style> === */
-:root{
-  --iconSize: 36px;
-  --iconGap: 12px;
-  --listPadX: 16px;
-}
-
-/* List icons — no background box */
-.txnIcon{
-  width:var(--iconSize);
-  height:var(--iconSize);
-  flex:0 0 var(--iconSize);
-  display:grid;
-  place-items:center;
-  background:transparent;
-  border-radius:0;
-  box-shadow:none;
-}
-.txnIcon img{
-  width:var(--iconSize);
-  height:var(--iconSize);
-  object-fit:contain;
-  filter:none;
-}
-
-/* Keep row padding consistent */
-.txnStack .txnRow{padding:16px var(--listPadX);}
-
-/* Inset separators after the icon */
-.txnStack .txnRow + .txnRow::before{
-  content:"";
-  position:absolute;
-  top:0;
-  left:calc(var(--listPadX) + var(--iconSize) + var(--iconGap));
-  right:var(--listPadX);
-  height:1px;
-  background:rgba(255,255,255,.08);
-}
-
-/* Transaction detail icon — bigger, no box */
-.txnDetailIcon{
-  width:auto;height:auto;
-  background:transparent;
-  border:0;border-radius:0;box-shadow:none;
-  margin:0 auto 14px;
-}
-.txnDetailIcon img{
-  width:72px;height:72px;
-  object-fit:contain;
-  filter:none;
-}
-
-/* Cashback percentage chip under amount */
-.amtWrap{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
-.cbChip{
-  font-size:12px; line-height:1;
-  padding:3px 6px;
-  border-radius:6px;
-  background:rgba(255,255,255,.12);
-  border:1px solid rgba(255,255,255,.14);
-}
-
-  .txnStack .txnRow + .txnRow::before{
-    left: calc(var(--listPadX) + var(--iconSize));
-  }
-
-  #txnsTile{ border-radius:6px; }
-  .txnStack{ border-radius:6px; }
-  
+  /* === Paste at end of your <style> === */
+  :root{ --iconSize:36px; --iconGap:12px; --listPadX:16px; }
+  .txnIcon{width:var(--iconSize);height:var(--iconSize);flex:0 0 var(--iconSize);display:grid;place-items:center;background:transparent;border-radius:0;box-shadow:none}
+  .txnIcon img{width:var(--iconSize);height:var(--iconSize);object-fit:contain;filter:none}
+  .txnStack .txnRow{padding:16px var(--listPadX)}
+  .txnStack .txnRow + .txnRow::before{content:"";position:absolute;top:0;left:calc(var(--listPadX) + var(--iconSize) + var(--iconGap));right:var(--listPadX);height:1px;background:rgba(255,255,255,.08)}
+  .txnDetailIcon{width:auto;height:auto;background:transparent;border:0;border-radius:0;box-shadow:none;margin:0 auto 14px}
+  .txnDetailIcon img{width:72px;height:72px;object-fit:contain;filter:none}
+  .amtWrap{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+  .cbChip{font-size:12px;line-height:1;padding:3px 6px;border-radius:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14)}
+  .txnStack .txnRow + .txnRow::before{left:calc(var(--listPadX) + var(--iconSize))}
+  #txnsTile{border-radius:6px}
+  .txnStack{border-radius:6px}
 </style>
 </head>
 <body>
@@ -263,9 +183,16 @@
       <div class="nav">
         <h1>Sapphire Reserve</h1>
         <div class="iconrow">
-          <div class="iconbtn" aria-label="Search"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
-          <div class="iconbtn" id="openAddTxn" aria-label="List"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M4 4h16v2H4zM4 9h16v2H4zM4 14h11v2H4zM4 19h11v2H4z"/></svg></div>
-          <div class="iconbtn" aria-label="More"><svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></div>
+          <div class="iconbtn" aria-label="Search">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 10-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          </div>
+          <div class="iconbtn" id="openAddTxn" aria-label="List">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M4 4h16v2H4zM4 9h16v2H4zM4 14h11v2H4zM4 19h11v2H4z"/></svg>
+          </div>
+          <!-- NEW: give the 3-dot icon an id to open the balances sheet -->
+          <div class="iconbtn" id="openBalances" aria-label="More">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+          </div>
         </div>
       </div>
 
@@ -455,6 +382,27 @@
       <div class="other" id="editTxnBtn">Go Back &amp; Edit</div>
     </div>
   </div>
+
+  <!-- NEW: Update Balances sheet -->
+  <div class="sheet" id="balancesSheet" aria-hidden="true">
+    <div class="dim" id="balancesDim"></div>
+    <div class="panel">
+      <div class="panelHead"><button class="closeX" id="closeBalances" aria-label="Close">×</button></div>
+      <div class="title">Update Balances</div>
+      <div class="form">
+        <label for="editCardBalance">Card Balance</label>
+        <input id="editCardBalance" type="number" step="0.01" inputmode="decimal" placeholder="0.00" />
+        <label for="editAvailableBalance">Available</label>
+        <input id="editAvailableBalance" type="number" step="0.01" inputmode="decimal" placeholder="0.00" />
+        <label for="editCashback">Cashback</label>
+        <input id="editCashback" type="number" step="0.01" inputmode="decimal" placeholder="0.00" />
+      </div>
+      <div class="actions" style="gap:10px">
+        <button class="btn green" id="balancesSaveBtn">Save</button>
+        <button class="btn gray" id="balancesCancelBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -588,19 +536,12 @@
   function saveTransactions(){try{localStorage.setItem(TXN_STORE_KEY,JSON.stringify(transactions))}catch(e){} refreshCashbackTile();}
   function rid(){return 't_'+Math.random().toString(36).slice(2,9)}
 
-  /* === CASHBACK LOGIC (as requested) === */
+  /* === CASHBACK LOGIC === */
   const round2=n=>Math.round(n*100)/100;
-  const CASHBACK_RATES={
-    shopping:0.05,
-    food:0.04, travel:0.04, streaming:0.04,
-    gaming:0.03, messaging:0.03
-  };
+  const CASHBACK_RATES={shopping:0.05,food:0.04, travel:0.04, streaming:0.04,gaming:0.03, messaging:0.03};
   const rateForCategory = cat => CASHBACK_RATES[cat] ?? 0;
   const calcCashback=(amt,cat)=>round2((Number(amt)||0)*rateForCategory(cat));
-  const getTxnCashback=t=>
-    (typeof t.cashback==='number') ? t.cashback :
-    (t.kind==='purchase' ? calcCashback(t.amount, t.category) : 0);
-  /* ===================================== */
+  const getTxnCashback=t=>(typeof t.cashback==='number') ? t.cashback : (t.kind==='purchase' ? calcCashback(t.amount, t.category) : 0);
 
   /* Seed transactions (used only if nothing is in localStorage) */
   const SEED_TXNS = (function(){
@@ -629,48 +570,32 @@
     return SEED_TXNS.slice(); // fallback if nothing stored
   }
 
-  const CAT_MAP={
-    food:'food-icon.png',
-    gaming:'gaming-icon.png',
-    streaming:'watch-icon.png',
-    travel:'travel-icon.png',
-    messaging:'messaging-icon.png',
-    shopping:'shopping-icon.png',
-    payment:'payment-icon.png'
-  };
-  const catLabel=(k)=>({
-    food:'Food/Drinks',gaming:'Gaming',streaming:'Streaming',travel:'Travel',
-    messaging:'Messaging',shopping:'Shopping',payment:'Payment'
-  }[k]||'Other');
+  const CAT_MAP={food:'food-icon.png',gaming:'gaming-icon.png',streaming:'watch-icon.png',travel:'travel-icon.png',messaging:'messaging-icon.png',shopping:'shopping-icon.png',payment:'payment-icon.png'};
+  const catLabel=(k)=>({food:'Food/Drinks',gaming:'Gaming',streaming:'Streaming',travel:'Travel',messaging:'Messaging',shopping:'Shopping',payment:'Payment'}[k]||'Other');
   const iconByCat=(k)=> CAT_MAP[k] || 'payment-icon.png';
 
-  /* Keyword → icon rules (simple "AI-ish" matcher) */
-const KEYWORD_ICON_RULES = [
-  { patterns: [/doordash/i, /dd\*/i, /dashpass/i], icon: 'doordash-icon.png' },
-  { patterns: [/affirm/i],                                                     icon: 'affirm-icon.png' },
-  { patterns: [/amazon/i, /\bamzn\b/i, /amzn\s*mk?tp/i, /prime\b/i],           icon: 'amazon-icon.png' },
-  { patterns: [/discord/i, /nitro/i],                                          icon: 'discord-icon.png' },
-  { patterns: [/\bapple\b/i, /apple\.?com\/bill/i, /itunes/i, /app\s*store/i, /apple\s*pay/i],
-                                                                                icon: 'apple-icon.png' },
-  { patterns: [/\bgoogle\b/i, /google\s*play/i, /(gpay|google\s*pay)/i],       icon: 'google-icon.png' },
-  { patterns: [/american\s+air(lines)?/i, /\baadvantage\b/i, /\baa\s?(?:#|flight|tkt|ticket)?/i],
-                                                                                icon: 'aa-icon.png' },
-  { patterns: [/singapore\s+air(lines)?/i, /\bkrisflyer\b/i, /\bsia\b/i],      icon: 'sing-icon.png' },
-];
+  const KEYWORD_ICON_RULES = [
+    { patterns: [/doordash/i, /dd\*/i, /dashpass/i], icon: 'doordash-icon.png' },
+    { patterns: [/affirm/i], icon: 'affirm-icon.png' },
+    { patterns: [/amazon/i, /\bamzn\b/i, /amzn\s*mk?tp/i, /prime\b/i], icon: 'amazon-icon.png' },
+    { patterns: [/discord/i, /nitro/i], icon: 'discord-icon.png' },
+    { patterns: [/\bapple\b/i, /apple\.?com\/bill/i, /itunes/i, /app\s*store/i, /apple\s*pay/i], icon: 'apple-icon.png' },
+    { patterns: [/\bgoogle\b/i, /google\s*play/i, /(gpay|google\s*pay)/i], icon: 'google-icon.png' },
+    { patterns: [/american\s+air(lines)?/i, /\baadvantage\b/i, /\baa\s?(?:#|flight|tkt|ticket)?/i], icon: 'aa-icon.png' },
+    { patterns: [/singapore\s+air(lines)?/i, /\bkrisflyer\b/i, /\bsia\b/i], icon: 'sing-icon.png' },
+  ];
 
-function chooseIconForMerchant(name){
-  if (!name) return null;
-  const s = String(name);
-  for (const rule of KEYWORD_ICON_RULES){
-    for (const rx of rule.patterns){
-      if (rx.test(s)) return rule.icon;
+  function chooseIconForMerchant(name){
+    if (!name) return null;
+    const s = String(name);
+    for (const rule of KEYWORD_ICON_RULES){
+      for (const rx of rule.patterns){
+        if (rx.test(s)) return rule.icon;
+      }
     }
+    return null;
   }
-  return null;
-}
-function iconForTransaction(t){
-  return chooseIconForMerchant(t.merchant) || iconByCat(t.category);
-}
+  function iconForTransaction(t){ return chooseIconForMerchant(t.merchant) || iconByCat(t.category); }
 
   const iconFromMerchant = (merchant='') => {
     const m = String(merchant || '');
@@ -691,7 +616,6 @@ function iconForTransaction(t){
 
   function renderTransactions(){
     transactions.sort((a,b)=>new Date(b.iso)-new Date(a.iso));
-
     const rows=transactions.map(t=>{
       const pct = Math.round(rateForCategory(t.category)*100);
       const pctChip = (t.kind==='purchase' && pct>0) ? `<div class="cbChip">${pct}%</div>` : '';
@@ -712,8 +636,8 @@ function iconForTransaction(t){
       </div>`;
     }).join('');
 
-    txnListEl.innerHTML=`<div class="txnStack">${rows||''}</div>`;
-    txnListEl.querySelectorAll('.txnRow').forEach(row=>{
+    document.getElementById('txnList').innerHTML=`<div class="txnStack">${rows||''}</div>`;
+    document.querySelectorAll('#txnList .txnRow').forEach(row=>{
       row.addEventListener('click',()=>openTxn(row.dataset.id));
       row.addEventListener('keypress',e=>{if(e.key==='Enter')openTxn(row.dataset.id)});
     });
@@ -728,7 +652,11 @@ function iconForTransaction(t){
       return sum;
     },0)*100)/100;
   }
-  function refreshCashbackTile(){const total=Math.max(0,computeCashbackAvailable());SETTINGS.cashback=total;saveBalances();if(cashbackEl) cashbackEl.textContent=fmtUSD(total)}
+  function refreshCashbackTile(){
+    const total=Math.max(0,computeCashbackAvailable());
+    SETTINGS.cashback=total; saveBalances();
+    if(cashbackEl) cashbackEl.textContent=fmtUSD(total);
+  }
 
   let currentTxnId=null;
   function openTxn(id){
@@ -885,6 +813,43 @@ function iconForTransaction(t){
     const nowIso=new Date().toISOString();
     window.addCashbackDeposit({amount:cbAmount,iso:nowIso,account:acct,routing});
     cbAmount=0; cbApplyFromFraction(0,false); closeCbSheet();
+  });
+
+  /* === NEW: Update Balances sheet logic === */
+  const balancesSheet=document.getElementById('balancesSheet'),
+        balancesDim=document.getElementById('balancesDim'),
+        openBalances=document.getElementById('openBalances'),
+        closeBalances=document.getElementById('closeBalances'),
+        balancesSaveBtn=document.getElementById('balancesSaveBtn'),
+        balancesCancelBtn=document.getElementById('balancesCancelBtn'),
+        editCardBalance=document.getElementById('editCardBalance'),
+        editAvailableBalance=document.getElementById('editAvailableBalance'),
+        editCashback=document.getElementById('editCashback');
+
+  function openBalancesSheet(){
+    // Prefill with current values
+    editCardBalance.value = (Number(SETTINGS.cardBalance)||0).toFixed(2);
+    editAvailableBalance.value = (Number(SETTINGS.availableBalance)||0).toFixed(2);
+    editCashback.value = (Number(SETTINGS.cashback)||0).toFixed(2);
+    balancesSheet.classList.add('active');
+  }
+  function closeBalancesSheet(){ balancesSheet.classList.remove('active'); }
+
+  openBalances.addEventListener('click', openBalancesSheet);
+  balancesDim.addEventListener('click', closeBalancesSheet);
+  closeBalances.addEventListener('click', closeBalancesSheet);
+  balancesCancelBtn.addEventListener('click', closeBalancesSheet);
+
+  balancesSaveBtn.addEventListener('click', ()=>{
+    const card = parseFloat(editCardBalance.value);
+    const avail = parseFloat(editAvailableBalance.value);
+    const cb = parseFloat(editCashback.value);
+    if (isFinite(card)) SETTINGS.cardBalance = +card.toFixed(2);
+    if (isFinite(avail)) SETTINGS.availableBalance = +avail.toFixed(2);
+    if (isFinite(cb)) SETTINGS.cashback = +cb.toFixed(2);
+    saveBalances();
+    applyBalances();
+    closeBalancesSheet();
   });
 })();
 </script>
