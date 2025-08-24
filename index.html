@@ -246,6 +246,10 @@
   background:rgba(255,255,255,.12);
   border:1px solid rgba(255,255,255,.14);
 }
+
+  .txnStack .txnRow + .txnRow::before{
+    left: calc(var(--listPadX) + var(--iconSize));
+  }
   
 </style>
 </head>
@@ -856,3 +860,4 @@ function iconForTransaction(t){
 </script>
 </body>
 </html>
+
