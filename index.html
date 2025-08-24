@@ -96,34 +96,15 @@
   .statusLine{font-size:18px;margin-bottom:4px}
 
   .txnDetailIcon{
-    width:72px;height:72px;border-radius:14px;
+    width:72px;height:72px;border-radius:0px;
     background:rgba(255,255,255,.80);
-    border:1px solid rgba(255,255,255,.12);
+    border:0px solid rgba(255,255,255,.12);
     display:grid;place-items:center;
     margin:0 auto 10px
   }
   .txnDetailIcon img{
     width:44px;height:44px;object-fit:contain;
     filter:drop-shadow(0 2px 8px rgba(0,0,0,.30));
-  }
-
-  .txnHeaderIcon{
-    background: transparent;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-
-    display: block;
-    margin: 6px auto 4px;
-    padding: 0;
-  }
-  .txnHeaderIcon img{
-    display: block;
-    margin: 0 auto;
-    width: clamp(96px, 28vw, 140px);
-    height: clamp(96px, 28vw, 140px);
-    object-fit: contain;
-    filter: drop-shadow(0 2px 8px rgba(0,0,0,.35));
   }
 
   /* Bottom sheet */
@@ -774,6 +755,7 @@ function iconForTransaction(t){
 </script>
 </body>
 </html>
+
 
 
 
