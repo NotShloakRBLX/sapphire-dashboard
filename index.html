@@ -95,6 +95,18 @@
   .row .right{font-weight:900;font-size:18px}
   .statusLine{font-size:18px;margin-bottom:4px}
 
+  .txnDetailIcon{
+    width:72px;height:72px;border-radius:14px;
+    background:rgba(255,255,255,.80);
+    border:1px solid rgba(255,255,255,.12);
+    display:grid;place-items:center;
+    margin:0 auto 10px
+  }
+  .txnDetailIcon img{
+    width:44px;height:44px;object-fit:contain;
+    filter:drop-shadow(0 2px 8px rgba(0,0,0,.30));
+  }
+
   /* Bottom sheet */
   .sheet{position:fixed;inset:0;display:grid;place-items:end center;pointer-events:none;z-index:9}
   .sheet.active{pointer-events:auto}
@@ -207,6 +219,7 @@
     <section class="view" id="txnView">
       <div class="nav"><button class="pill" id="backTxn">Back</button><div class="iconrow"></div></div>
       <div class="txnHeader">
+        <div class="txnDetailIcon"><img id="txnIcon" src="./payment-icon.png" alt=""></div>
         <div class="txnAmount" id="txnAmount">$0.00</div>
         <div class="txnMerchant" id="txnMerchant">Merchant</div>
         <div class="txnDate" id="txnDate">MM/DD/YY, 0:00 PM</div>
@@ -589,6 +602,7 @@ function iconForTransaction(t){
   let currentTxnId=null;
   function openTxn(id){
     const t=transactions.find(x=>x.id===id); if(!t) return; currentTxnId=id;
+    document.getElementById('txnIcon').src = './' + iconForTransaction(t);
     document.getElementById('txnAmount').textContent=formatMoneyAbs(t.amount);
     document.getElementById('txnMerchant').textContent=t.merchant;
     document.getElementById('txnDate').textContent=fullDateTime(t.iso);
@@ -741,6 +755,7 @@ function iconForTransaction(t){
 </script>
 </body>
 </html>
+
 
 
 
