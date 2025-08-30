@@ -22,7 +22,8 @@
     font:15px -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
     -webkit-font-smoothing:antialiased}
   .app{max-width:430px;height:100svh;margin:0 auto;position:relative;overflow:hidden;background:var(--bg)}
-  .views{display:flex;width:200%;height:100%;transition:transform var(--t)}
+  /* support 3 views */
+  .views{display:flex;width:300%;height:100%;transition:transform var(--t)}
   .view{width:100%;height:100%;overflow:auto;padding-bottom:28px;background:linear-gradient(#0b0b0b,#0b0b0b 50%,#0a0a0a)}
   .view::-webkit-scrollbar{width:0;height:0}
   .nav{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;
@@ -85,7 +86,10 @@
   .txnStack .txnRow{padding:16px 16px;background:transparent;border-radius:0}
   .txnStack .txnRow + .txnRow::before{content:"";position:absolute;left:92px;right:16px;top:0;height:1px;background:rgba(255,255,255,.08)}
 
-  .pos-0 .views{transform:translateX(0%)} .pos-1 .views{transform:translateX(-50%)}
+  /* positions for 3 views */
+  .pos-0 .views{transform:translateX(0%)} 
+  .pos-1 .views{transform:translateX(-33.333333%)} 
+  .pos-2 .views{transform:translateX(-66.666666%)}
 
   .txnHeader{padding:28px 18px 10px;text-align:center}
   .txnAmount{font-size:60px;font-weight:900;letter-spacing:-.5px}
@@ -161,7 +165,7 @@
   .hidden{display:none !important}
   #cardBalTile{padding-bottom:8px} #cardBalTile>:last-child{margin-bottom:0}
 
-  /* === Paste at end of your <style> === */
+  /* === Tighten list visuals === */
   :root{ --iconSize:36px; --iconGap:12px; --listPadX:16px; }
   .txnIcon{width:var(--iconSize);height:var(--iconSize);flex:0 0 var(--iconSize);display:grid;place-items:center;background:transparent;border-radius:0;box-shadow:none}
   .txnIcon img{width:var(--iconSize);height:var(--iconSize);object-fit:contain;filter:none}
@@ -174,11 +178,41 @@
   .txnStack .txnRow + .txnRow::before{left:calc(var(--listPadX) + var(--iconSize))}
   #txnsTile{border-radius:6px}
   .txnStack{border-radius:6px}
+
+  /* ===== Pay Confirmation View (dark) ===== */
+  #payPage .content{padding:14px 14px 24px}
+  .payTitle{font-size:24px;font-weight:900;margin:4px 0 10px}
+  .payAmount{font-size:64px;line-height:1;font-weight:900;letter-spacing:-.5px;margin:6px 0 18px}
+  .payBox{display:flex;gap:12px;align-items:center;padding:16px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--tileBorder);cursor:pointer}
+  .payBox .bankIcon{width:36px;height:36px;border-radius:8px;background:#0f0f0f;display:grid;place-items:center}
+  .payBox .bankIcon img{width:26px;height:26px;object-fit:contain}
+  .payBox .label{font-size:13px;color:var(--muted);margin-bottom:2px}
+  .payBox .name{font-weight:800}
+  .spacer{height:16px}
+  /* Slide to confirm */
+  .slideWrap{margin-top:18px;position:relative;height:60px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--tileBorder);user-select:none}
+  .slideThumb{position:absolute;top:4px;left:4px;width:52px;height:52px;border-radius:999px;background:#0d0d0d;display:grid;place-items:center;font-size:24px;font-weight:900;box-shadow:0 8px 18px rgba(0,0,0,.45);touch-action:none}
+  .slideLabel{position:absolute;inset:0;display:grid;place-items:center;font-weight:900;color:rgba(255,255,255,.9);pointer-events:none}
+  .slideDone{background:#0a84ff}
+  /* loading chip */
+  .loadingChip{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:rgba(255,255,255,.09);
+    border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:10px;backdrop-filter:blur(6px)}
+  .spinner{width:18px;height:18px;border-radius:50%;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* Account picker rows */
+  .acctRow{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid var(--tileBorder);margin:10px 14px}
+  .acctRow img{width:28px;height:28px}
+  .acctRow .names{flex:1}
+  .acctRow .names .big{font-weight:800}
+  .acctRow .names .small{color:var(--muted);font-size:12px;margin-top:2px}
+  .acctRow input{accent-color:#0a84ff;transform:scale(1.1)}
 </style>
 </head>
 <body>
 <div class="app pos-0" id="app">
   <div class="views">
+    <!-- HOME / CARD VIEW -->
     <section class="view" id="card">
       <div class="nav">
         <h1>Sapphire Reserve</h1>
@@ -189,7 +223,6 @@
           <div class="iconbtn" id="openAddTxn" aria-label="List">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path opacity=".9" d="M4 4h16v2H4zM4 9h16v2H4zM4 14h11v2H4zM4 19h11v2H4z"/></svg>
           </div>
-          <!-- NEW: give the 3-dot icon an id to open the balances sheet -->
           <div class="iconbtn" id="openBalances" aria-label="More">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
           </div>
@@ -228,6 +261,7 @@
       </div>
     </section>
 
+    <!-- TXN DETAIL VIEW -->
     <section class="view" id="txnView">
       <div class="nav"><button class="pill" id="backTxn">Back</button><div class="iconrow"></div></div>
       <div class="txnHeader">
@@ -245,9 +279,39 @@
       <div class="row hidden" id="depositTargetRow"><h3>Deposited To</h3><div class="right" id="depositTargetValue">•••• 0000</div></div>
       <div class="deleteWrap"><button class="deleteBtn" id="deleteTxnBtn">Delete Transaction</button></div>
     </section>
+
+    <!-- NEW: PAY CONFIRMATION VIEW -->
+    <section class="view" id="payPage">
+      <div class="nav">
+        <button class="pill" id="payBackBtn">Back</button>
+        <div class="iconrow"><button class="pill" id="payCancelBtn">Cancel</button></div>
+      </div>
+      <div class="content">
+        <div class="payTitle">Pay Card</div>
+        <div class="payAmount" id="payAmountLabel">$0.00</div>
+
+        <div class="kb" style="margin:8px 2px 8px">Transfer from</div>
+        <div class="payBox" id="openAcctPicker" aria-label="Choose an account">
+          <div class="bankIcon"><img src="./chase-icon.png" alt=""></div>
+          <div style="flex:1">
+            <div class="label">From</div>
+            <div class="name" id="fromAcctName">Savings •••• 9124</div>
+            <div class="micro">Available</div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="spacer"></div>
+
+        <div class="slideWrap" id="slideWrap" aria-label="Slide to confirm">
+          <div class="slideThumb" id="slideThumb">➜</div>
+          <div class="slideLabel" id="slideLabel">Slide to confirm</div>
+        </div>
+      </div>
+    </section>
   </div>
 
-  <!-- Payment sheet (DARK, includes success state) -->
+  <!-- Payment sheet (DARK, includes amount picker) -->
   <div class="sheet dark" id="sheet">
     <div class="dim" id="dim"></div>
     <div class="panel">
@@ -270,22 +334,12 @@
       </div>
 
       <div class="info" id="payInfo">
-        Pay June Balance
-        <small>Paying your monthly balance is recommended to help keep you financially healthy and avoid interest charges.</small>
+        Pay Card Balance
+        <small>Paying the total amount you’ve spent is a great way to clear your balance.</small>
       </div>
 
       <div class="actions"><button class="btn primary" id="payNowBtn">Pay $0.00</button></div>
       <div class="other" id="otherAmountBtn">Other Amount</div>
-
-      <!-- Success content (in the same popup) -->
-      <div class="payReceipt" id="payReceipt" aria-live="polite" aria-atomic="true">
-        <div class="payCheck"><div class="inner">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg></div></div>
-        <div class="payTitle">You Paid <span id="receiptAmt">$0.00</span></div>
-        <div class="paySub">Your payment has been received and will be reflected in your balance within 24 hours.</div>
-      </div>
     </div>
   </div>
 
@@ -355,7 +409,6 @@
         <label for="txStatus">Status</label>
         <select id="txStatus"><option>Approved</option><option>Refunded</option><option>Posted</option></select>
 
-        <!-- NEW: Category dropdown -->
         <label for="txCategory">Category</label>
         <select id="txCategory">
           <option value="food">Food/Drinks</option>
@@ -383,7 +436,7 @@
     </div>
   </div>
 
-  <!-- NEW: Update Balances sheet -->
+  <!-- Update Balances sheet -->
   <div class="sheet" id="balancesSheet" aria-hidden="true">
     <div class="dim" id="balancesDim"></div>
     <div class="panel">
@@ -401,6 +454,33 @@
         <button class="btn green" id="balancesSaveBtn">Save</button>
         <button class="btn gray" id="balancesCancelBtn">Cancel</button>
       </div>
+    </div>
+  </div>
+
+  <!-- NEW: Account picker sheet (dark) -->
+  <div class="sheet dark" id="acctSheet" aria-hidden="true">
+    <div class="dim" id="acctDim"></div>
+    <div class="panel">
+      <div class="panelHead"><button class="closeX" id="acctClose" aria-label="Close">×</button></div>
+      <div class="title">Choose an account</div>
+      <div id="acctList">
+        <label class="acctRow">
+          <input type="radio" name="acct" value="Savings •••• 9124" checked />
+          <img src="./chase-icon.png" alt="">
+          <div class="names"><div class="big">Savings •••• 9124</div><div class="small">Available</div></div>
+        </label>
+        <label class="acctRow">
+          <input type="radio" name="acct" value="Checking •••• 2143" />
+          <img src="./chase-icon.png" alt="">
+          <div class="names"><div class="big">Checking •••• 2143</div><div class="small">Available</div></div>
+        </label>
+        <label class="acctRow">
+          <input type="radio" name="acct" value="TOTAL CHECKING (••• 6750)" />
+          <img src="./chase-icon.png" alt="">
+          <div class="names"><div class="big">TOTAL CHECKING (…6750)</div><div class="small">Available</div></div>
+        </label>
+      </div>
+      <div class="actions" style="gap:10px"><button class="btn primary" id="acctSave">Save</button></div>
     </div>
   </div>
 </div>
@@ -437,12 +517,11 @@
   const ensureCbv=()=>{const stored=Number(localStorage.getItem(CBV_KEY)||'0');if(stored!==CASHBACK_VERSION){localStorage.setItem(CBV_KEY,String(CASHBACK_VERSION))}return CASHBACK_VERSION};
   const currentCbv=()=>Number(localStorage.getItem(CBV_KEY)||ensureCbv()); ensureCbv();
 
-  /* Payment sheet */
+  /* Payment sheet (amount picker) */
   const sheet=document.getElementById('sheet'), dim=document.getElementById('dim'),
         openPay=document.getElementById('openPay'), closeSheetBtn=document.getElementById('closeSheet');
-  const closeSheet=()=>{ sheet.classList.remove('active','success'); };
+  const closeSheet=()=>{ sheet.classList.remove('active'); };
   openPay.addEventListener('click',()=>{
-    sheet.classList.remove('success');
     sheet.classList.add('active');
     MAX = Math.max(0, SETTINGS.cardBalance);
     if (MAX > 0) { lockedAtMax=false; lastFrac=0; applyFromFraction(1,false); }
@@ -450,7 +529,7 @@
   dim.addEventListener('click',closeSheet); closeSheetBtn.addEventListener('click',closeSheet);
   document.addEventListener('keydown',e=>{if(e.key==='Escape') closeSheet()});
 
-  /* Slider */
+  /* Slider (ring amount chooser) */
   const MIN=0.00; let MAX=SETTINGS.cardBalance; let THRESH=+(MAX*0.82).toFixed(2);
   const ringWrap=document.getElementById('ringWrap'), ringSvg=document.getElementById('ringSvg'),
         progress=document.getElementById('progress'), handle=document.getElementById('handle'),
@@ -465,7 +544,7 @@
     else if(v>THRESH){progress.setAttribute('stroke','url(#gradGreen)');
       info.innerHTML='Pay More Toward Your Balance<small>Paying more of your card balance helps free up available credit and reduces the amount to pay next month.</small>'}
     else{progress.setAttribute('stroke','url(#gradGray)');
-      info.innerHTML='Pay June Balance<small>Paying your monthly balance is recommended to help keep you financially healthy and avoid interest charges.</small>'}
+      info.innerHTML='Pay Statement Amount<small>Paying your monthly balance helps avoid interest charges.</small>'}
   }
   const signedDelta=(a,b)=>(((a-b)+1.5)%1)-0.5;
 
@@ -515,35 +594,42 @@
     saveBalances(); applyBalances();
   }
 
-  const receiptAmt=document.getElementById('receiptAmt');
-  /* Use the captured slider amount so receipt isn't $0.00 */
+  /* === Pay flow to full confirm page (no transaction yet) === */
+  let pendingPayAmt = 0;
+  const payAmountLabel = document.getElementById('payAmountLabel');
+  const payBackBtn = document.getElementById('payBackBtn');
+  const payCancelBtn = document.getElementById('payCancelBtn');
+  payBackBtn.addEventListener('click', ()=>{ app.className='app pos-0'; });
+  payCancelBtn.addEventListener('click', ()=>{ app.className='app pos-0'; });
+
+  function openPayPage() {
+    payAmountLabel.textContent = '$' + pendingPayAmt.toFixed(2);
+    closeSheet();
+    app.className = 'app pos-2';
+    resetSlider();
+  }
   payBtn.addEventListener('click', ()=>{
-    const payIso = new Date().toISOString();
-    const paid = amount;
-    if (paid > 0){
-      window.addPayment({amount: paid, iso: payIso, category:'payment'});
-    }
-    receiptAmt.textContent = '$' + paid.toFixed(2);
-    sheet.classList.add('success');
+    pendingPayAmt = amount;
+    if (pendingPayAmt <= 0) return;
+    openPayPage();
   });
 
   applyBalances();
 
   /* Transactions & cashback */
-  const txnListEl=document.getElementById('txnList');
   const TXN_STORE_KEY='demo_txns';
 
   function saveTransactions(){try{localStorage.setItem(TXN_STORE_KEY,JSON.stringify(transactions))}catch(e){} refreshCashbackTile();}
   function rid(){return 't_'+Math.random().toString(36).slice(2,9)}
 
-  /* === CASHBACK LOGIC === */
+  /* CASHBACK LOGIC */
   const round2=n=>Math.round(n*100)/100;
   const CASHBACK_RATES={shopping:0.05,food:0.04, travel:0.04, streaming:0.04,gaming:0.03, messaging:0.03};
   const rateForCategory = cat => CASHBACK_RATES[cat] ?? 0;
   const calcCashback=(amt,cat)=>round2((Number(amt)||0)*rateForCategory(cat));
   const getTxnCashback=t=>(typeof t.cashback==='number') ? t.cashback : (t.kind==='purchase' ? calcCashback(t.amount, t.category) : 0);
 
-  /* Seed transactions (used only if nothing is in localStorage) */
+  /* Seed transactions if none */
   const SEED_TXNS = (function(){
     const cv = currentCbv();
     return [
@@ -567,7 +653,7 @@
         if(Array.isArray(arr) && arr.length) return arr;
       }
     }catch(e){}
-    return SEED_TXNS.slice(); // fallback if nothing stored
+    return SEED_TXNS.slice();
   }
 
   const CAT_MAP={food:'food-icon.png',gaming:'gaming-icon.png',streaming:'watch-icon.png',travel:'travel-icon.png',messaging:'messaging-icon.png',shopping:'shopping-icon.png',payment:'payment-icon.png'};
@@ -583,6 +669,8 @@
     { patterns: [/\bgoogle\b/i, /google\s*play/i, /(gpay|google\s*pay)/i], icon: 'google-icon.png' },
     { patterns: [/american\s+air(lines)?/i, /\baadvantage\b/i, /\baa\s?(?:#|flight|tkt|ticket)?/i], icon: 'aa-icon.png' },
     { patterns: [/singapore\s+air(lines)?/i, /\bkrisflyer\b/i, /\bsia\b/i], icon: 'sing-icon.png' },
+    /* NEW: card payment keywords -> Chase icon */
+    { patterns: [/card\s*payment/i, /payment.*7295/i, /\b7295\b/i], icon: 'chase-icon.png' },
   ];
 
   function chooseIconForMerchant(name){
@@ -595,18 +683,13 @@
     }
     return null;
   }
-  function iconForTransaction(t){ return chooseIconForMerchant(t.merchant) || iconByCat(t.category); }
+  /* Force all payment txns to use chase icon */
+  function iconForTransaction(t){ 
+    if (t.kind==='payment') return 'chase-icon.png';
+    return chooseIconForMerchant(t.merchant) || iconByCat(t.category); 
+  }
 
-  const iconFromMerchant = (merchant='') => {
-    const m = String(merchant || '');
-    for (const rule of KEYWORD_ICON_RULES){
-      if (rule.patterns.some(re => re.test(m))) return rule.icon;
-    }
-    return null;
-  };
-  const iconForTxn = (t) => iconFromMerchant(t.merchant) || iconByCat(t.category);
-
-  /* Load transactions from storage (persist across reloads) */
+  /* Load transactions */
   let transactions = loadTransactions() || [];
 
   function formatDisplay(t){const negative=(t.status==='Refunded'||t.status==='Posted');return (negative?'- ':'')+'$'+Number(t.amount).toFixed(2)}
@@ -681,7 +764,7 @@
     if(i>-1){transactions.splice(i,1);saveTransactions();renderTransactions();currentTxnId=null;app.className='app pos-0'}
   });
 
-  /* Public helpers with category support */
+  /* Public helpers */
   window.addPurchase=({merchant,amount,iso,card='Sapphire Reserve',status='Approved',category='shopping'})=>{
     const amt=Number(amount);
     transactions.push({
@@ -815,7 +898,7 @@
     cbAmount=0; cbApplyFromFraction(0,false); closeCbSheet();
   });
 
-  /* === NEW: Update Balances sheet logic === */
+  /* Update Balances sheet logic */
   const balancesSheet=document.getElementById('balancesSheet'),
         balancesDim=document.getElementById('balancesDim'),
         openBalances=document.getElementById('openBalances'),
@@ -827,7 +910,6 @@
         editCashback=document.getElementById('editCashback');
 
   function openBalancesSheet(){
-    // Prefill with current values
     editCardBalance.value = (Number(SETTINGS.cardBalance)||0).toFixed(2);
     editAvailableBalance.value = (Number(SETTINGS.availableBalance)||0).toFixed(2);
     editCashback.value = (Number(SETTINGS.cashback)||0).toFixed(2);
@@ -851,6 +933,102 @@
     applyBalances();
     closeBalancesSheet();
   });
+
+  /* ===== Pay Confirmation page interactions ===== */
+  const openAcctPicker = document.getElementById('openAcctPicker');
+  const acctSheet = document.getElementById('acctSheet');
+  const acctDim = document.getElementById('acctDim');
+  const acctClose = document.getElementById('acctClose');
+  const acctSave = document.getElementById('acctSave');
+  const fromAcctNameEl = document.getElementById('fromAcctName');
+
+  function openAcctSheet(){ acctSheet.classList.add('active'); }
+  function closeAcctSheet(){ acctSheet.classList.remove('active'); }
+
+  openAcctPicker.addEventListener('click', openAcctSheet);
+  acctDim.addEventListener('click', closeAcctSheet);
+  acctClose.addEventListener('click', closeAcctSheet);
+  acctSave.addEventListener('click', ()=>{
+    const sel = document.querySelector('#acctList input[name="acct"]:checked');
+    if (sel) fromAcctNameEl.textContent = sel.value;
+    closeAcctSheet();
+  });
+
+  /* Slide to confirm */
+  const slideWrap = document.getElementById('slideWrap');
+  const slideThumb = document.getElementById('slideThumb');
+  const slideLabel = document.getElementById('slideLabel');
+  let draggingSlide=false, startX=0, thumbX=0, maxX=0, confirmed=false;
+
+  function resetSlider(){
+    confirmed=false;
+    slideThumb.style.transition=''; 
+    slideThumb.style.left='4px';
+    slideWrap.classList.remove('slideDone');
+    slideLabel.textContent='Slide to confirm';
+  }
+
+  function beginDrag(e){
+    if(confirmed) return;
+    draggingSlide=true;
+    startX=(e.touches?e.touches[0].clientX:e.clientX);
+    const wrapRect=slideWrap.getBoundingClientRect();
+    const thumbRect=slideThumb.getBoundingClientRect();
+    maxX = wrapRect.width - thumbRect.width - 8; // both side paddings 4px
+    thumbX = parseFloat(slideThumb.style.left||'4');
+    slideThumb.style.transition='none';
+    e.preventDefault();
+  }
+  function moveDrag(e){
+    if(!draggingSlide||confirmed) return;
+    const x=(e.touches?e.touches[0].clientX:e.clientX);
+    const dx=x-startX;
+    let nx=Math.max(4,Math.min(4+dx+ (thumbX-4),4+maxX));
+    slideThumb.style.left=nx+'px';
+  }
+  function endDrag(){
+    if(!draggingSlide||confirmed) return;
+    draggingSlide=false;
+    const currentLeft=parseFloat(slideThumb.style.left||'4');
+    const threshold=4+maxX*0.92;
+    if(currentLeft>=threshold){
+      // Confirmed
+      confirmed=true;
+      slideThumb.style.left=(4+maxX)+'px';
+      slideWrap.classList.add('slideDone');
+      slideLabel.textContent='Processing…';
+      performPayment();
+    }else{
+      slideThumb.style.transition='left .25s ease';
+      slideThumb.style.left='4px';
+    }
+  }
+  slideThumb.addEventListener('mousedown',beginDrag);
+  slideThumb.addEventListener('touchstart',beginDrag,{passive:false});
+  window.addEventListener('mousemove',moveDrag,{passive:false});
+  window.addEventListener('touchmove',moveDrag,{passive:false});
+  window.addEventListener('mouseup',endDrag);
+  window.addEventListener('touchend',endDrag);
+
+  function showLoadingChip(){
+    const chip=document.createElement('div');
+    chip.className='loadingChip';
+    chip.innerHTML='<div class="spinner"></div><div>Submitting payment…</div>';
+    document.body.appendChild(chip);
+    return chip;
+  }
+
+  function performPayment(){
+    const chip=showLoadingChip();
+    const nowIso=new Date().toISOString();
+    // Make the payment transaction; merchant uses CARD PAYMENT 7295 to ensure chase icon rule
+    window.addPayment({amount:pendingPayAmt,iso:nowIso,merchant:'CARD PAYMENT 7295',category:'payment'});
+    setTimeout(()=>{
+      chip.remove();
+      app.className='app pos-0';
+      resetSlider();
+    },3000);
+  }
 })();
 </script>
 </body>
