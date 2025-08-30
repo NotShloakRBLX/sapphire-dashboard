@@ -596,21 +596,26 @@
 
   /* === Pay flow to full confirm page (no transaction yet) === */
   let pendingPayAmt = 0;
+  let confirmFlow = 'pay';                       // 'pay' | 'cashback'
   const payAmountLabel = document.getElementById('payAmountLabel');
   const payBackBtn = document.getElementById('payBackBtn');
   const payCancelBtn = document.getElementById('payCancelBtn');
+  const payTitleEl = document.querySelector('#payPage .payTitle');
   payBackBtn.addEventListener('click', ()=>{ app.className='app pos-0'; });
   payCancelBtn.addEventListener('click', ()=>{ app.className='app pos-0'; });
 
   function openPayPage() {
+    payTitleEl.textContent = (confirmFlow === 'cashback') ? 'Cashback Deposit' : 'Pay Card';
     payAmountLabel.textContent = '$' + pendingPayAmt.toFixed(2);
     closeSheet();
+    if (confirmFlow === 'cashback') { closeCbSheet(); }
     app.className = 'app pos-2';
     resetSlider();
   }
   payBtn.addEventListener('click', ()=>{
     pendingPayAmt = amount;
     if (pendingPayAmt <= 0) return;
+    confirmFlow = 'pay';
     openPayPage();
   });
 
@@ -885,11 +890,15 @@
   window.addEventListener('mousemove',cbMove,{passive:false}); window.addEventListener('touchmove',cbMove,{passive:false});
   window.addEventListener('mouseup',cbEnd); window.addEventListener('touchend',cbEnd);
 
+  /* Route cashback deposit to the same confirm page */
   cbDepositBtn.addEventListener('click', ()=>{
     if(cbAmount<=0) return;
-    cbViews.style.transform='translateX(-50%)';
-    cbAcct.value=''; cbRouting.value='';
+    pendingPayAmt = cbAmount;
+    confirmFlow = 'cashback';
+    openPayPage();
   });
+
+  /* (Second page fields remain available but are not used in this flow) */
   cbSubmit.addEventListener('click', ()=>{
     const acct=(cbAcct.value||'').trim(), routing=(cbRouting.value||'').trim();
     if(!acct||!routing||cbAmount<=0) return;
@@ -897,6 +906,7 @@
     window.addCashbackDeposit({amount:cbAmount,iso:nowIso,account:acct,routing});
     cbAmount=0; cbApplyFromFraction(0,false); closeCbSheet();
   });
+  cbCancel.addEventListener('click', closeCbSheet);
 
   /* Update Balances sheet logic */
   const balancesSheet=document.getElementById('balancesSheet'),
@@ -1010,19 +1020,26 @@
   window.addEventListener('mouseup',endDrag);
   window.addEventListener('touchend',endDrag);
 
-  function showLoadingChip(){
+  function showLoadingChip(message){
     const chip=document.createElement('div');
     chip.className='loadingChip';
-    chip.innerHTML='<div class="spinner"></div><div>Submitting payment…</div>';
+    chip.innerHTML='<div class="spinner"></div><div>'+(message||'Submitting payment…')+'</div>';
     document.body.appendChild(chip);
     return chip;
   }
 
   function performPayment(){
-    const chip=showLoadingChip();
-    const nowIso=new Date().toISOString();
-    // Make the payment transaction; merchant uses CARD PAYMENT 7295 to ensure chase icon rule
-    window.addPayment({amount:pendingPayAmt,iso:nowIso,merchant:'CARD PAYMENT 7295',category:'payment'});
+    const isDeposit = (confirmFlow === 'cashback');
+    const chip=showLoadingChip(isDeposit ? 'Submitting deposit…' : 'Submitting payment…');
+    const nowIso = new Date().toISOString();
+
+    if (isDeposit){
+      window.addCashbackDeposit({amount:pendingPayAmt,iso:nowIso,account:fromAcctNameEl.textContent});
+    }else{
+      // merchant ensures chase icon rule
+      window.addPayment({amount:pendingPayAmt,iso:nowIso,merchant:'CARD PAYMENT 7295',category:'payment'});
+    }
+
     setTimeout(()=>{
       chip.remove();
       app.className='app pos-0';
