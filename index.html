@@ -184,15 +184,17 @@
   .payTitle{font-size:24px;font-weight:900;margin:4px 0 10px}
   .payAmount{font-size:64px;line-height:1;font-weight:900;letter-spacing:-.5px;margin:6px 0 18px}
   .payBox{display:flex;gap:12px;align-items:center;padding:16px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--tileBorder);cursor:pointer}
-  .payBox .bankIcon{width:36px;height:36px;border-radius:8px;background:#0f0f0f;display:grid;place-items:center}
+  /* icon container without black box */
+  .payBox .bankIcon{width:36px;height:36px;border-radius:0;background:transparent;display:grid;place-items:center}
   .payBox .bankIcon img{width:26px;height:26px;object-fit:contain}
   .payBox .label{font-size:13px;color:var(--muted);margin-bottom:2px}
   .payBox .name{font-weight:800}
   .spacer{height:16px}
   /* Slide to confirm */
-  .slideWrap{margin-top:18px;position:relative;height:60px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--tileBorder);user-select:none}
-  .slideThumb{position:absolute;top:4px;left:4px;width:52px;height:52px;border-radius:999px;background:#0d0d0d;display:grid;place-items:center;font-size:24px;font-weight:900;box-shadow:0 8px 18px rgba(0,0,0,.45);touch-action:none}
-  .slideLabel{position:absolute;inset:0;display:grid;place-items:center;font-weight:900;color:rgba(255,255,255,.9);pointer-events:none}
+  .slideWrap{margin-top:18px;position:relative;height:60px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--tileBorder);user-select:none;overflow:hidden}
+  .slideFill{position:absolute;left:4px;top:4px;bottom:4px;width:0;border-radius:999px;background:linear-gradient(90deg,#51c0ff,#0a84ff);pointer-events:none;transition:width .15s ease}
+  .slideThumb{position:absolute;top:4px;left:4px;width:52px;height:52px;border-radius:999px;background:#0d0d0d;display:grid;place-items:center;font-size:24px;font-weight:900;box-shadow:0 8px 18px rgba(0,0,0,.45);touch-action:none;z-index:2}
+  .slideLabel{position:absolute;inset:0;display:grid;place-items:center;font-weight:900;color:rgba(255,255,255,.6);pointer-events:none;z-index:0}
   .slideDone{background:#0a84ff}
   /* loading chip */
   .loadingChip{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:rgba(255,255,255,.09);
@@ -290,7 +292,7 @@
         <div class="payTitle">Pay Card</div>
         <div class="payAmount" id="payAmountLabel">$0.00</div>
 
-        <div class="kb" style="margin:8px 2px 8px">Transfer from</div>
+        <div class="kb" style="margin:8px 2px 8px" id="transferLabel">Transfer from</div>
         <div class="payBox" id="openAcctPicker" aria-label="Choose an account">
           <div class="bankIcon"><img src="./chase-icon.png" alt=""></div>
           <div style="flex:1">
@@ -304,6 +306,7 @@
         <div class="spacer"></div>
 
         <div class="slideWrap" id="slideWrap" aria-label="Slide to confirm">
+          <div class="slideFill" id="slideFill"></div>
           <div class="slideThumb" id="slideThumb">➜</div>
           <div class="slideLabel" id="slideLabel">Slide to confirm</div>
         </div>
@@ -601,11 +604,13 @@
   const payBackBtn = document.getElementById('payBackBtn');
   const payCancelBtn = document.getElementById('payCancelBtn');
   const payTitleEl = document.querySelector('#payPage .payTitle');
+  const transferLabel = document.getElementById('transferLabel');
   payBackBtn.addEventListener('click', ()=>{ app.className='app pos-0'; });
   payCancelBtn.addEventListener('click', ()=>{ app.className='app pos-0'; });
 
   function openPayPage() {
     payTitleEl.textContent = (confirmFlow === 'cashback') ? 'Cashback Deposit' : 'Pay Card';
+    transferLabel.textContent = (confirmFlow === 'cashback') ? 'Transfer to' : 'Transfer from';
     payAmountLabel.textContent = '$' + pendingPayAmt.toFixed(2);
     closeSheet();
     if (confirmFlow === 'cashback') { closeCbSheet(); }
@@ -968,12 +973,15 @@
   const slideWrap = document.getElementById('slideWrap');
   const slideThumb = document.getElementById('slideThumb');
   const slideLabel = document.getElementById('slideLabel');
-  let draggingSlide=false, startX=0, thumbX=0, maxX=0, confirmed=false;
+  const slideFill = document.getElementById('slideFill');
+  let draggingSlide=false, startX=0, thumbX=0, maxX=0, confirmed=false, thumbW=52;
 
   function resetSlider(){
     confirmed=false;
-    slideThumb.style.transition=''; 
+    slideThumb.style.transition='';
     slideThumb.style.left='4px';
+    slideFill.style.transition='';
+    slideFill.style.width='0px';
     slideWrap.classList.remove('slideDone');
     slideLabel.textContent='Slide to confirm';
   }
@@ -986,7 +994,9 @@
     const thumbRect=slideThumb.getBoundingClientRect();
     maxX = wrapRect.width - thumbRect.width - 8; // both side paddings 4px
     thumbX = parseFloat(slideThumb.style.left||'4');
+    thumbW = thumbRect.width;
     slideThumb.style.transition='none';
+    slideFill.style.transition='width .15s ease';
     e.preventDefault();
   }
   function moveDrag(e){
@@ -995,6 +1005,9 @@
     const dx=x-startX;
     let nx=Math.max(4,Math.min(4+dx+ (thumbX-4),4+maxX));
     slideThumb.style.left=nx+'px';
+    // Blue trail follows thumb
+    const fillW = Math.max(0, (nx - 4) + thumbW);
+    slideFill.style.width = fillW + 'px';
   }
   function endDrag(){
     if(!draggingSlide||confirmed) return;
@@ -1005,12 +1018,15 @@
       // Confirmed
       confirmed=true;
       slideThumb.style.left=(4+maxX)+'px';
+      slideFill.style.width='calc(100% - 8px)';
       slideWrap.classList.add('slideDone');
       slideLabel.textContent='Processing…';
       performPayment();
     }else{
       slideThumb.style.transition='left .25s ease';
       slideThumb.style.left='4px';
+      slideFill.style.transition='width .25s ease';
+      slideFill.style.width='0px';
     }
   }
   slideThumb.addEventListener('mousedown',beginDrag);
