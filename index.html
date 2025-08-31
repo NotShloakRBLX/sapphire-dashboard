@@ -209,6 +209,13 @@
   .acctRow .names .big{font-weight:800}
   .acctRow .names .small{color:var(--muted);font-size:12px;margin-top:2px}
   .acctRow input{accent-color:#0a84ff;transform:scale(1.1)}
+
+  /* ===== Additions for min/max dots & arc labels ===== */
+  .arcLabel{fill:rgba(255,255,255,.68);font-weight:900;letter-spacing:.12em;font-size:13px}
+  #minDot,#maxDot{fill:#26d07c;stroke:rgba(255,255,255,.25);stroke-width:2}
+  #minBadge{display:none}
+  #minBadge circle{fill:#ffd60a;stroke:#fff;stroke-width:3}
+  #minBadge text{fill:#000;font-weight:900;font-size:18px;dominant-baseline:middle;text-anchor:middle}
 </style>
 
 <!-- 🔗 Firebase CDN (Compat builds so we can use plain <script>) -->
@@ -218,8 +225,7 @@
 
 <!-- 🔧 PASTE YOUR FIREBASE CONFIG HERE (keep keys exactly like this) -->
 <script>
-  // 1) Replace the empty strings with your own Firebase project details
-  //    from Firebase console > Project settings > Your apps > Web app
+  // 1) Replace with your Firebase project details
   window.firebaseConfig = {
     apiKey: "AIzaSyBxhm51j73vehFr-_NTEnyPcgmyGPCQhwE",
     authDomain: "sapphire-reserve-e5cac.firebaseapp.com",
@@ -227,12 +233,9 @@
     storageBucket: "sapphire-reserve-e5cac.firebasestorage.app",
     messagingSenderId: "778349882307",
     appId: "1:778349882307:web:4c43dd8ba5e5c6e401ab76"
-    // (optional) storageBucket: "", measurementId: ""
   };
 
-  // 2) (Optional) Set a shared document ID to sync across devices.
-  //    If blank, the app uses your anonymous auth UID (per-device).
-  //    Example: window.CLOUD_DOC_ID = "my-shared-wallet-123";
+  // 2) Shared doc id for cross-device sync (optional)
   window.CLOUD_DOC_ID = "sapphire-reserve";
 </script>
 </head>
@@ -352,11 +355,38 @@
             <linearGradient id="gradBlue" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#51c0ff"/><stop offset="100%" stop-color="#0a84ff"/></linearGradient>
             <linearGradient id="gradGreen" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#b8ffb9"/><stop offset="100%" stop-color="#34c759"/></linearGradient>
             <linearGradient id="gradGray"  x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#e9ecef"/><stop offset="100%" stop-color="#cfd8dc"/></linearGradient>
+            <!-- NEW: Yellow for min-payment snap -->
+            <linearGradient id="gradYellow" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ffd60a"/><stop offset="100%" stop-color="#f0b429"/></linearGradient>
+
+            <!-- Paths for arc labels -->
+            <path id="arcTop"    d="M 40 160 A 120 120 0 0 1 280 160"/>
+            <path id="arcBottom" d="M 280 160 A 120 120 0 0 1 40 160"/>
           </defs>
+
+          <!-- base + progress -->
           <circle cx="160" cy="160" r="120" stroke="#e9e9ef" stroke-opacity=".65" stroke-width="26" fill="none"/>
           <circle id="progress" cx="160" cy="160" r="120" stroke="url(#gradGray)" stroke-width="26" fill="none"
                   stroke-linecap="round" transform="rotate(-90 160 160)" />
+          <!-- handle -->
           <circle id="handle" cx="160" cy="40" r="12" fill="#fff" stroke="#e6e6e6" stroke-width="2"/>
+
+          <!-- NEW: locator dots -->
+          <circle id="minDot" cx="160" cy="160" r="6" />
+          <circle id="maxDot" cx="160" cy="40"  r="6" />
+
+          <!-- NEW: yellow exclamation badge shown when snapped at $40 -->
+          <g id="minBadge" transform="translate(160,40)">
+            <circle r="16"></circle>
+            <text y="1">!</text>
+          </g>
+
+          <!-- NEW: arc labels -->
+          <text class="arcLabel">
+            <textPath href="#arcTop" startOffset="50%" text-anchor="middle" id="arcBalanceText">CARD BALANCE: $0.00</textPath>
+          </text>
+          <text class="arcLabel">
+            <textPath href="#arcBottom" startOffset="50%" text-anchor="middle">NO INTEREST CHARGES</textPath>
+          </text>
         </svg>
         <div class="centerText" aria-live="polite" aria-atomic="true"><div class="amt" id="amountLabel">$0.00</div></div>
       </div>
@@ -556,7 +586,6 @@
         saveTransactions(); renderTransactions(); refreshCashbackTile();
       }
     }else{
-      // First run: seed the cloud with whatever we have locally
       await ref.set({
         settings: SETTINGS,
         transactions: transactions,
@@ -615,7 +644,7 @@
   openPay.addEventListener('click',()=>{
     sheet.classList.add('active');
     MAX = Math.max(0, SETTINGS.cardBalance);
-    if (MAX > 0) { lockedAtMax=false; lastFrac=0; applyFromFraction(1,false); }
+    if (MAX > 0) { lockedAtMax=false; lockedAtMin=false; lastFrac=0; updateMarkersAndLabels(); applyFromFraction(1,false); }
   });
   dim.addEventListener('click',closeSheet); closeSheetBtn.addEventListener('click',closeSheet);
   document.addEventListener('keydown',e=>{if(e.key==='Escape') closeSheet()});
@@ -627,36 +656,136 @@
         amountLabel=document.getElementById('amountLabel'), payBtn=document.getElementById('payNowBtn'),
         info=document.getElementById('payInfo');
   const R=120, C=2*Math.PI*R; progress.setAttribute('stroke-dasharray',`${C}`); progress.setAttribute('stroke-dashoffset',`${C}`);
-  let amount=MIN, dragging=false, lastFrac=0, lockedAtMax=false;
+
+  /* NEW: min/max dots & labels refs */
+  const minDot = document.getElementById('minDot');
+  const maxDot = document.getElementById('maxDot');
+  const minBadge = document.getElementById('minBadge');
+  const arcBalanceText = document.getElementById('arcBalanceText');
+
+  const MIN_PAYMENT_ABS = 40; // $40 minimum payment
+  let minFrac = 0; // recalculated whenever MAX changes
+
+  let amount=MIN, dragging=false, lastFrac=0, lockedAtMax=false, lockedAtMin=false;
+
+  function fmtUSD(n){return (Number(n)||0).toLocaleString(undefined,{style:'currency',currency:'USD'})}
+
+  /* Place a point on the ring given a fraction 0..1 */
+  function pointForFrac(frac){
+    const ang=(-90+360*frac)*Math.PI/180;
+    return {x:160+R*Math.cos(ang), y:160+R*Math.sin(ang), ang};
+  }
+
+  /* Update locator dots + arc labels whenever balances/ring change */
+  function updateMarkersAndLabels(){
+    // dynamic "CARD BALANCE: $X"
+    arcBalanceText.textContent = 'CARD BALANCE: ' + fmtUSD(MAX);
+
+    // recompute min fraction
+    minFrac = (MAX>0) ? Math.min(1, MIN_PAYMENT_ABS / MAX) : 0;
+
+    // position min dot (hide if balance <= $40)
+    if (MAX > MIN_PAYMENT_ABS){
+      const p = pointForFrac(minFrac);
+      minDot.setAttribute('cx', p.x.toFixed(2));
+      minDot.setAttribute('cy', p.y.toFixed(2));
+      minDot.style.display = '';
+    }else{
+      minDot.style.display = 'none';
+    }
+
+    // position max dot (always at f=1)
+    const pMax = pointForFrac(1);
+    maxDot.setAttribute('cx', pMax.x.toFixed(2));
+    maxDot.setAttribute('cy', pMax.y.toFixed(2));
+  }
 
   function setUI(v){
-    if(lockedAtMax||Math.abs(v-MAX)<0.01){progress.setAttribute('stroke','url(#gradBlue)');
-      info.innerHTML='Pay Card Balance<small>Paying the total amount you’ve spent is a great way to clear your balance and stay ahead on your finances.</small>'}
-    else if(v>THRESH){progress.setAttribute('stroke','url(#gradGreen)');
-      info.innerHTML='Pay More Toward Your Balance<small>Paying more of your card balance helps free up available credit and reduces the amount to pay next month.</small>'}
-    else{progress.setAttribute('stroke','url(#gradGray)');
-      info.innerHTML='Pay Statement Amount<small>Paying your monthly balance helps avoid interest charges.</small>'}
+    // choose progress color by state
+    if (lockedAtMin){
+      progress.setAttribute('stroke','url(#gradYellow)');
+      info.innerHTML='Minimum Payment<small>Paying the minimum keeps your account in good standing.</small>';
+    } else if(lockedAtMax||Math.abs(v-MAX)<0.01){
+      progress.setAttribute('stroke','url(#gradBlue)');
+      info.innerHTML='Pay Card Balance<small>Paying the total amount you’ve spent is a great way to clear your balance and stay ahead on your finances.</small>';
+    } else if(v>THRESH){
+      progress.setAttribute('stroke','url(#gradGreen)');
+      info.innerHTML='Pay More Toward Your Balance<small>Paying more of your card balance helps free up available credit and reduces the amount to pay next month.</small>';
+    } else {
+      progress.setAttribute('stroke','url(#gradGray)');
+      info.innerHTML='Pay Statement Amount<small>Paying your monthly balance helps avoid interest charges.</small>';
+    }
+
+    // show/hide yellow "!" badge when locked at minimum
+    if (lockedAtMin && MAX > MIN_PAYMENT_ABS){
+      const p = pointForFrac(minFrac);
+      // offset slightly outward from the ring
+      const vx = p.x - 160, vy = p.y - 160;
+      const len = Math.hypot(vx, vy) || 1;
+      const ox = vx / len * 24, oy = vy / len * 24;
+      minBadge.setAttribute('transform', `translate(${(p.x+ox).toFixed(2)},${(p.y+oy).toFixed(2)})`);
+      minBadge.style.display = '';
+    }else{
+      minBadge.style.display = 'none';
+    }
   }
+
   const signedDelta=(a,b)=>(((a-b)+1.5)%1)-0.5;
 
   function applyFromFraction(fracRaw,fromDrag=false){
-    let f=Math.max(0,Math.min(0.999999,fracRaw)); const delta=signedDelta(f,lastFrac);
-    if(lockedAtMax){ if(delta>0){f=1}else{lockedAtMax=false} }
-    const NEAR_MAX=0.995; if(!lockedAtMax&&f>=NEAR_MAX){lockedAtMax=true;f=1}
-    lastFrac=f; const fracForAmount=(f===1)?1:f; amount=+((MIN+fracForAmount*(MAX-MIN)).toFixed(2));
-    const dash=C*(1-fracForAmount); progress.style.transition=fromDrag?'none':'stroke-dashoffset 220ms ease, stroke 220ms ease';
+    let f=Math.max(0,Math.min(0.999999,fracRaw));
+    const delta=signedDelta(f,lastFrac);
+
+    /* handle "max" sticky lock (existing behavior) */
+    if(lockedAtMax){
+      if(delta>0){ f=1; } else { lockedAtMax=false; }
+    }
+    const NEAR_MAX=0.995;
+    if(!lockedAtMax && f>=NEAR_MAX){ lockedAtMax=true; f=1; }
+
+    /* NEW: $40 minimum sticky lock (only if balance > $40) */
+    if (MAX > MIN_PAYMENT_ABS){
+      if (lockedAtMin){
+        // unlock as soon as user pushes forward past the minimum
+        if (delta>0.005){ lockedAtMin=false; }
+        else { f=minFrac; }
+      } else {
+        const near=0.02; // ~7° of arc
+        if (Math.abs(f-minFrac) < near){ lockedAtMin=true; f=minFrac; }
+      }
+    } else {
+      lockedAtMin=false;
+    }
+
+    lastFrac=f;
+    const fracForAmount=(f===1)?1:f;
+    amount=+((MIN+fracForAmount*(MAX-MIN)).toFixed(2));
+
+    const dash=C*(1-fracForAmount);
+    progress.style.transition=fromDrag?'none':'stroke-dashoffset 220ms ease, stroke 220ms ease';
     progress.setAttribute('stroke-dashoffset',`${dash}`);
-    const ang=(-90+360*fracForAmount)*Math.PI/180; const hx=160+R*Math.cos(ang), hy=160+R*Math.sin(ang);
-    handle.style.transition=fromDrag?'none':'cx 180ms ease, cy 180ms ease'; handle.setAttribute('cx',hx.toFixed(2)); handle.setAttribute('cy',hy.toFixed(2));
-    amountLabel.textContent='$'+amount.toFixed(2); payBtn.textContent='Pay $'+amount.toFixed(2); setUI(amount);
+
+    const p = pointForFrac(fracForAmount);
+    handle.style.transition=fromDrag?'none':'cx 180ms ease, cy 180ms ease';
+    handle.setAttribute('cx',p.x.toFixed(2));
+    handle.setAttribute('cy',p.y.toFixed(2));
+
+    amountLabel.textContent='$'+amount.toFixed(2);
+    payBtn.textContent='Pay $'+amount.toFixed(2);
+    setUI(amount);
   }
 
   const cardBalanceEl=document.getElementById('cardBalance'), availableEl=document.getElementById('availableBalance'),
-        cashbackEl=document.getElementById('cashback'); const fmtUSD=n=>n.toLocaleString(undefined,{style:'currency',currency:'USD'});
+        cashbackEl=document.getElementById('cashback');
   function applyBalances(){
-    cardBalanceEl.textContent=fmtUSD(SETTINGS.cardBalance); availableEl.textContent=`${fmtUSD(SETTINGS.availableBalance)} Available`;
+    cardBalanceEl.textContent=fmtUSD(SETTINGS.cardBalance);
+    availableEl.textContent=`${fmtUSD(SETTINGS.availableBalance)} Available`;
     if(cashbackEl) cashbackEl.textContent=fmtUSD(SETTINGS.cashback);
-    MAX=Math.max(0,SETTINGS.cardBalance); THRESH=+(MAX*0.82).toFixed(2); lockedAtMax=false; lastFrac=0; applyFromFraction(0,false);
+    MAX=Math.max(0,SETTINGS.cardBalance);
+    THRESH=+(MAX*0.82).toFixed(2);
+    lockedAtMax=false; lockedAtMin=false; lastFrac=0;
+    updateMarkersAndLabels();
+    applyFromFraction(0,false);
   }
 
   function fractionFromPointer(evt){
@@ -1093,7 +1222,6 @@
     const dx=x-startX;
     let nx=Math.max(4,Math.min(4+dx+ (thumbX-4),4+maxX));
     slideThumb.style.left=nx+'px';
-    // Blue trail follows thumb
     const fillW = Math.max(0, (nx - 4) + thumbW);
     slideFill.style.width = fillW + 'px';
   }
@@ -1103,7 +1231,6 @@
     const currentLeft=parseFloat(slideThumb.style.left||'4');
     const threshold=4+maxX*0.92;
     if(currentLeft>=threshold){
-      // Confirmed
       confirmed=true;
       slideThumb.style.left=(4+maxX)+'px';
       slideFill.style.width='calc(100% - 8px)';
@@ -1140,7 +1267,6 @@
     if (isDeposit){
       window.addCashbackDeposit({amount:pendingPayAmt,iso:nowIso,account:fromAcctNameEl.textContent});
     }else{
-      // merchant ensures chase icon rule
       window.addPayment({amount:pendingPayAmt,iso:nowIso,merchant:'CARD PAYMENT 7295',category:'payment'});
     }
 
@@ -1158,4 +1284,3 @@
 </script>
 </body>
 </html>
-
