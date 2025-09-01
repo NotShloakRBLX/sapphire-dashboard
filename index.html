@@ -68,7 +68,7 @@
     border:none;outline:none;-webkit-tap-highlight-color:transparent;box-shadow:0 10px 24px rgba(0,0,0,.45);font-size:14px;}
   .payBubble:active{transform:scale(.95)}
 
-  /* iOS-style stacked transactions */
+  /* iOS-style stacked transactions (updated to match Apple-style list) */
   .txnRow{display:flex;gap:12px;align-items:flex-start;background:transparent;border:0;border-radius:12px;
     padding:14px 16px;cursor:pointer;position:relative}
   .txnRow + .txnRow{margin-top:0}
@@ -81,6 +81,7 @@
   .txnRight{display:flex;align-items:flex-start;gap:8px}
   .chev{opacity:.55;font-size:20px;line-height:1;margin-top:1px}
 
+  /* Group container with sharper corners; inset separators that don’t span full width */
   .txnStack{border:1px solid rgba(255,255,255,.10);border-radius:12px;overflow:hidden;background:rgba(255,255,255,.035)}
   .txnStack .txnRow{padding:16px 16px;background:transparent;border-radius:0}
   .txnStack .txnRow + .txnRow::before{content:"";position:absolute;left:92px;right:16px;top:0;height:1px;background:rgba(255,255,255,.08)}
@@ -116,8 +117,7 @@
   .panelHead{display:flex;align-items:center;justify-content:center;padding:12px 14px 0;position:relative}
   .closeX{position:absolute;left:14px;top:8px;width:36px;height:36px;border-radius:10px;border:none;background:#efefef;font-size:20px;font-weight:900;cursor:pointer}
   .title{font-size:28px;font-weight:900;margin:6px 0 0;text-align:center}
-  .ringWrap{position:relative;width:86%;max-width:360px;aspect-ratio:1;margin:12px auto 12px;
-    touch-action:none;user-select:none;} /* prevent page scroll while sliding */
+  .ringWrap{position:relative;width:86%;max-width:360px;aspect-ratio:1;margin:12px auto 12px}
   .ringWrap svg{width:100%;height:100%}
   .centerText{position:absolute;inset:0;display:grid;place-items:center;text-align:center;pointer-events:none}
   .amt{font-weight:900;font-size:44px}
@@ -130,11 +130,13 @@
   .btn.gray{background:#efefef;color:#000;font-weight:900}
   .other{text-align:center;padding-bottom:20px;color:#007aff;font-weight:900}
 
+  /* Make payment & cashback sheets dark */
   .sheet.dark .panel{background:#111;color:#fff}
   .sheet.dark .closeX{background:#1f1f1f;color:#fff;border:1px solid #2a2a2a}
   .sheet.dark .info{color:#dcdcdc}
   .sheet.dark .info small{color:#9a9a9a}
 
+  /* SUCCESS VIEW inside same sheet */
   .sheet.success .title,.sheet.success .ringWrap,.sheet.success .info,.sheet.success .actions,.sheet.success .other{display:none}
   .payReceipt{display:none;color:#fff;text-align:center;padding:14px 16px 28px}
   .sheet.success .payReceipt{display:block}
@@ -163,7 +165,7 @@
   .hidden{display:none !important}
   #cardBalTile{padding-bottom:8px} #cardBalTile>:last-child{margin-bottom:0}
 
-  /* Keep the tightened list visuals from before (unchanged) */
+  /* === Tighten list visuals === */
   :root{ --iconSize:36px; --iconGap:12px; --listPadX:16px; }
   .txnIcon{width:var(--iconSize);height:var(--iconSize);flex:0 0 var(--iconSize);display:grid;place-items:center;background:transparent;border-radius:0;box-shadow:none}
   .txnIcon img{width:var(--iconSize);height:var(--iconSize);object-fit:contain;filter:none}
@@ -182,41 +184,42 @@
   .payTitle{font-size:24px;font-weight:900;margin:4px 0 10px}
   .payAmount{font-size:64px;line-height:1;font-weight:900;letter-spacing:-.5px;margin:6px 0 18px}
   .payBox{display:flex;gap:12px;align-items:center;padding:16px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--tileBorder);cursor:pointer}
+  /* icon container without black box */
   .payBox .bankIcon{width:36px;height:36px;border-radius:0;background:transparent;display:grid;place-items:center}
   .payBox .bankIcon img{width:26px;height:26px;object-fit:contain}
   .payBox .label{font-size:13px;color:var(--muted);margin-bottom:2px}
   .payBox .name{font-weight:800}
   .spacer{height:16px}
+  /* Slide to confirm */
   .slideWrap{margin-top:18px;position:relative;height:60px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--tileBorder);user-select:none;overflow:hidden}
   .slideFill{position:absolute;left:4px;top:4px;bottom:4px;width:0;border-radius:999px;background:linear-gradient(90deg,#51c0ff,#0a84ff);pointer-events:none;transition:width .15s ease}
   .slideThumb{position:absolute;top:4px;left:4px;width:52px;height:52px;border-radius:999px;background:#0d0d0d;display:grid;place-items:center;font-size:24px;font-weight:900;box-shadow:0 8px 18px rgba(0,0,0,.45);touch-action:none;z-index:2}
   .slideLabel{position:absolute;inset:0;display:grid;place-items:center;font-weight:900;color:rgba(255,255,255,.6);pointer-events:none;z-index:0}
   .slideDone{background:#0a84ff}
+  /* loading chip */
   .loadingChip{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:rgba(255,255,255,.09);
     border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:10px;backdrop-filter:blur(6px)}
   .spinner{width:18px;height:18px;border-radius:50%;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;animation:spin 1s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
 
+  /* Account picker rows */
   .acctRow{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid var(--tileBorder);margin:10px 14px}
   .acctRow img{width:28px;height:28px}
   .acctRow .names{flex:1}
   .acctRow .names .big{font-weight:800}
   .acctRow .names .small{color:var(--muted);font-size:12px;margin-top:2px}
   .acctRow input{accent-color:#0a84ff;transform:scale(1.1)}
-
-  /* slider interaction tweaks */
-  #ringSvg,#handle{touch-action:none}
-  .marker{pointer-events:none;filter:drop-shadow(0 1px 4px rgba(0,0,0,.35))}
-  .minBadge circle{fill:#ffd60a;stroke:#fff;stroke-width:2}
-  .minBadge text{font-weight:900;fill:#000;font-size:16px;dominant-baseline:middle;text-anchor:middle}
-  .maxDot{fill:#2ecc71}
 </style>
 
+<!-- 🔗 Firebase CDN (Compat builds so we can use plain <script>) -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
+<!-- 🔧 PASTE YOUR FIREBASE CONFIG HERE (keep keys exactly like this) -->
 <script>
+  // 1) Replace the empty strings with your own Firebase project details
+  //    from Firebase console > Project settings > Your apps > Web app
   window.firebaseConfig = {
     apiKey: "AIzaSyBxhm51j73vehFr-_NTEnyPcgmyGPCQhwE",
     authDomain: "sapphire-reserve-e5cac.firebaseapp.com",
@@ -225,6 +228,8 @@
     messagingSenderId: "778349882307",
     appId: "1:778349882307:web:4c43dd8ba5e5c6e401ab76"
   };
+
+  // 2) Shared doc ID to sync across devices (optional)
   window.CLOUD_DOC_ID = "sapphire-reserve";
 </script>
 </head>
@@ -299,7 +304,7 @@
       <div class="deleteWrap"><button class="deleteBtn" id="deleteTxnBtn">Delete Transaction</button></div>
     </section>
 
-    <!-- PAY CONFIRMATION VIEW -->
+    <!-- NEW: PAY CONFIRMATION VIEW -->
     <section class="view" id="payPage">
       <div class="nav">
         <button class="pill" id="payBackBtn">Back</button>
@@ -331,7 +336,7 @@
     </section>
   </div>
 
-  <!-- Payment sheet -->
+  <!-- Payment sheet (DARK, includes amount picker) -->
   <div class="sheet dark" id="sheet">
     <div class="dim" id="dim"></div>
     <div class="panel">
@@ -344,16 +349,10 @@
             <linearGradient id="gradBlue" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#51c0ff"/><stop offset="100%" stop-color="#0a84ff"/></linearGradient>
             <linearGradient id="gradGreen" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#b8ffb9"/><stop offset="100%" stop-color="#34c759"/></linearGradient>
             <linearGradient id="gradGray"  x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#e9ecef"/><stop offset="100%" stop-color="#cfd8dc"/></linearGradient>
-            <linearGradient id="gradYellow" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ffe97a"/><stop offset="100%" stop-color="#ffd60a"/></linearGradient>
           </defs>
           <circle cx="160" cy="160" r="120" stroke="#e9e9ef" stroke-opacity=".65" stroke-width="26" fill="none"/>
           <circle id="progress" cx="160" cy="160" r="120" stroke="url(#gradGray)" stroke-width="26" fill="none"
-                  stroke-linecap="round" transform="rotate(-90 160 160)"/>
-          <!-- markers only (tags removed) -->
-          <g id="minMarker" class="marker minBadge" style="display:none">
-            <circle r="10"></circle><text y="1">!</text>
-          </g>
-          <circle id="maxMarker" class="marker maxDot" r="7" style="display:none"></circle>
+                  stroke-linecap="round" transform="rotate(-90 160 160)" />
           <circle id="handle" cx="160" cy="40" r="12" fill="#fff" stroke="#e6e6e6" stroke-width="2"/>
         </svg>
         <div class="centerText" aria-live="polite" aria-atomic="true"><div class="amt" id="amountLabel">$0.00</div></div>
@@ -369,7 +368,7 @@
     </div>
   </div>
 
-  <!-- Cashback sheet (unchanged) -->
+  <!-- Cashback sheet (dark) -->
   <div class="sheet dark" id="cashbackSheet" aria-hidden="true">
     <div class="dim" id="cbDim"></div>
     <div class="panel">
@@ -385,7 +384,7 @@
               </defs>
               <circle cx="160" cy="160" r="120" stroke="#e9e9ef" stroke-opacity=".65" stroke-width="26" fill="none"/>
               <circle id="cbProgress" cx="160" cy="160" r="120" stroke="url(#cbGradGray)" stroke-width="26" fill="none"
-                      stroke-linecap="round" transform="rotate(-90 160 160)"/>
+                      stroke-linecap="round" transform="rotate(-90 160 160)" />
               <circle id="cbHandle" cx="160" cy="40" r="12" fill="#fff" stroke="#e6e6e6" stroke-width="2"/>
             </svg>
             <div class="centerText"><div class="amt" id="cbAmountLabel">$0.00</div></div>
@@ -422,7 +421,7 @@
     </div>
   </div>
 
-  <!-- Add / Confirm Txn sheets (unchanged) -->
+  <!-- Add / Confirm Txn sheets -->
   <div class="sheet" id="addTxnSheet" aria-hidden="true">
     <div class="dim" id="addTxnDim"></div>
     <div class="panel">
@@ -483,7 +482,7 @@
     </div>
   </div>
 
-  <!-- Account picker -->
+  <!-- NEW: Account picker sheet (dark) -->
   <div class="sheet dark" id="acctSheet" aria-hidden="true">
     <div class="dim" id="acctDim"></div>
     <div class="panel">
@@ -513,16 +512,22 @@
 
 <script>
 (()=> {
-  /* ===== Firebase helpers ===== */
-  let cloudSaveDebounced = ()=>{};
+  /* ============ Firebase helpers (minimal additions) ============ */
+  let cloudSaveDebounced = ()=>{}; // becomes real after init
+
   async function fbInit(){
     try{
       if(!window.firebaseConfig || !firebase?.initializeApp) return null;
-      if(!firebase.apps.length){ firebase.initializeApp(window.firebaseConfig); }
+      if(!firebase.apps.length){
+        firebase.initializeApp(window.firebaseConfig);
+      }
+      // Sign in anonymously so Firestore rules can require auth
       try{ await firebase.auth().signInAnonymously(); }catch(e){}
       const db=firebase.firestore();
+      // Optional offline cache (ignore if it fails)
       try{ await db.enablePersistence({synchronizeTabs:true}); }catch(e){}
-      window.db=db; return db;
+      window.db=db;
+      return db;
     }catch(e){ return null; }
   }
   async function cloudDocRef(){
@@ -539,22 +544,37 @@
     const snap=await ref.get();
     if(snap.exists){
       const data=snap.data()||{};
-      if(data.settings){ SETTINGS={...SETTINGS, ...data.settings, version: SETTINGS.version}; saveBalances(); applyBalances(); }
-      if(Array.isArray(data.transactions)){ transactions=data.transactions.slice(); saveTransactions(); renderTransactions(); refreshCashbackTile(); }
+      if(data.settings){
+        SETTINGS={...SETTINGS, ...data.settings, version: SETTINGS.version};
+        saveBalances(); applyBalances();
+      }
+      if(Array.isArray(data.transactions)){
+        transactions=data.transactions.slice();
+        saveTransactions(); renderTransactions(); refreshCashbackTile();
+      }
     }else{
-      await ref.set({ settings: SETTINGS, transactions: transactions, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+      // First run: seed the cloud with whatever we have locally
+      await ref.set({
+        settings: SETTINGS,
+        transactions: transactions,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
     }
   }
   async function cloudSave(){
     try{
       const ref=await cloudDocRef(); if(!ref) return;
-      await ref.set({ settings: SETTINGS, transactions: transactions, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, {merge:true});
+      await ref.set({
+        settings: SETTINGS,
+        transactions: transactions,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, {merge:true});
     }catch(e){}
   }
   function debounce(fn,ms){let t;return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);} }
   cloudSaveDebounced = debounce(cloudSave, 600);
 
-  /* ===== App ===== */
+  /* ============ Your existing app ============ */
   const app=document.getElementById('app');
   document.getElementById('backTxn').addEventListener('click', ()=>{ app.className='app pos-0'; });
 
@@ -585,116 +605,67 @@
   const ensureCbv=()=>{const stored=Number(localStorage.getItem(CBV_KEY)||'0');if(stored!==CASHBACK_VERSION){localStorage.setItem(CBV_KEY,String(CASHBACK_VERSION))}return CASHBACK_VERSION};
   const currentCbv=()=>Number(localStorage.getItem(CBV_KEY)||ensureCbv()); ensureCbv();
 
-  /* ===== Payment sheet (amount picker) ===== */
+  /* Payment sheet (amount picker) */
   const sheet=document.getElementById('sheet'), dim=document.getElementById('dim'),
         openPay=document.getElementById('openPay'), closeSheetBtn=document.getElementById('closeSheet');
   const closeSheet=()=>{ sheet.classList.remove('active'); };
   openPay.addEventListener('click',()=>{
     sheet.classList.add('active');
     MAX = Math.max(0, SETTINGS.cardBalance);
-    layoutMarkers();
-    // Reverted: start at MAX again
-    if (MAX > 0) { lockedAtMax=false; lastFrac=0; applyFromFraction(1,false); }
+    // Start at $0.00 when opening the sheet
+    lockedAtMax=false; lastFrac=0; applyFromFraction(0,false);
   });
   dim.addEventListener('click',closeSheet); closeSheetBtn.addEventListener('click',closeSheet);
   document.addEventListener('keydown',e=>{if(e.key==='Escape') closeSheet()});
 
+  /* Slider (ring amount chooser) */
   const MIN=0.00; let MAX=SETTINGS.cardBalance; let THRESH=+(MAX*0.82).toFixed(2);
-  const MIN_PAYMENT=40;
-
   const ringWrap=document.getElementById('ringWrap'), ringSvg=document.getElementById('ringSvg'),
         progress=document.getElementById('progress'), handle=document.getElementById('handle'),
         amountLabel=document.getElementById('amountLabel'), payBtn=document.getElementById('payNowBtn'),
-        info=document.getElementById('payInfo'),
-        minMarker=document.getElementById('minMarker'), maxMarker=document.getElementById('maxMarker');
-
+        info=document.getElementById('payInfo');
   const R=120, C=2*Math.PI*R; progress.setAttribute('stroke-dasharray',`${C}`); progress.setAttribute('stroke-dashoffset',`${C}`);
-  let amount=MIN, dragging=false, lastFrac=0, lockedAtMax=false, lockedAtMin=false, minFrac=0;
-
-  function posForFrac(fr){ const ang=(-90+360*fr)*Math.PI/180; return {x:160+R*Math.cos(ang), y:160+R*Math.sin(ang)}; }
-  function layoutMarkers(){
-    MAX=Math.max(0,SETTINGS.cardBalance);
-    THRESH=+(MAX*0.82).toFixed(2);
-    const showMin = MAX>=MIN_PAYMENT;
-    minFrac = showMin ? (MIN_PAYMENT / MAX) : 0;
-    if(showMin){
-      const p = posForFrac(minFrac);
-      minMarker.style.display='block'; minMarker.setAttribute('transform',`translate(${p.x},${p.y})`);
-    }else{ minMarker.style.display='none'; }
-    if(MAX>0){
-      const p2 = posForFrac(1); maxMarker.style.display='block';
-      maxMarker.setAttribute('cx',p2.x); maxMarker.setAttribute('cy',p2.y);
-    }else{ maxMarker.style.display='none'; }
-  }
+  let amount=MIN, dragging=false, lastFrac=0, lockedAtMax=false;
 
   function setUI(v){
-    const nearMin = (MAX>=MIN_PAYMENT) && Math.abs(v - MIN_PAYMENT) < 0.01;
-    if(lockedAtMax || Math.abs(v-MAX)<0.01){
-      progress.setAttribute('stroke','url(#gradBlue)');
-      info.innerHTML='Pay Card Balance<small>Paying the total amount you’ve spent is a great way to clear your balance and stay ahead on your finances.</small>';
-    }else if(nearMin){
-      progress.setAttribute('stroke','url(#gradYellow)');
-      info.innerHTML='Minimum Due ($40)<small>This is the minimum payment required.</small>';
-    }else if(v>THRESH){
-      progress.setAttribute('stroke','url(#gradGreen)');
-      info.innerHTML='Pay More Toward Your Balance<small>Paying more of your card balance helps free up available credit and reduces the amount to pay next month.</small>';
-    }else{
-      progress.setAttribute('stroke','url(#gradGray)');
-      info.innerHTML='Pay Statement Amount<small>Paying your monthly balance helps avoid interest charges.</small>';
-    }
+    if(lockedAtMax||Math.abs(v-MAX)<0.01){progress.setAttribute('stroke','url(#gradBlue)');
+      info.innerHTML='Pay Card Balance<small>Paying the total amount you’ve spent is a great way to clear your balance and stay ahead on your finances.</small>'}
+    else if(v>THRESH){progress.setAttribute('stroke','url(#gradGreen)');
+      info.innerHTML='Pay More Toward Your Balance<small>Paying more of your card balance helps free up available credit and reduces the amount to pay next month.</small>'}
+    else{progress.setAttribute('stroke','url(#gradGray)');
+      info.innerHTML='Pay Statement Amount<small>Paying your monthly balance helps avoid interest charges.</small>'}
   }
   const signedDelta=(a,b)=>(((a-b)+1.5)%1)-0.5;
 
   function applyFromFraction(fracRaw,fromDrag=false){
-    let f=Math.max(0,Math.min(0.999999,fracRaw));
-    const delta=signedDelta(f,lastFrac);
-
+    let f=Math.max(0,Math.min(0.999999,fracRaw)); const delta=signedDelta(f,lastFrac);
     if(lockedAtMax){ if(delta>0){f=1}else{lockedAtMax=false} }
     const NEAR_MAX=0.995; if(!lockedAtMax&&f>=NEAR_MAX){lockedAtMax=true;f=1}
-
-    if(MAX>=MIN_PAYMENT){
-      const STICK=0.02, UNLOCK=0.04;
-      if(lockedAtMin){ if(Math.abs(f-minFrac) >= UNLOCK){ lockedAtMin=false; } else { f=minFrac; } }
-      else { if(Math.abs(f-minFrac) <= STICK){ lockedAtMin=true; f=minFrac; } }
-    }else{ lockedAtMin=false; }
-
-    lastFrac=f;
-    const fracForAmount=(f===1)?1:f;
-    amount=+((MIN+fracForAmount*(MAX-MIN)).toFixed(2));
-
-    const dash=C*(1-fracForAmount);
-    progress.style.transition=fromDrag?'none':'stroke-dashoffset 220ms ease, stroke 220ms ease';
+    lastFrac=f; const fracForAmount=(f===1)?1:f; amount=+((MIN+fracForAmount*(MAX-MIN)).toFixed(2));
+    const dash=C*(1-fracForAmount); progress.style.transition=fromDrag?'none':'stroke-dashoffset 220ms ease, stroke 220ms ease';
     progress.setAttribute('stroke-dashoffset',`${dash}`);
-
-    const p=posForFrac(fracForAmount);
-    handle.style.transition=fromDrag?'none':'cx 180ms ease, cy 180ms ease';
-    handle.setAttribute('cx',p.x.toFixed(2)); handle.setAttribute('cy',p.y.toFixed(2));
-
-    amountLabel.textContent='$'+amount.toFixed(2);
-    payBtn.textContent='Pay $'+amount.toFixed(2);
-    setUI(amount);
+    const ang=(-90+360*fracForAmount)*Math.PI/180; const hx=160+R*Math.cos(ang), hy=160+R*Math.sin(ang);
+    handle.style.transition=fromDrag?'none':'cx 180ms ease, cy 180ms ease'; handle.setAttribute('cx',hx.toFixed(2)); handle.setAttribute('cy',hy.toFixed(2));
+    amountLabel.textContent='$'+amount.toFixed(2); payBtn.textContent='Pay $'+amount.toFixed(2); setUI(amount);
   }
 
   const cardBalanceEl=document.getElementById('cardBalance'), availableEl=document.getElementById('availableBalance'),
         cashbackEl=document.getElementById('cashback'); const fmtUSD=n=>n.toLocaleString(undefined,{style:'currency',currency:'USD'});
   function applyBalances(){
-    cardBalanceEl.textContent=fmtUSD(SETTINGS.cardBalance); 
-    availableEl.textContent=`${fmtUSD(SETTINGS.availableBalance)} Available`;
+    cardBalanceEl.textContent=fmtUSD(SETTINGS.cardBalance); availableEl.textContent=`${fmtUSD(SETTINGS.availableBalance)} Available`;
     if(cashbackEl) cashbackEl.textContent=fmtUSD(SETTINGS.cashback);
-    MAX=Math.max(0,SETTINGS.cardBalance); THRESH=+(MAX*0.82).toFixed(2);
-    lockedAtMax=false; lockedAtMin=false; lastFrac=0; layoutMarkers(); applyFromFraction(0,false);
+    MAX=Math.max(0,SETTINGS.cardBalance); THRESH=+(MAX*0.82).toFixed(2); lockedAtMax=false; lastFrac=0; applyFromFraction(0,false);
   }
 
   function fractionFromPointer(evt){
     const rect=ringWrap.getBoundingClientRect();
     const x=(evt.touches?evt.touches[0].clientX:evt.clientX)-rect.left;
     const y=(evt.touches?evt.touches[0].clientY:evt.clientY)-rect.top;
-    const cx=rect.width/2, cy=rect.height/2; 
-    let theta=Math.atan2(y-cy,x-cx); theta+=Math.PI/2; if(theta<0) theta+=Math.PI*2;
+    const cx=rect.width/2, cy=rect.height/2; let theta=Math.atan2(y-cy,x-cx); theta+=Math.PI/2; if(theta<0) theta+=Math.PI*2;
     return theta/(Math.PI*2);
   }
-  const start=e=>{dragging=true;applyFromFraction(fractionFromPointer(e),true);e.preventDefault();}
-  const move=e=>{if(!dragging)return;applyFromFraction(fractionFromPointer(e),true);e.preventDefault();}
+  const start=e=>{dragging=true;applyFromFraction(fractionFromPointer(e),true);e.preventDefault()}
+  const move=e=>{if(!dragging)return;applyFromFraction(fractionFromPointer(e),true);e.preventDefault()}
   const end=()=>{dragging=false}
   handle.addEventListener('mousedown',start); handle.addEventListener('touchstart',start,{passive:false});
   ringSvg.addEventListener('mousedown',start); ringSvg.addEventListener('touchstart',start,{passive:false});
@@ -712,9 +683,9 @@
     saveBalances(); applyBalances();
   }
 
-  /* === Pay flow to confirm page === */
+  /* === Pay flow to full confirm page (no transaction yet) === */
   let pendingPayAmt = 0;
-  let confirmFlow = 'pay';
+  let confirmFlow = 'pay';                       // 'pay' | 'cashback'
   const payAmountLabel = document.getElementById('payAmountLabel');
   const payBackBtn = document.getElementById('payBackBtn');
   const payCancelBtn = document.getElementById('payCancelBtn');
@@ -741,32 +712,42 @@
 
   applyBalances();
 
-  /* Transactions & cashback (unchanged) */
+  /* Transactions & cashback */
   const TXN_STORE_KEY='demo_txns';
+
   function saveTransactions(){try{localStorage.setItem(TXN_STORE_KEY,JSON.stringify(transactions))}catch(e){} refreshCashbackTile(); cloudSaveDebounced(); }
   function rid(){return 't_'+Math.random().toString(36).slice(2,9)}
+
+  /* CASHBACK LOGIC */
   const round2=n=>Math.round(n*100)/100;
   const CASHBACK_RATES={shopping:0.05,food:0.04, travel:0.04, streaming:0.04,gaming:0.03, messaging:0.03};
   const rateForCategory = cat => CASHBACK_RATES[cat] ?? 0;
   const calcCashback=(amt,cat)=>round2((Number(amt)||0)*rateForCategory(cat));
   const getTxnCashback=t=>(typeof t.cashback==='number') ? t.cashback : (t.kind==='purchase' ? calcCashback(t.amount, t.category) : 0);
 
-  const SEED_TXNS=(function(){const cv=currentCbv();return[
-    {id:'t_seed1',kind:'purchase',merchant:'DISCORD* GIFT-NITRO-MO',amount:10.66,iso:'2025-04-07T15:00:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'gaming',cashback:calcCashback(10.66,'gaming'),cbv:cv},
-    {id:'t_seed2',kind:'purchase',merchant:'DISCORD* GIFT-NITRO-MO',amount:10.66,iso:'2025-04-07T14:00:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'gaming',cashback:calcCashback(10.66,'gaming'),cbv:cv},
-    {id:'t_seed3',kind:'purchase',merchant:'Nike',amount:64.35,iso:'2025-08-24T17:10:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'shopping',cashback:calcCashback(64.35,'shopping'),cbv:cv},
-    {id:'t_seed4',kind:'purchase',merchant:"McDonald's PlayPlace",amount:31.29,iso:'2025-08-22T12:00:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'food',cashback:calcCashback(31.29,'food'),cbv:cv},
-    {id:'t_seed5',kind:'purchase',merchant:'State Farm Insurance',amount:156.34,iso:'2025-08-21T12:00:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'shopping',cashback:calcCashback(156.34,'shopping'),cbv:cv},
-    {id:'t_seed6',kind:'purchase',merchant:'Apple',amount:2.99,iso:'2025-08-20T12:00:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'messaging',cashback:calcCashback(2.99,'messaging'),cbv:cv},
-    {id:'t_seed7',kind:'payment',merchant:'From Apple Cash',amount:458.72,iso:'2025-08-19T12:00:00.000Z',status:'Posted',card:'Sapphire Reserve',category:'payment',cashback:0,cbv:cv},
-    {id:'t_seed8',kind:'purchase',merchant:'Delta Air Lines',amount:386.67,iso:'2025-04-28T12:00:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'travel',cashback:calcCashback(386.67,'travel'),cbv:cv},
-    {id:'t_seed9',kind:'purchase',merchant:'Amazon',amount:23.49,iso:'2025-08-24T10:30:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'shopping',cashback:calcCashback(23.49,'shopping'),cbv:cv}
-  ];})();
+  /* Seed transactions if none */
+  const SEED_TXNS = (function(){
+    const cv = currentCbv();
+    return [
+      {id:'t_seed1',kind:'purchase',merchant:'DISCORD* GIFT-NITRO-MO',amount:10.66,iso:'2025-04-07T15:00:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'gaming',cashback:calcCashback(10.66,'gaming'),cbv:cv},
+      {id:'t_seed2',kind:'purchase',merchant:'DISCORD* GIFT-NITRO-MO',amount:10.66,iso:'2025-04-07T14:00:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'gaming',cashback:calcCashback(10.66,'gaming'),cbv:cv},
+      {id:'t_seed3',kind:'purchase',merchant:'Nike',amount:64.35,iso:'2025-08-24T17:10:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'shopping',cashback:calcCashback(64.35,'shopping'),cbv:cv},
+      {id:'t_seed4',kind:'purchase',merchant:"McDonald's PlayPlace",amount:31.29,iso:'2025-08-22T12:00:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'food',cashback:calcCashback(31.29,'food'),cbv:cv},
+      {id:'t_seed5',kind:'purchase',merchant:'State Farm Insurance',amount:156.34,iso:'2025-08-21T12:00:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'shopping',cashback:calcCashback(156.34,'shopping'),cbv:cv},
+      {id:'t_seed6',kind:'purchase',merchant:'Apple',amount:2.99,iso:'2025-08-20T12:00:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'messaging',cashback:calcCashback(2.99,'messaging'),cbv:cv},
+      {id:'t_seed7',kind:'payment',merchant:'From Apple Cash',amount:458.72,iso:'2025-08-19T12:00:00.000Z',status:'Posted',card:'Sapphire Reserve',category:'payment',cashback:0,cbv:cv},
+      {id:'t_seed8',kind:'purchase',merchant:'Delta Air Lines',amount:386.67,iso:'2025-04-28T12:00:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'travel',cashback:calcCashback(386.67,'travel'),cbv:cv},
+      {id:'t_seed9',kind:'purchase',merchant:'Amazon',amount:23.49,iso:'2025-08-24T10:30:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'shopping',cashback:calcCashback(23.49,'shopping'),cbv:cv}
+    ];
+  })();
 
   function loadTransactions(){
     try{
       const raw=localStorage.getItem(TXN_STORE_KEY);
-      if(raw){const arr=JSON.parse(raw); if(Array.isArray(arr) && arr.length) return arr;}
+      if(raw){
+        const arr=JSON.parse(raw);
+        if(Array.isArray(arr) && arr.length) return arr;
+      }
     }catch(e){}
     return SEED_TXNS.slice();
   }
@@ -784,6 +765,7 @@
     { patterns: [/\bgoogle\b/i, /google\s*play/i, /(gpay|google\s*pay)/i], icon: 'google-icon.png' },
     { patterns: [/american\s+air(lines)?/i, /\baadvantage\b/i, /\baa\s?(?:#|flight|tkt|ticket)?/i], icon: 'aa-icon.png' },
     { patterns: [/singapore\s+air(lines)?/i, /\bkrisflyer\b/i, /\bsia\b/i], icon: 'sing-icon.png' },
+    /* NEW: card payment keywords -> Chase icon */
     { patterns: [/card\s*payment/i, /payment.*7295/i, /\b7295\b/i], icon: 'chase-icon.png' },
   ];
 
@@ -797,11 +779,13 @@
     }
     return null;
   }
+  /* Force all payment txns to use chase icon */
   function iconForTransaction(t){ 
     if (t.kind==='payment') return 'chase-icon.png';
     return chooseIconForMerchant(t.merchant) || iconByCat(t.category); 
   }
 
+  /* Load transactions */
   let transactions = loadTransactions() || [];
 
   function formatDisplay(t){const negative=(t.status==='Refunded'||t.status==='Posted');return (negative?'- ':'')+'$'+Number(t.amount).toFixed(2)}
@@ -812,7 +796,7 @@
   function renderTransactions(){
     transactions.sort((a,b)=>new Date(b.iso)-new Date(a.iso));
     const rows=transactions.map(t=>{
-      const pct = Math.round((CASHBACK_RATES[t.category]||0)*100);
+      const pct = Math.round(rateForCategory(t.category)*100);
       const pctChip = (t.kind==='purchase' && pct>0) ? `<div class="cbChip">${pct}%</div>` : '';
       return `
       <div class="txnRow" data-id="${t.id}" tabindex="0" role="button" aria-label="Open ${t.merchant} transaction">
@@ -830,6 +814,7 @@
         </div>
       </div>`;
     }).join('');
+
     document.getElementById('txnList').innerHTML=`<div class="txnStack">${rows||''}</div>`;
     document.querySelectorAll('#txnList .txnRow').forEach(row=>{
       row.addEventListener('click',()=>openTxn(row.dataset.id));
@@ -878,8 +863,10 @@
   /* Public helpers */
   window.addPurchase=({merchant,amount,iso,card='Sapphire Reserve',status='Approved',category='shopping'})=>{
     const amt=Number(amount);
-    transactions.push({id:rid(),kind:'purchase',merchant,amount:amt,iso,status,card,category,
-      cashback:calcCashback(amt,category),cbv:currentCbv()});
+    transactions.push({
+      id:rid(),kind:'purchase',merchant,amount:amt,iso,status,card,category,
+      cashback:calcCashback(amt,category),cbv:currentCbv()
+    });
     saveTransactions();renderTransactions();applyBalanceDelta(+amt,-amt);
   };
   window.addRefund=({merchant,amount,iso,card='Sapphire Reserve',status='Refunded',category='shopping'})=>{
@@ -967,6 +954,7 @@
         cbHandle=document.getElementById('cbHandle'),cbAmountLabel=document.getElementById('cbAmountLabel');
   const CB_R=120, CB_C=2*Math.PI*CB_R; cbProgress.setAttribute('stroke-dasharray',`${CB_C}`); cbProgress.setAttribute('stroke-dashoffset',`${CB_C}`);
   let CB_MAX=0, cbAmount=0, cbDragging=false, cbLastFrac=0, cbLockedAtMax=false;
+
   function cbSetMax(){CB_MAX=Math.max(0,computeCashbackAvailable())}
   function cbSetUI(v){cbProgress.setAttribute('stroke',v>0?'url(#cbGradGreen)':'url(#cbGradGray)')}
   function cbSignedDelta(a,b){return (((a-b)+1.5)%1)-0.5}
@@ -993,6 +981,92 @@
   window.addEventListener('mousemove',cbMove,{passive:false}); window.addEventListener('touchmove',cbMove,{passive:false});
   window.addEventListener('mouseup',cbEnd); window.addEventListener('touchend',cbEnd);
 
+  /* Route cashback deposit to the same confirm page */
+  cbDepositBtn.addEventListener('click', ()=>{
+    if(cbAmount<=0) return;
+    pendingPayAmt = cbAmount;
+    confirmFlow = 'cashback';
+    openPayPage();
+  });
+
+  /* (Second page fields remain available but are not used in this flow) */
+  cbSubmit.addEventListener('click', ()=>{
+    const acct=(cbAcct.value||'').trim(), routing=(cbRouting.value||'').trim();
+    if(!acct||!routing||cbAmount<=0) return;
+    const nowIso=new Date().toISOString();
+    window.addCashbackDeposit({amount:cbAmount,iso:nowIso,account:acct,routing});
+    cbAmount=0; cbApplyFromFraction(0,false); closeCbSheet();
+  });
+  cbCancel.addEventListener('click', closeCbSheet);
+
+  /* Update Balances sheet logic */
+  const balancesSheet=document.getElementById('balancesSheet'),
+        balancesDim=document.getElementById('balancesDim'),
+        openBalances=document.getElementById('openBalances'),
+        closeBalances=document.getElementById('closeBalances'),
+        balancesSaveBtn=document.getElementById('balancesSaveBtn'),
+        balancesCancelBtn=document.getElementById('balancesCancelBtn'),
+        editCardBalance=document.getElementById('editCardBalance'),
+        editAvailableBalance=document.getElementById('editAvailableBalance'),
+        editCashback=document.getElementById('editCashback');
+
+  function openBalancesSheet(){
+    editCardBalance.value = (Number(SETTINGS.cardBalance)||0).toFixed(2);
+    editAvailableBalance.value = (Number(SETTINGS.availableBalance)||0).toFixed(2);
+    editCashback.value = (Number(SETTINGS.cashback)||0).toFixed(2);
+    balancesSheet.classList.add('active');
+  }
+  function closeBalancesSheet(){ balancesSheet.classList.remove('active'); }
+
+  openBalances.addEventListener('click', openBalancesSheet);
+  balancesDim.addEventListener('click', closeBalancesSheet);
+  closeBalances.addEventListener('click', closeBalancesSheet);
+  balancesCancelBtn.addEventListener('click', closeBalancesSheet);
+
+  /* ==== Robust money field parsing + save ==== */
+  function parseMoneyField(el){
+    const s = (el.value || '').toString().replace(/[^\d.-]/g,'');
+    return s === '' ? NaN : parseFloat(s);
+  }
+  balancesSaveBtn.addEventListener('click', ()=>{
+    const card  = parseMoneyField(editCardBalance);
+    const avail = parseMoneyField(editAvailableBalance);
+    const cb    = parseMoneyField(editCashback);
+
+    if (isFinite(card))  SETTINGS.cardBalance      = +card.toFixed(2);
+    if (isFinite(avail)) SETTINGS.availableBalance = +avail.toFixed(2);
+    if (isFinite(cb))    SETTINGS.cashback         = +cb.toFixed(2);
+
+    // Normalize fields to what was saved
+    editCardBalance.value      = (Number(SETTINGS.cardBalance)      || 0).toFixed(2);
+    editAvailableBalance.value = (Number(SETTINGS.availableBalance) || 0).toFixed(2);
+    editCashback.value         = (Number(SETTINGS.cashback)         || 0).toFixed(2);
+
+    saveBalances();
+    applyBalances();
+    closeBalancesSheet();
+  });
+
+  /* ===== Pay Confirmation page interactions ===== */
+  const openAcctPicker = document.getElementById('openAcctPicker');
+  const acctSheet = document.getElementById('acctSheet');
+  const acctDim = document.getElementById('acctDim');
+  const acctClose = document.getElementById('acctClose');
+  const acctSave = document.getElementById('acctSave');
+  const fromAcctNameEl = document.getElementById('fromAcctName');
+
+  function openAcctSheet(){ acctSheet.classList.add('active'); }
+  function closeAcctSheet(){ acctSheet.classList.remove('active'); }
+
+  openAcctPicker.addEventListener('click', openAcctSheet);
+  acctDim.addEventListener('click', closeAcctSheet);
+  acctClose.addEventListener('click', closeAcctSheet);
+  acctSave.addEventListener('click', ()=>{
+    const sel = document.querySelector('#acctList input[name="acct"]:checked');
+    if (sel) fromAcctNameEl.textContent = sel.value;
+    closeAcctSheet();
+  });
+
   /* Slide to confirm */
   const slideWrap = document.getElementById('slideWrap');
   const slideThumb = document.getElementById('slideThumb');
@@ -1016,7 +1090,7 @@
     startX=(e.touches?e.touches[0].clientX:e.clientX);
     const wrapRect=slideWrap.getBoundingClientRect();
     const thumbRect=slideThumb.getBoundingClientRect();
-    maxX = wrapRect.width - thumbRect.width - 8;
+    maxX = wrapRect.width - thumbRect.width - 8; // both side paddings 4px
     thumbX = parseFloat(slideThumb.style.left||'4');
     thumbW = thumbRect.width;
     slideThumb.style.transition='none';
@@ -1029,9 +1103,9 @@
     const dx=x-startX;
     let nx=Math.max(4,Math.min(4+dx+ (thumbX-4),4+maxX));
     slideThumb.style.left=nx+'px';
+    // Blue trail follows thumb
     const fillW = Math.max(0, (nx - 4) + thumbW);
     slideFill.style.width = fillW + 'px';
-    e.preventDefault();
   }
   function endDrag(){
     if(!draggingSlide||confirmed) return;
@@ -1039,6 +1113,7 @@
     const currentLeft=parseFloat(slideThumb.style.left||'4');
     const threshold=4+maxX*0.92;
     if(currentLeft>=threshold){
+      // Confirmed
       confirmed=true;
       slideThumb.style.left=(4+maxX)+'px';
       slideFill.style.width='calc(100% - 8px)';
@@ -1068,12 +1143,25 @@
   }
 
   function performPayment(){
-    const chip=showLoadingChip('Submitting payment…');
+    const isDeposit = (confirmFlow === 'cashback');
+    const chip=showLoadingChip(isDeposit ? 'Submitting deposit…' : 'Submitting payment…');
     const nowIso = new Date().toISOString();
-    window.addPayment({amount:pendingPayAmt,iso:nowIso,merchant:'CARD PAYMENT 7295',category:'payment'});
-    setTimeout(()=>{ chip.remove(); app.className='app pos-0'; resetSlider(); },3000);
+
+    if (isDeposit){
+      window.addCashbackDeposit({amount:pendingPayAmt,iso:nowIso,account:fromAcctNameEl.textContent});
+    }else{
+      // merchant ensures chase icon rule
+      window.addPayment({amount:pendingPayAmt,iso:nowIso,merchant:'CARD PAYMENT 7295',category:'payment'});
+    }
+
+    setTimeout(()=>{
+      chip.remove();
+      app.className='app pos-0';
+      resetSlider();
+    },3000);
   }
 
+  /* === Start Firebase sync (loads cloud over local if present) === */
   (async ()=>{ const db=await fbInit(); if(db){ await cloudLoad(); } })();
 
 })();
