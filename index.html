@@ -36,6 +36,7 @@
   .iconbtn:active{transform:scale(.96)}
   .iconrow{display:flex;gap:10px}
   .content{padding:6px 12px 28px}
+
   .bigCard{height:212px;border-radius:7px;overflow:hidden;box-shadow:var(--shadow);position:relative}
   .bigCard .visa{right:22px;bottom:18px}
   .grad1{background:
@@ -43,6 +44,7 @@
     linear-gradient(110deg,#5d00bb 0%,#5d00bb 55%,#000 82%,#000 100%);}
   .visa{position:absolute;right:29px;bottom:26px}
   .visa svg{width:150px;height:auto;filter:drop-shadow(0 4px 12px rgba(0,0,0,.35))}
+
   .grid{margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .tile{background:var(--tile);border:1px solid var(--tileBorder);border-radius:var(--radiusTile);padding:14px 16px;position:relative}
   .kb{font-size:13px;color:var(--muted);margin:0 0 6px}
@@ -53,6 +55,7 @@
   .compact .val{font-size:25px}
   .compact .micro{margin-top:0}
   .full{grid-column:1/-1}
+
   /* Due tile + pay bubble */
   .dueTile{padding:12px 16px 16px}
   .dueTall{grid-row:span 2;}
@@ -64,6 +67,7 @@
     background:#000;color:#fff;display:grid;place-items:center;font-weight:900;letter-spacing:.2px;
     border:none;outline:none;-webkit-tap-highlight-color:transparent;box-shadow:0 10px 24px rgba(0,0,0,.45);font-size:14px;}
   .payBubble:active{transform:scale(.95)}
+
   /* iOS-style stacked transactions (updated to match Apple-style list) */
   .txnRow{display:flex;gap:12px;align-items:flex-start;background:transparent;border:0;border-radius:12px;
     padding:14px 16px;cursor:pointer;position:relative}
@@ -76,14 +80,17 @@
   .txnAmt{font-weight:600}
   .txnRight{display:flex;align-items:flex-start;gap:8px}
   .chev{opacity:.55;font-size:20px;line-height:1;margin-top:1px}
+
   /* Group container with sharper corners; inset separators that don’t span full width */
   .txnStack{border:1px solid rgba(255,255,255,.10);border-radius:12px;overflow:hidden;background:rgba(255,255,255,.035)}
   .txnStack .txnRow{padding:16px 16px;background:transparent;border-radius:0}
   .txnStack .txnRow + .txnRow::before{content:"";position:absolute;left:92px;right:16px;top:0;height:1px;background:rgba(255,255,255,.08)}
+
   /* positions for 3 views */
   .pos-0 .views{transform:translateX(0%)} 
   .pos-1 .views{transform:translateX(-33.333333%)} 
   .pos-2 .views{transform:translateX(-66.666666%)}
+
   .txnHeader{padding:28px 18px 10px;text-align:center}
   .txnAmount{font-size:60px;font-weight:900;letter-spacing:-.5px}
   .txnMerchant{color:var(--muted);font-size:22px;font-weight:700;margin-top:6px}
@@ -94,9 +101,11 @@
   .row h3{margin:0;font-size:18px}
   .row .right{font-weight:900;font-size:18px}
   .statusLine{font-size:18px;margin-bottom:4px}
+
   .txnDetailIcon{width:72px;height:72px;border-radius:0px;background:rgba(255,255,255,.80);border:0px solid rgba(255,255,255,.12);
     display:grid;place-items:center;margin:0 auto 10px}
   .txnDetailIcon img{width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,.30))}
+
   /* Bottom sheet */
   .sheet{position:fixed;inset:0;display:grid;place-items:end center;pointer-events:none;z-index:9}
   .sheet.active{pointer-events:auto}
@@ -120,11 +129,13 @@
   .btn.green{background:#34c759;color:#000;font-weight:900}
   .btn.gray{background:#efefef;color:#000;font-weight:900}
   .other{text-align:center;padding-bottom:20px;color:#007aff;font-weight:900}
+
   /* Make payment & cashback sheets dark */
   .sheet.dark .panel{background:#111;color:#fff}
   .sheet.dark .closeX{background:#1f1f1f;color:#fff;border:1px solid #2a2a2a}
   .sheet.dark .info{color:#dcdcdc}
   .sheet.dark .info small{color:#9a9a9a}
+
   /* SUCCESS VIEW inside same sheet */
   .sheet.success .title,.sheet.success .ringWrap,.sheet.success .info,.sheet.success .actions,.sheet.success .other{display:none}
   .payReceipt{display:none;color:#fff;text-align:center;padding:14px 16px 28px}
@@ -134,9 +145,11 @@
   .payCheck svg{width:60px;height:60px}
   .payTitle{font-size:40px;font-weight:900;margin:6px 0 8px}
   .paySub{color:#cfcfcf;font-weight:800;line-height:1.35}
+
   .cardFields{padding:6px 12px 20px}
   .visa svg, .visa img{width:55px;height:auto;filter:drop-shadow(0 4px 12px rgba(0,0,0,.35))}
   .bigCard .visa{right:10px;bottom:12px}
+
   .form{padding:8px 14px 18px}
   .form label{display:block;font-weight:800;margin:12px 0 6px}
   .form input,.form select{width:100%;padding:12px 12px;border-radius:12px;border:1px solid #d9d9d9;font:inherit}
@@ -151,6 +164,7 @@
   .subtle{color:#6a6a6a;font-weight:700;margin:0 14px 10px}
   .hidden{display:none !important}
   #cardBalTile{padding-bottom:8px} #cardBalTile>:last-child{margin-bottom:0}
+
   /* === Tighten list visuals === */
   :root{ --iconSize:36px; --iconGap:12px; --listPadX:16px; }
   .txnIcon{width:var(--iconSize);height:var(--iconSize);flex:0 0 var(--iconSize);display:grid;place-items:center;background:transparent;border-radius:0;box-shadow:none}
@@ -164,6 +178,7 @@
   .txnStack .txnRow + .txnRow::before{left:calc(var(--listPadX) + var(--iconSize))}
   #txnsTile{border-radius:6px}
   .txnStack{border-radius:6px}
+
   /* ===== Pay Confirmation View (dark) ===== */
   #payPage .content{padding:14px 14px 24px}
   .payTitle{font-size:24px;font-weight:900;margin:4px 0 10px}
@@ -186,6 +201,7 @@
     border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:10px;backdrop-filter:blur(6px)}
   .spinner{width:18px;height:18px;border-radius:50%;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;animation:spin 1s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
+
   /* Account picker rows */
   .acctRow{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid var(--tileBorder);margin:10px 14px}
   .acctRow img{width:28px;height:28px}
@@ -194,27 +210,28 @@
   .acctRow .names .small{color:var(--muted);font-size:12px;margin-top:2px}
   .acctRow input{accent-color:#0a84ff;transform:scale(1.1)}
 </style>
+
 <!-- 🔗 Firebase CDN (Compat builds so we can use plain <script>) -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
 <!-- 🔧 PASTE YOUR FIREBASE CONFIG HERE (keep keys exactly like this) -->
 <script>
   // 1) Replace the empty strings with your own Firebase project details
   //    from Firebase console > Project settings > Your apps > Web app
   window.firebaseConfig = {
-    apiKey: "AIzaSyBxhm51j73vehFr-_NTEnyPcgmyGPCQhwE",
-    authDomain: "sapphire-reserve-e5cac.firebaseapp.com",
-    projectId: "sapphire-reserve-e5cac",
-    storageBucket: "sapphire-reserve-e5cac.firebasestorage.app",
-    messagingSenderId: "778349882307",
-    appId: "1:778349882307:web:4c43dd8ba5e5c6e401ab76"
+    apiKey: "",
+    authDomain: "",
+    projectId: "",
+    appId: ""
     // (optional) storageBucket: "", measurementId: ""
   };
+
   // 2) (Optional) Set a shared document ID to sync across devices.
   //    If blank, the app uses your anonymous auth UID (per-device).
   //    Example: window.CLOUD_DOC_ID = "my-shared-wallet-123";
-  window.CLOUD_DOC_ID = "sapphire-reserve";
+  window.CLOUD_DOC_ID = "";
 </script>
 </head>
 <body>
@@ -236,25 +253,31 @@
           </div>
         </div>
       </div>
+
       <div class="content">
         <div class="bigCard grad1" id="bigCard">
           <div class="visa"><img src="./my-logo.png" alt="Card Brand"></div>
         </div>
+
         <div class="grid">
           <div class="tile compact" id="cardBalTile">
             <div class="kb">Card Balance</div>
             <p class="val" id="cardBalance">$0.00</p>
             <p class="micro" id="availableBalance">$0.00 Available</p>
           </div>
+
           <div class="tile dueTile dueTall" id="dueTile">
             <p class="dueHeader">Payment Due In</p>
             <div class="dueVal"><span class="num">1</span><span class="unit">Month</span></div>
             <button class="payBubble" id="openPay">Pay</button>
           </div>
+
           <div class="tile compact" id="cashbackTile" style="cursor:pointer">
             <div class="kb">Cashback</div><p class="val" id="cashback">$0.00</p>
           </div>
+
           <div class="tile full"><div class="kb">Savings Account</div><div class="val">$756.34</div></div>
+
           <div class="tile full" id="txnsTile">
             <div class="kb" style="margin-bottom:8px">Latest Card Transactions</div>
             <div id="txnList"></div>
@@ -262,6 +285,7 @@
         </div>
       </div>
     </section>
+
     <!-- TXN DETAIL VIEW -->
     <section class="view" id="txnView">
       <div class="nav"><button class="pill" id="backTxn">Back</button><div class="iconrow"></div></div>
@@ -280,6 +304,7 @@
       <div class="row hidden" id="depositTargetRow"><h3>Deposited To</h3><div class="right" id="depositTargetValue">•••• 0000</div></div>
       <div class="deleteWrap"><button class="deleteBtn" id="deleteTxnBtn">Delete Transaction</button></div>
     </section>
+
     <!-- NEW: PAY CONFIRMATION VIEW -->
     <section class="view" id="payPage">
       <div class="nav">
@@ -289,6 +314,7 @@
       <div class="content">
         <div class="payTitle">Pay Card</div>
         <div class="payAmount" id="payAmountLabel">$0.00</div>
+
         <div class="kb" style="margin:8px 2px 8px" id="transferLabel">Transfer from</div>
         <div class="payBox" id="openAcctPicker" aria-label="Choose an account">
           <div class="bankIcon"><img src="./chase-icon.png" alt=""></div>
@@ -299,7 +325,9 @@
           </div>
           <div class="chev">›</div>
         </div>
+
         <div class="spacer"></div>
+
         <div class="slideWrap" id="slideWrap" aria-label="Slide to confirm">
           <div class="slideFill" id="slideFill"></div>
           <div class="slideThumb" id="slideThumb">➜</div>
@@ -308,12 +336,14 @@
       </div>
     </section>
   </div>
+
   <!-- Payment sheet (DARK, includes amount picker) -->
   <div class="sheet dark" id="sheet">
     <div class="dim" id="dim"></div>
     <div class="panel">
       <div class="panelHead"><button class="closeX" id="closeSheet" aria-label="Close">×</button></div>
       <div class="title">Choose Amount</div>
+
       <div class="ringWrap" id="ringWrap">
         <svg viewBox="0 0 320 320" id="ringSvg" aria-hidden="true">
           <defs>
@@ -328,14 +358,17 @@
         </svg>
         <div class="centerText" aria-live="polite" aria-atomic="true"><div class="amt" id="amountLabel">$0.00</div></div>
       </div>
+
       <div class="info" id="payInfo">
         Pay Card Balance
         <small>Paying the total amount you’ve spent is a great way to clear your balance.</small>
       </div>
+
       <div class="actions"><button class="btn primary" id="payNowBtn">Pay $0.00</button></div>
       <div class="other" id="otherAmountBtn">Other Amount</div>
     </div>
   </div>
+
   <!-- Cashback sheet (dark) -->
   <div class="sheet dark" id="cashbackSheet" aria-hidden="true">
     <div class="dim" id="cbDim"></div>
@@ -374,6 +407,7 @@
       </div>
     </div>
   </div>
+
   <!-- Card details sheet -->
   <div class="sheet" id="cardSheet" aria-hidden="true">
     <div class="dim" id="cardDim"></div>
@@ -387,6 +421,7 @@
       </div>
     </div>
   </div>
+
   <!-- Add / Confirm Txn sheets -->
   <div class="sheet" id="addTxnSheet" aria-hidden="true">
     <div class="dim" id="addTxnDim"></div>
@@ -399,6 +434,7 @@
         <label for="txWhen">Date &amp; Time</label><input id="txWhen" type="datetime-local" />
         <label for="txStatus">Status</label>
         <select id="txStatus"><option>Approved</option><option>Refunded</option><option>Posted</option></select>
+
         <label for="txCategory">Category</label>
         <select id="txCategory">
           <option value="food">Food/Drinks</option>
@@ -414,6 +450,7 @@
       <div class="other" id="txCancelFromForm">Cancel</div>
     </div>
   </div>
+
   <div class="sheet" id="confirmTxnSheet" aria-hidden="true">
     <div class="dim" id="confirmDim"></div>
     <div class="panel">
@@ -424,6 +461,7 @@
       <div class="other" id="editTxnBtn">Go Back &amp; Edit</div>
     </div>
   </div>
+
   <!-- Update Balances sheet -->
   <div class="sheet" id="balancesSheet" aria-hidden="true">
     <div class="dim" id="balancesDim"></div>
@@ -444,6 +482,7 @@
       </div>
     </div>
   </div>
+
   <!-- NEW: Account picker sheet (dark) -->
   <div class="sheet dark" id="acctSheet" aria-hidden="true">
     <div class="dim" id="acctDim"></div>
@@ -471,10 +510,12 @@
     </div>
   </div>
 </div>
+
 <script>
 (()=> {
   /* ============ Firebase helpers (minimal additions) ============ */
   let cloudSaveDebounced = ()=>{}; // becomes real after init
+
   async function fbInit(){
     try{
       if(!window.firebaseConfig || !firebase?.initializeApp) return null;
@@ -533,11 +574,14 @@
   }
   function debounce(fn,ms){let t;return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);} }
   cloudSaveDebounced = debounce(cloudSave, 600);
+
   /* ============ Your existing app ============ */
   const app=document.getElementById('app');
   document.getElementById('backTxn').addEventListener('click', ()=>{ app.className='app pos-0'; });
+
   const SETTINGS_DEFAULT = {version:9,cardBalance:69.45,availableBalance:255.55,cashback:0.00,
     cardNumber:'5278 6812 3931 7295',cardExpiry:'07/30',cardCvv:'528'};
+
   function loadBalances(){
     try{
       const raw = localStorage.getItem('demo_balances');
@@ -557,9 +601,11 @@
   }
   let SETTINGS=loadBalances();
   const saveBalances=()=>{ localStorage.setItem('demo_balances',JSON.stringify(SETTINGS)); cloudSaveDebounced(); };
+
   const CASHBACK_VERSION=2, CBV_KEY='cbv_current';
   const ensureCbv=()=>{const stored=Number(localStorage.getItem(CBV_KEY)||'0');if(stored!==CASHBACK_VERSION){localStorage.setItem(CBV_KEY,String(CASHBACK_VERSION))}return CASHBACK_VERSION};
   const currentCbv=()=>Number(localStorage.getItem(CBV_KEY)||ensureCbv()); ensureCbv();
+
   /* Payment sheet (amount picker) */
   const sheet=document.getElementById('sheet'), dim=document.getElementById('dim'),
         openPay=document.getElementById('openPay'), closeSheetBtn=document.getElementById('closeSheet');
@@ -571,6 +617,7 @@
   });
   dim.addEventListener('click',closeSheet); closeSheetBtn.addEventListener('click',closeSheet);
   document.addEventListener('keydown',e=>{if(e.key==='Escape') closeSheet()});
+
   /* Slider (ring amount chooser) */
   const MIN=0.00; let MAX=SETTINGS.cardBalance; let THRESH=+(MAX*0.82).toFixed(2);
   const ringWrap=document.getElementById('ringWrap'), ringSvg=document.getElementById('ringSvg'),
@@ -579,6 +626,7 @@
         info=document.getElementById('payInfo');
   const R=120, C=2*Math.PI*R; progress.setAttribute('stroke-dasharray',`${C}`); progress.setAttribute('stroke-dashoffset',`${C}`);
   let amount=MIN, dragging=false, lastFrac=0, lockedAtMax=false;
+
   function setUI(v){
     if(lockedAtMax||Math.abs(v-MAX)<0.01){progress.setAttribute('stroke','url(#gradBlue)');
       info.innerHTML='Pay Card Balance<small>Paying the total amount you’ve spent is a great way to clear your balance and stay ahead on your finances.</small>'}
@@ -588,6 +636,7 @@
       info.innerHTML='Pay Statement Amount<small>Paying your monthly balance helps avoid interest charges.</small>'}
   }
   const signedDelta=(a,b)=>(((a-b)+1.5)%1)-0.5;
+
   function applyFromFraction(fracRaw,fromDrag=false){
     let f=Math.max(0,Math.min(0.999999,fracRaw)); const delta=signedDelta(f,lastFrac);
     if(lockedAtMax){ if(delta>0){f=1}else{lockedAtMax=false} }
@@ -599,6 +648,7 @@
     handle.style.transition=fromDrag?'none':'cx 180ms ease, cy 180ms ease'; handle.setAttribute('cx',hx.toFixed(2)); handle.setAttribute('cy',hy.toFixed(2));
     amountLabel.textContent='$'+amount.toFixed(2); payBtn.textContent='Pay $'+amount.toFixed(2); setUI(amount);
   }
+
   const cardBalanceEl=document.getElementById('cardBalance'), availableEl=document.getElementById('availableBalance'),
         cashbackEl=document.getElementById('cashback'); const fmtUSD=n=>n.toLocaleString(undefined,{style:'currency',currency:'USD'});
   function applyBalances(){
@@ -606,6 +656,7 @@
     if(cashbackEl) cashbackEl.textContent=fmtUSD(SETTINGS.cashback);
     MAX=Math.max(0,SETTINGS.cardBalance); THRESH=+(MAX*0.82).toFixed(2); lockedAtMax=false; lastFrac=0; applyFromFraction(0,false);
   }
+
   function fractionFromPointer(evt){
     const rect=ringWrap.getBoundingClientRect();
     const x=(evt.touches?evt.touches[0].clientX:evt.clientX)-rect.left;
@@ -620,15 +671,18 @@
   ringSvg.addEventListener('mousedown',start); ringSvg.addEventListener('touchstart',start,{passive:false});
   window.addEventListener('mousemove',move,{passive:false}); window.addEventListener('touchmove',move,{passive:false});
   window.addEventListener('mouseup',end); window.addEventListener('touchend',end);
+
   document.getElementById('otherAmountBtn').addEventListener('click',()=>{
     const raw=prompt('Enter a payment amount (0.00–'+MAX.toFixed(2)+')', amount.toFixed(2));
     if(!raw) return; const n=parseFloat(raw.replace(/[^\d.]/g,'')); if(isFinite(n)){applyFromFraction(Math.max(0,Math.min(1,n/Math.max(1,MAX))),false)}
   });
+
   function applyBalanceDelta(cardDelta,availDelta){
     const nextCard=+(SETTINGS.cardBalance+cardDelta).toFixed(2);
     SETTINGS.cardBalance=nextCard<0?0:nextCard; SETTINGS.availableBalance=+(SETTINGS.availableBalance+availDelta).toFixed(2);
     saveBalances(); applyBalances();
   }
+
   /* === Pay flow to full confirm page (no transaction yet) === */
   let pendingPayAmt = 0;
   let confirmFlow = 'pay';                       // 'pay' | 'cashback'
@@ -639,6 +693,7 @@
   const transferLabel = document.getElementById('transferLabel');
   payBackBtn.addEventListener('click', ()=>{ app.className='app pos-0'; });
   payCancelBtn.addEventListener('click', ()=>{ app.className='app pos-0'; });
+
   function openPayPage() {
     payTitleEl.textContent = (confirmFlow === 'cashback') ? 'Cashback Deposit' : 'Pay Card';
     transferLabel.textContent = (confirmFlow === 'cashback') ? 'Transfer to' : 'Transfer from';
@@ -654,17 +709,22 @@
     confirmFlow = 'pay';
     openPayPage();
   });
+
   applyBalances();
+
   /* Transactions & cashback */
   const TXN_STORE_KEY='demo_txns';
+
   function saveTransactions(){try{localStorage.setItem(TXN_STORE_KEY,JSON.stringify(transactions))}catch(e){} refreshCashbackTile(); cloudSaveDebounced(); }
   function rid(){return 't_'+Math.random().toString(36).slice(2,9)}
+
   /* CASHBACK LOGIC */
   const round2=n=>Math.round(n*100)/100;
   const CASHBACK_RATES={shopping:0.05,food:0.04, travel:0.04, streaming:0.04,gaming:0.03, messaging:0.03};
   const rateForCategory = cat => CASHBACK_RATES[cat] ?? 0;
   const calcCashback=(amt,cat)=>round2((Number(amt)||0)*rateForCategory(cat));
   const getTxnCashback=t=>(typeof t.cashback==='number') ? t.cashback : (t.kind==='purchase' ? calcCashback(t.amount, t.category) : 0);
+
   /* Seed transactions if none */
   const SEED_TXNS = (function(){
     const cv = currentCbv();
@@ -680,6 +740,7 @@
       {id:'t_seed9',kind:'purchase',merchant:'Amazon',amount:23.49,iso:'2025-08-24T10:30:00.000Z',status:'Approved',card:'Sapphire Reserve',category:'shopping',cashback:calcCashback(23.49,'shopping'),cbv:cv}
     ];
   })();
+
   function loadTransactions(){
     try{
       const raw=localStorage.getItem(TXN_STORE_KEY);
@@ -690,9 +751,11 @@
     }catch(e){}
     return SEED_TXNS.slice();
   }
+
   const CAT_MAP={food:'food-icon.png',gaming:'gaming-icon.png',streaming:'watch-icon.png',travel:'travel-icon.png',messaging:'messaging-icon.png',shopping:'shopping-icon.png',payment:'payment-icon.png'};
   const catLabel=(k)=>({food:'Food/Drinks',gaming:'Gaming',streaming:'Streaming',travel:'Travel',messaging:'Messaging',shopping:'Shopping',payment:'Payment'}[k]||'Other');
   const iconByCat=(k)=> CAT_MAP[k] || 'payment-icon.png';
+
   const KEYWORD_ICON_RULES = [
     { patterns: [/doordash/i, /dd\*/i, /dashpass/i], icon: 'doordash-icon.png' },
     { patterns: [/affirm/i], icon: 'affirm-icon.png' },
@@ -705,6 +768,7 @@
     /* NEW: card payment keywords -> Chase icon */
     { patterns: [/card\s*payment/i, /payment.*7295/i, /\b7295\b/i], icon: 'chase-icon.png' },
   ];
+
   function chooseIconForMerchant(name){
     if (!name) return null;
     const s = String(name);
@@ -720,12 +784,15 @@
     if (t.kind==='payment') return 'chase-icon.png';
     return chooseIconForMerchant(t.merchant) || iconByCat(t.category); 
   }
+
   /* Load transactions */
   let transactions = loadTransactions() || [];
+
   function formatDisplay(t){const negative=(t.status==='Refunded'||t.status==='Posted');return (negative?'- ':'')+'$'+Number(t.amount).toFixed(2)}
   function formatMoneyAbs(n){return '$'+Math.abs(n).toFixed(2)}
   function shortDate(iso){const d=new Date(iso);return d.toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit'})}
   function fullDateTime(iso){const d=new Date(iso);return d.toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'2-digit'})+', '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})}
+
   function renderTransactions(){
     transactions.sort((a,b)=>new Date(b.iso)-new Date(a.iso));
     const rows=transactions.map(t=>{
@@ -747,12 +814,14 @@
         </div>
       </div>`;
     }).join('');
+
     document.getElementById('txnList').innerHTML=`<div class="txnStack">${rows||''}</div>`;
     document.querySelectorAll('#txnList .txnRow').forEach(row=>{
       row.addEventListener('click',()=>openTxn(row.dataset.id));
       row.addEventListener('keypress',e=>{if(e.key==='Enter')openTxn(row.dataset.id)});
     });
   }
+
   function computeCashbackAvailable(){
     const cv=currentCbv();
     return Math.round(transactions.reduce((sum,t)=>{
@@ -767,6 +836,7 @@
     SETTINGS.cashback=total; saveBalances();
     if(cashbackEl) cashbackEl.textContent=fmtUSD(total);
   }
+
   let currentTxnId=null;
   function openTxn(id){
     const t=transactions.find(x=>x.id===id); if(!t) return; currentTxnId=id;
@@ -789,6 +859,7 @@
     if(!currentTxnId)return; const i=transactions.findIndex(t=>t.id===currentTxnId);
     if(i>-1){transactions.splice(i,1);saveTransactions();renderTransactions();currentTxnId=null;app.className='app pos-0'}
   });
+
   /* Public helpers */
   window.addPurchase=({merchant,amount,iso,card='Sapphire Reserve',status='Approved',category='shopping'})=>{
     const amt=Number(amount);
@@ -812,7 +883,9 @@
   };
   window.removeTransaction=(id)=>{const i=transactions.findIndex(t=>t.id===id);if(i>-1){transactions.splice(i,1);saveTransactions();renderTransactions();}}
   window.removeTransactionWhere=(criteria)=>{const i=transactions.findIndex(t=>Object.entries(criteria).every(([k,v])=>t[k]===v));if(i>-1){transactions.splice(i,1);saveTransactions();renderTransactions();}}
+
   renderTransactions(); refreshCashbackTile();
+
   /* Card details */
   const cardSheet=document.getElementById('cardSheet'),cardDim=document.getElementById('cardDim'),
         closeCardSheetBtn=document.getElementById('closeCardSheet'),
@@ -823,6 +896,7 @@
   cardDim.addEventListener('click',closeCardSheet); closeCardSheetBtn.addEventListener('click',closeCardSheet);
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCardSheet()});
   const bigCardEl=document.getElementById('bigCard'); if(bigCardEl){bigCardEl.style.cursor='pointer'; bigCardEl.addEventListener('click',openCardSheet)}
+
   /* Add Txn flow */
   const addTxnSheet=document.getElementById('addTxnSheet'),addTxnDim=document.getElementById('addTxnDim'),
         openAddTxn=document.getElementById('openAddTxn'),closeAddTxn=document.getElementById('closeAddTxn'),
@@ -864,6 +938,7 @@
     else{window.addPayment({amount,iso,status,card:'Sapphire Reserve',merchant,category})}
     pendingTxn=null; closeConfirmSheet();
   });
+
   /* Cashback sheet */
   const cashbackTile=document.getElementById('cashbackTile'),cbSheet=document.getElementById('cashbackSheet'),
         cbDim=document.getElementById('cbDim'),cbViews=document.getElementById('cbViews'),
@@ -874,10 +949,12 @@
   function closeCbSheet(){cbSheet.classList.remove('active')}
   cashbackTile.addEventListener('click',openCbSheet); cbDim.addEventListener('click',closeCbSheet);
   cbClose1.addEventListener('click',closeCbSheet); cbClose2.addEventListener('click',closeCbSheet); cbCancel.addEventListener('click',closeCbSheet);
+
   const cbRingWrap=document.getElementById('cbRingWrap'),cbRingSvg=document.getElementById('cbRingSvg'),cbProgress=document.getElementById('cbProgress'),
         cbHandle=document.getElementById('cbHandle'),cbAmountLabel=document.getElementById('cbAmountLabel');
   const CB_R=120, CB_C=2*Math.PI*CB_R; cbProgress.setAttribute('stroke-dasharray',`${CB_C}`); cbProgress.setAttribute('stroke-dashoffset',`${CB_C}`);
   let CB_MAX=0, cbAmount=0, cbDragging=false, cbLastFrac=0, cbLockedAtMax=false;
+
   function cbSetMax(){CB_MAX=Math.max(0,computeCashbackAvailable())}
   function cbSetUI(v){cbProgress.setAttribute('stroke',v>0?'url(#cbGradGreen)':'url(#cbGradGray)')}
   function cbSignedDelta(a,b){return (((a-b)+1.5)%1)-0.5}
@@ -903,6 +980,7 @@
   cbRingSvg.addEventListener('mousedown',cbStart); cbRingSvg.addEventListener('touchstart',cbStart,{passive:false});
   window.addEventListener('mousemove',cbMove,{passive:false}); window.addEventListener('touchmove',cbMove,{passive:false});
   window.addEventListener('mouseup',cbEnd); window.addEventListener('touchend',cbEnd);
+
   /* Route cashback deposit to the same confirm page */
   cbDepositBtn.addEventListener('click', ()=>{
     if(cbAmount<=0) return;
@@ -910,6 +988,7 @@
     confirmFlow = 'cashback';
     openPayPage();
   });
+
   /* (Second page fields remain available but are not used in this flow) */
   cbSubmit.addEventListener('click', ()=>{
     const acct=(cbAcct.value||'').trim(), routing=(cbRouting.value||'').trim();
@@ -919,6 +998,7 @@
     cbAmount=0; cbApplyFromFraction(0,false); closeCbSheet();
   });
   cbCancel.addEventListener('click', closeCbSheet);
+
   /* Update Balances sheet logic */
   const balancesSheet=document.getElementById('balancesSheet'),
         balancesDim=document.getElementById('balancesDim'),
@@ -929,6 +1009,7 @@
         editCardBalance=document.getElementById('editCardBalance'),
         editAvailableBalance=document.getElementById('editAvailableBalance'),
         editCashback=document.getElementById('editCashback');
+
   function openBalancesSheet(){
     editCardBalance.value = (Number(SETTINGS.cardBalance)||0).toFixed(2);
     editAvailableBalance.value = (Number(SETTINGS.availableBalance)||0).toFixed(2);
@@ -936,10 +1017,12 @@
     balancesSheet.classList.add('active');
   }
   function closeBalancesSheet(){ balancesSheet.classList.remove('active'); }
+
   openBalances.addEventListener('click', openBalancesSheet);
   balancesDim.addEventListener('click', closeBalancesSheet);
   closeBalances.addEventListener('click', closeBalancesSheet);
   balancesCancelBtn.addEventListener('click', closeBalancesSheet);
+
   balancesSaveBtn.addEventListener('click', ()=>{
     const card = parseFloat(editCardBalance.value);
     const avail = parseFloat(editAvailableBalance.value);
@@ -951,6 +1034,7 @@
     applyBalances();
     closeBalancesSheet();
   });
+
   /* ===== Pay Confirmation page interactions ===== */
   const openAcctPicker = document.getElementById('openAcctPicker');
   const acctSheet = document.getElementById('acctSheet');
@@ -958,8 +1042,10 @@
   const acctClose = document.getElementById('acctClose');
   const acctSave = document.getElementById('acctSave');
   const fromAcctNameEl = document.getElementById('fromAcctName');
+
   function openAcctSheet(){ acctSheet.classList.add('active'); }
   function closeAcctSheet(){ acctSheet.classList.remove('active'); }
+
   openAcctPicker.addEventListener('click', openAcctSheet);
   acctDim.addEventListener('click', closeAcctSheet);
   acctClose.addEventListener('click', closeAcctSheet);
@@ -968,12 +1054,14 @@
     if (sel) fromAcctNameEl.textContent = sel.value;
     closeAcctSheet();
   });
+
   /* Slide to confirm */
   const slideWrap = document.getElementById('slideWrap');
   const slideThumb = document.getElementById('slideThumb');
   const slideLabel = document.getElementById('slideLabel');
   const slideFill = document.getElementById('slideFill');
   let draggingSlide=false, startX=0, thumbX=0, maxX=0, confirmed=false, thumbW=52;
+
   function resetSlider(){
     confirmed=false;
     slideThumb.style.transition='';
@@ -983,6 +1071,7 @@
     slideWrap.classList.remove('slideDone');
     slideLabel.textContent='Slide to confirm';
   }
+
   function beginDrag(e){
     if(confirmed) return;
     draggingSlide=true;
@@ -1032,6 +1121,7 @@
   window.addEventListener('touchmove',moveDrag,{passive:false});
   window.addEventListener('mouseup',endDrag);
   window.addEventListener('touchend',endDrag);
+
   function showLoadingChip(message){
     const chip=document.createElement('div');
     chip.className='loadingChip';
@@ -1039,26 +1129,30 @@
     document.body.appendChild(chip);
     return chip;
   }
+
   function performPayment(){
     const isDeposit = (confirmFlow === 'cashback');
     const chip=showLoadingChip(isDeposit ? 'Submitting deposit…' : 'Submitting payment…');
     const nowIso = new Date().toISOString();
+
     if (isDeposit){
       window.addCashbackDeposit({amount:pendingPayAmt,iso:nowIso,account:fromAcctNameEl.textContent});
     }else{
       // merchant ensures chase icon rule
       window.addPayment({amount:pendingPayAmt,iso:nowIso,merchant:'CARD PAYMENT 7295',category:'payment'});
     }
+
     setTimeout(()=>{
       chip.remove();
       app.className='app pos-0';
       resetSlider();
     },3000);
   }
+
   /* === Start Firebase sync (loads cloud over local if present) === */
   (async ()=>{ const db=await fbInit(); if(db){ await cloudLoad(); } })();
+
 })();
 </script>
 </body>
 </html>
-
