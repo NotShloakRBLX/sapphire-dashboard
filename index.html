@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<meta nameA="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
 <title>Sapphire Reserve</title>
 <style>
   :root{
@@ -18,9 +18,12 @@
   }
   *{box-sizing:border-box}
   html,body{height:100%}
-  body{margin:0;background:#000;color:var(--text);
+  body{
+    margin:0;background:#000;color:var(--text);
     font:15px -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    -webkit-font-smoothing:antialiased}
+    -webkit-font-smoothing:antialiased;
+    overscroll-behavior:contain;      /* reduce page tug while dragging */
+  }
   .app{max-width:430px;height:100svh;margin:0 auto;position:relative;overflow:hidden;background:var(--bg)}
   /* support 3 views */
   .views{display:flex;width:300%;height:100%;transition:transform var(--t)}
@@ -117,7 +120,8 @@
   .panelHead{display:flex;align-items:center;justify-content:center;padding:12px 14px 0;position:relative}
   .closeX{position:absolute;left:14px;top:8px;width:36px;height:36px;border-radius:10px;border:none;background:#efefef;font-size:20px;font-weight:900;cursor:pointer}
   .title{font-size:28px;font-weight:900;margin:6px 0 0;text-align:center}
-  .ringWrap{position:relative;width:86%;max-width:360px;aspect-ratio:1;margin:12px auto 12px}
+  .ringWrap{position:relative;width:86%;max-width:360px;aspect-ratio:1;margin:12px auto 12px;
+    touch-action:none; user-select:none;} /* stop page pan/zoom here */
   .ringWrap svg{width:100%;height:100%}
   .centerText{position:absolute;inset:0;display:grid;place-items:center;text-align:center;pointer-events:none}
   .amt{font-weight:900;font-size:44px}
@@ -184,19 +188,16 @@
   .payTitle{font-size:24px;font-weight:900;margin:4px 0 10px}
   .payAmount{font-size:64px;line-height:1;font-weight:900;letter-spacing:-.5px;margin:6px 0 18px}
   .payBox{display:flex;gap:12px;align-items:center;padding:16px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--tileBorder);cursor:pointer}
-  /* icon container without black box */
   .payBox .bankIcon{width:36px;height:36px;border-radius:0;background:transparent;display:grid;place-items:center}
   .payBox .bankIcon img{width:26px;height:26px;object-fit:contain}
   .payBox .label{font-size:13px;color:var(--muted);margin-bottom:2px}
   .payBox .name{font-weight:800}
   .spacer{height:16px}
-  /* Slide to confirm */
   .slideWrap{margin-top:18px;position:relative;height:60px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--tileBorder);user-select:none;overflow:hidden}
   .slideFill{position:absolute;left:4px;top:4px;bottom:4px;width:0;border-radius:999px;background:linear-gradient(90deg,#51c0ff,#0a84ff);pointer-events:none;transition:width .15s ease}
   .slideThumb{position:absolute;top:4px;left:4px;width:52px;height:52px;border-radius:999px;background:#0d0d0d;display:grid;place-items:center;font-size:24px;font-weight:900;box-shadow:0 8px 18px rgba(0,0,0,.45);touch-action:none;z-index:2}
   .slideLabel{position:absolute;inset:0;display:grid;place-items:center;font-weight:900;color:rgba(255,255,255,.6);pointer-events:none;z-index:0}
   .slideDone{background:#0a84ff}
-  /* loading chip */
   .loadingChip{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:rgba(255,255,255,.09);
     border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:10px;backdrop-filter:blur(6px)}
   .spinner{width:18px;height:18px;border-radius:50%;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;animation:spin 1s linear infinite}
@@ -210,10 +211,13 @@
   .acctRow .names .small{color:var(--muted);font-size:12px;margin-top:2px}
   .acctRow input{accent-color:#0a84ff;transform:scale(1.1)}
 
-  /* === Added: ring labels & markers === */
-  .ringTag{fill:rgba(255,255,255,.85);font-weight:900;letter-spacing:2px;font-size:14px;text-transform:uppercase;pointer-events:none}
-  .snapDot{pointer-events:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
-  .snapDot text{font-weight:900;font-size:14px;text-anchor:middle;dominant-baseline:central}
+  /* === slider markers === */
+  #handle{touch-action:none}
+  #ringSvg,#cbRingSvg{touch-action:none}
+  .marker{pointer-events:none;filter:drop-shadow(0 1px 4px rgba(0,0,0,.35))}
+  .minBadge circle{fill:#ffd60a;stroke:#fff;stroke-width:2}
+  .minBadge text{font-weight:900;fill:#000;font-size:16px;dominant-baseline:middle;text-anchor:middle}
+  .maxDot{fill:#2ecc71}
 </style>
 
 <!-- 🔗 Firebase CDN (Compat builds so we can use plain <script>) -->
@@ -223,8 +227,6 @@
 
 <!-- 🔧 PASTE YOUR FIREBASE CONFIG HERE (keep keys exactly like this) -->
 <script>
-  // 1) Replace the empty strings with your own Firebase project details
-  //    from Firebase console > Project settings > Your apps > Web app
   window.firebaseConfig = {
     apiKey: "AIzaSyBxhm51j73vehFr-_NTEnyPcgmyGPCQhwE",
     authDomain: "sapphire-reserve-e5cac.firebaseapp.com",
@@ -232,12 +234,7 @@
     storageBucket: "sapphire-reserve-e5cac.firebasestorage.app",
     messagingSenderId: "778349882307",
     appId: "1:778349882307:web:4c43dd8ba5e5c6e401ab76"
-    // (optional) storageBucket: "", measurementId: ""
   };
-
-  // 2) (Optional) Set a shared document ID to sync across devices.
-  //    If blank, the app uses your anonymous auth UID (per-device).
-  //    Example: window.CLOUD_DOC_ID = "my-shared-wallet-123";
   window.CLOUD_DOC_ID = "sapphire-reserve";
 </script>
 </head>
@@ -357,32 +354,19 @@
             <linearGradient id="gradBlue" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#51c0ff"/><stop offset="100%" stop-color="#0a84ff"/></linearGradient>
             <linearGradient id="gradGreen" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#b8ffb9"/><stop offset="100%" stop-color="#34c759"/></linearGradient>
             <linearGradient id="gradGray"  x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#e9ecef"/><stop offset="100%" stop-color="#cfd8dc"/></linearGradient>
-            <!-- full circle path for ring text -->
-            <path id="ringArc" d="M160 40 A120 120 0 1 1 159.99 40"/>
+            <linearGradient id="gradYellow" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ffe97a"/><stop offset="100%" stop-color="#ffd60a"/></linearGradient>
           </defs>
-          <!-- Base ring -->
           <circle cx="160" cy="160" r="120" stroke="#e9e9ef" stroke-opacity=".65" stroke-width="26" fill="none"/>
-          <!-- Progress stroke -->
           <circle id="progress" cx="160" cy="160" r="120" stroke="url(#gradGray)" stroke-width="26" fill="none"
-                  stroke-linecap="round" transform="rotate(-90 160 160)" />
-          <!-- Markers -->
-          <g id="minMarker" class="snapDot" style="display:none">
-            <circle r="13" fill="#ffd60a" stroke="#fff" stroke-width="3"></circle>
-            <text y="1" fill="#000">!</text>
+                  stroke-linecap="round" transform="rotate(-90 160 160)"/>
+          <!-- markers -->
+          <g id="minMarker" class="marker minBadge" style="display:none">
+            <circle r="10"></circle>
+            <text y="1">!</text>
           </g>
-          <g id="maxMarker" class="snapDot">
-            <circle r="10" fill="#2ecc71" stroke="#1b8f4a" stroke-width="2"></circle>
-          </g>
-          <!-- Handle + check -->
+          <circle id="maxMarker" class="marker maxDot" r="7" style="display:none"></circle>
+          <!-- draggable knob -->
           <circle id="handle" cx="160" cy="40" r="12" fill="#fff" stroke="#e6e6e6" stroke-width="2"/>
-          <text id="handleCheck" x="160" y="40" fill="#000" font-size="14" font-weight="900" text-anchor="middle" dominant-baseline="central" style="display:none">✓</text>
-          <!-- Tags on ring -->
-          <text class="ringTag" text-anchor="middle">
-            <textPath id="balText" href="#ringArc" startOffset="0%"></textPath>
-          </text>
-          <text class="ringTag" text-anchor="middle">
-            <textPath id="noIntText" href="#ringArc" startOffset="50%">NO INTEREST CHARGES</textPath>
-          </text>
         </svg>
         <div class="centerText" aria-live="polite" aria-atomic="true"><div class="amt" id="amountLabel">$0.00</div></div>
       </div>
@@ -413,7 +397,7 @@
               </defs>
               <circle cx="160" cy="160" r="120" stroke="#e9e9ef" stroke-opacity=".65" stroke-width="26" fill="none"/>
               <circle id="cbProgress" cx="160" cy="160" r="120" stroke="url(#cbGradGray)" stroke-width="26" fill="none"
-                      stroke-linecap="round" transform="rotate(-90 160 160)" />
+                      stroke-linecap="round" transform="rotate(-90 160 160)"/>
               <circle id="cbHandle" cx="160" cy="40" r="12" fill="#fff" stroke="#e6e6e6" stroke-width="2"/>
             </svg>
             <div class="centerText"><div class="amt" id="cbAmountLabel">$0.00</div></div>
@@ -550,10 +534,8 @@
       if(!firebase.apps.length){
         firebase.initializeApp(window.firebaseConfig);
       }
-      // Sign in anonymously so Firestore rules can require auth
       try{ await firebase.auth().signInAnonymously(); }catch(e){}
       const db=firebase.firestore();
-      // Optional offline cache (ignore if it fails)
       try{ await db.enablePersistence({synchronizeTabs:true}); }catch(e){}
       window.db=db;
       return db;
@@ -582,7 +564,6 @@
         saveTransactions(); renderTransactions(); refreshCashbackTile();
       }
     }else{
-      // First run: seed the cloud with whatever we have locally
       await ref.set({
         settings: SETTINGS,
         transactions: transactions,
@@ -634,115 +615,137 @@
   const ensureCbv=()=>{const stored=Number(localStorage.getItem(CBV_KEY)||'0');if(stored!==CASHBACK_VERSION){localStorage.setItem(CBV_KEY,String(CASHBACK_VERSION))}return CASHBACK_VERSION};
   const currentCbv=()=>Number(localStorage.getItem(CBV_KEY)||ensureCbv()); ensureCbv();
 
-  /* Payment sheet (amount picker) */
+  /* ===== Payment sheet (amount picker) ===== */
   const sheet=document.getElementById('sheet'), dim=document.getElementById('dim'),
         openPay=document.getElementById('openPay'), closeSheetBtn=document.getElementById('closeSheet');
   const closeSheet=()=>{ sheet.classList.remove('active'); };
   openPay.addEventListener('click',()=>{
     sheet.classList.add('active');
     MAX = Math.max(0, SETTINGS.cardBalance);
-    lockedAtMax=false; lockedAtMin=false; lastFrac=0;
-    handle.setAttribute('fill','#fff'); handleCheck.style.display='none';
-    applyFromFraction(0,false);  // start at $0.00
-    updateRingLabelsAndMarkers();
+    layoutMarkers();
+    // Start at $0.00 (not max)
+    lockedAtMax=false; lockedAtMin=false; lastFrac=0; applyFromFraction(0,false);
   });
   dim.addEventListener('click',closeSheet); closeSheetBtn.addEventListener('click',closeSheet);
   document.addEventListener('keydown',e=>{if(e.key==='Escape') closeSheet()});
 
   /* Slider (ring amount chooser) */
   const MIN=0.00; let MAX=SETTINGS.cardBalance; let THRESH=+(MAX*0.82).toFixed(2);
-  const MIN_PAYMENT=40;
+  const MIN_PAYMENT=40; // special sticky marker (when balance >= $40)
+
   const ringWrap=document.getElementById('ringWrap'), ringSvg=document.getElementById('ringSvg'),
         progress=document.getElementById('progress'), handle=document.getElementById('handle'),
-        handleCheck=document.getElementById('handleCheck'),
         amountLabel=document.getElementById('amountLabel'), payBtn=document.getElementById('payNowBtn'),
         info=document.getElementById('payInfo'),
-        minMarker=document.getElementById('minMarker'), maxMarker=document.getElementById('maxMarker'),
-        balText=document.getElementById('balText');
+        minMarker=document.getElementById('minMarker'), maxMarker=document.getElementById('maxMarker');
+
   const R=120, C=2*Math.PI*R; progress.setAttribute('stroke-dasharray',`${C}`); progress.setAttribute('stroke-dashoffset',`${C}`);
-  let amount=MIN, dragging=false, lastFrac=0, lockedAtMax=false, lockedAtMin=false;
+  let amount=MIN, dragging=false, lastFrac=0, lockedAtMax=false, lockedAtMin=false, minFrac=0;
 
-  function setUI(v){
-    if(lockedAtMax||Math.abs(v-MAX)<0.01){progress.setAttribute('stroke','url(#gradBlue)');
-      info.innerHTML='Pay Card Balance<small>Paying the total amount you’ve spent is a great way to clear your balance and stay ahead on your finances.</small>'}
-    else if(v>THRESH){progress.setAttribute('stroke','url(#gradGreen)');
-      info.innerHTML='Pay More Toward Your Balance<small>Paying more of your card balance helps free up available credit and reduces the amount to pay next month.</small>'}
-    else{progress.setAttribute('stroke','url(#gradGray)');
-      info.innerHTML='Pay Statement Amount<small>Paying your monthly balance helps avoid interest charges.</small>'}
-  }
-  const signedDelta=(a,b)=>(((a-b)+1.5)%1)-0.5;
-
-  function xyOnCircle(frac){
-    const ang=(-90+360*frac)*Math.PI/180;
-    return {x:160+R*Math.cos(ang), y:160+R*Math.sin(ang)};
-  }
-
-  function updateRingLabelsAndMarkers(){
-    balText.textContent = 'CARD BALANCE: ' + (MAX||0).toLocaleString(undefined,{style:'currency',currency:'USD'});
-    // position max marker at end of ring
-    const pMax=xyOnCircle(0.999999);
-    maxMarker.setAttribute('transform',`translate(${pMax.x},${pMax.y})`);
-    // position min-payment marker if applicable
-    if(MAX>MIN_PAYMENT){
-      const frac=Math.max(0,Math.min(1, MIN_PAYMENT/Math.max(1,MAX)));
-      const p=xyOnCircle(frac);
-      minMarker.style.display=''; minMarker.setAttribute('transform',`translate(${p.x},${p.y})`);
+  function posForFrac(fr){ const ang=(-90+360*fr)*Math.PI/180; return {x:160+R*Math.cos(ang), y:160+R*Math.sin(ang)}; }
+  function layoutMarkers(){
+    MAX=Math.max(0,SETTINGS.cardBalance);
+    THRESH=+(MAX*0.82).toFixed(2);
+    const showMin = MAX>=MIN_PAYMENT;
+    minFrac = showMin ? (MIN_PAYMENT / MAX) : 0;
+    if(showMin){
+      const p = posForFrac(minFrac);
+      minMarker.style.display='block';
+      minMarker.setAttribute('transform',`translate(${p.x},${p.y})`);
     }else{
       minMarker.style.display='none';
     }
+    if(MAX>0){
+      const p2 = posForFrac(1);
+      maxMarker.style.display='block';
+      maxMarker.setAttribute('cx',p2.x); maxMarker.setAttribute('cy',p2.y);
+    }else{
+      maxMarker.style.display='none';
+    }
   }
 
+  function setUI(v){
+    const nearMin = (MAX>=MIN_PAYMENT) && Math.abs(v - MIN_PAYMENT) < 0.01;
+    if(lockedAtMax || Math.abs(v-MAX)<0.01){
+      progress.setAttribute('stroke','url(#gradBlue)');
+      info.innerHTML='Pay Card Balance<small>Paying the total amount you’ve spent is a great way to clear your balance and stay ahead on your finances.</small>';
+    }else if(nearMin){
+      progress.setAttribute('stroke','url(#gradYellow)');
+      info.innerHTML='Minimum Due ($40)<small>This is the minimum payment required.</small>';
+    }else if(v>THRESH){
+      progress.setAttribute('stroke','url(#gradGreen)');
+      info.innerHTML='Pay More Toward Your Balance<small>Paying more of your card balance helps free up available credit and reduces the amount to pay next month.</small>';
+    }else{
+      progress.setAttribute('stroke','url(#gradGray)');
+      info.innerHTML='Pay Statement Amount<small>Paying your monthly balance helps avoid interest charges.</small>';
+    }
+  }
+  const signedDelta=(a,b)=>(((a-b)+1.5)%1)-0.5;
+
   function applyFromFraction(fracRaw,fromDrag=false){
-    let f=Math.max(0,Math.min(0.999999,fracRaw)); const delta=signedDelta(f,lastFrac);
+    let f=Math.max(0,Math.min(0.999999,fracRaw));
+    const delta=signedDelta(f,lastFrac);
 
-    // Lock to max near the end
-    const NEAR_MAX=0.995;
+    /* sticky MAX */
     if(lockedAtMax){ if(delta>0){f=1}else{lockedAtMax=false} }
-    if(!lockedAtMax&&f>=NEAR_MAX){lockedAtMax=true;f=1}
+    const NEAR_MAX=0.995; if(!lockedAtMax&&f>=NEAR_MAX){lockedAtMax=true;f=1}
 
-    // Lock to minimum payment ($40) when balance supports it
-    const minActive = MAX>MIN_PAYMENT;
-    const SNAP=0.025; // snap window along the ring
-    const minFrac = minActive ? Math.max(0,Math.min(0.999999, MIN_PAYMENT/Math.max(1,MAX))) : null;
-
-    if(minActive){
+    /* sticky MIN ($40) */
+    if(MAX>=MIN_PAYMENT){
+      const STICK=0.02, UNLOCK=0.04;
       if(lockedAtMin){
-        if(Math.abs(f - minFrac) > SNAP*1.2 && delta>0){ lockedAtMin=false; }
-        else{ f=minFrac; }
+        // unlock if user drags clearly past the marker
+        if(Math.abs(f-minFrac) >= UNLOCK){ lockedAtMin=false; }
+        else { f=minFrac; }
       }else{
-        if(Math.abs(f - minFrac) < SNAP){ lockedAtMin=true; f=minFrac; }
+        if(Math.abs(f-minFrac) <= STICK){ lockedAtMin=true; f=minFrac; }
       }
     }else{
       lockedAtMin=false;
     }
 
-    lastFrac=f; const fracForAmount=(f===1)?1:f; amount=+((MIN+fracForAmount*(MAX-MIN)).toFixed(2));
-    const dash=C*(1-fracForAmount); progress.style.transition=fromDrag?'none':'stroke-dashoffset 220ms ease, stroke 220ms ease';
+    lastFrac=f;
+    const fracForAmount=(f===1)?1:f;
+    amount=+((MIN+fracForAmount*(MAX-MIN)).toFixed(2));
+
+    const dash=C*(1-fracForAmount);
+    progress.style.transition=fromDrag?'none':'stroke-dashoffset 220ms ease, stroke 220ms ease';
     progress.setAttribute('stroke-dashoffset',`${dash}`);
 
-    const p=xyOnCircle(fracForAmount);
+    const p=posForFrac(fracForAmount);
     handle.style.transition=fromDrag?'none':'cx 180ms ease, cy 180ms ease';
     handle.setAttribute('cx',p.x.toFixed(2)); handle.setAttribute('cy',p.y.toFixed(2));
-    handleCheck.setAttribute('x',p.x.toFixed(2)); handleCheck.setAttribute('y',p.y.toFixed(2));
 
-    amountLabel.textContent='$'+amount.toFixed(2); payBtn.textContent='Pay $'+amount.toFixed(2); setUI(amount);
+    amountLabel.textContent='$'+amount.toFixed(2);
+    payBtn.textContent='Pay $'+amount.toFixed(2);
+    setUI(amount);
+  }
+
+  const cardBalanceEl=document.getElementById('cardBalance'), availableEl=document.getElementById('availableBalance'),
+        cashbackEl=document.getElementById('cashback'); const fmtUSD=n=>n.toLocaleString(undefined,{style:'currency',currency:'USD'});
+  function applyBalances(){
+    cardBalanceEl.textContent=fmtUSD(SETTINGS.cardBalance);
+    availableEl.textContent=`${fmtUSD(SETTINGS.availableBalance)} Available`;
+    if(cashbackEl) cashbackEl.textContent=fmtUSD(SETTINGS.cashback);
+    MAX=Math.max(0,SETTINGS.cardBalance); THRESH=+(MAX*0.82).toFixed(2);
+    lockedAtMax=false; lockedAtMin=false; lastFrac=0;
+    layoutMarkers();
+    applyFromFraction(0,false);
   }
 
   function fractionFromPointer(evt){
     const rect=ringWrap.getBoundingClientRect();
     const x=(evt.touches?evt.touches[0].clientX:evt.clientX)-rect.left;
     const y=(evt.touches?evt.touches[0].clientY:evt.clientY)-rect.top;
-    const cx=rect.width/2, cy=rect.height/2; let theta=Math.atan2(y-cy,x-cx); theta+=Math.PI/2; if(theta<0) theta+=Math.PI*2;
+    const cx=rect.width/2, cy=rect.height/2;
+    let theta=Math.atan2(y-cy,x-cx); theta+=Math.PI/2; if(theta<0) theta+=Math.PI*2;
     return theta/(Math.PI*2);
   }
-
-  // Dragging ONLY from the knob to prevent jump-to-max
-  const start=e=>{dragging=true; handle.setAttribute('fill','#fff'); handleCheck.style.display='none';
-    applyFromFraction(fractionFromPointer(e),true); e.preventDefault()}
-  const move=e=>{if(!dragging)return;applyFromFraction(fractionFromPointer(e),true)}
-  const end=()=>{ if(!dragging) return; dragging=false; handle.setAttribute('fill','#34c759'); handleCheck.style.display=''; }
+  const start=e=>{dragging=true;applyFromFraction(fractionFromPointer(e),true);e.preventDefault();}
+  const move=e=>{if(!dragging)return;applyFromFraction(fractionFromPointer(e),true);e.preventDefault();}
+  const end=()=>{dragging=false}
   handle.addEventListener('mousedown',start); handle.addEventListener('touchstart',start,{passive:false});
-  // (INTENTIONALLY do not allow starting drag from the ring)
+  ringSvg.addEventListener('mousedown',start); ringSvg.addEventListener('touchstart',start,{passive:false});
   window.addEventListener('mousemove',move,{passive:false}); window.addEventListener('touchmove',move,{passive:false});
   window.addEventListener('mouseup',end); window.addEventListener('touchend',end);
 
@@ -750,18 +753,6 @@
     const raw=prompt('Enter a payment amount (0.00–'+MAX.toFixed(2)+')', amount.toFixed(2));
     if(!raw) return; const n=parseFloat(raw.replace(/[^\d.]/g,'')); if(isFinite(n)){applyFromFraction(Math.max(0,Math.min(1,n/Math.max(1,MAX))),false)}
   });
-
-  const cardBalanceEl=document.getElementById('cardBalance'), availableEl=document.getElementById('availableBalance'),
-        cashbackEl=document.getElementById('cashback'); const fmtUSD=n=>n.toLocaleString(undefined,{style:'currency',currency:'USD'});
-  function applyBalances(){
-    cardBalanceEl.textContent=fmtUSD(SETTINGS.cardBalance); availableEl.textContent=`${fmtUSD(SETTINGS.availableBalance)} Available`;
-    if(cashbackEl) cashbackEl.textContent=fmtUSD(SETTINGS.cashback);
-    MAX=Math.max(0,SETTINGS.cardBalance); THRESH=+(MAX*0.82).toFixed(2);
-    lockedAtMax=false; lockedAtMin=false; lastFrac=0;
-    handle.setAttribute('fill','#fff'); handleCheck.style.display='none';
-    applyFromFraction(0,false);
-    updateRingLabelsAndMarkers();
-  }
 
   function applyBalanceDelta(cardDelta,availDelta){
     const nextCard=+(SETTINGS.cardBalance+cardDelta).toFixed(2);
@@ -771,7 +762,7 @@
 
   /* === Pay flow to full confirm page (no transaction yet) === */
   let pendingPayAmt = 0;
-  let confirmFlow = 'pay';                       // 'pay' | 'cashback'
+  let confirmFlow = 'pay';
   const payAmountLabel = document.getElementById('payAmountLabel');
   const payBackBtn = document.getElementById('payBackBtn');
   const payCancelBtn = document.getElementById('payCancelBtn');
@@ -789,7 +780,7 @@
     app.className = 'app pos-2';
     resetSlider();
   }
-  document.getElementById('payNowBtn').addEventListener('click', ()=>{
+  payBtn.addEventListener('click', ()=>{
     pendingPayAmt = amount;
     if (pendingPayAmt <= 0) return;
     confirmFlow = 'pay';
@@ -851,7 +842,6 @@
     { patterns: [/\bgoogle\b/i, /google\s*play/i, /(gpay|google\s*pay)/i], icon: 'google-icon.png' },
     { patterns: [/american\s+air(lines)?/i, /\baadvantage\b/i, /\baa\s?(?:#|flight|tkt|ticket)?/i], icon: 'aa-icon.png' },
     { patterns: [/singapore\s+air(lines)?/i, /\bkrisflyer\b/i, /\bsia\b/i], icon: 'sing-icon.png' },
-    /* NEW: card payment keywords -> Chase icon */
     { patterns: [/card\s*payment/i, /payment.*7295/i, /\b7295\b/i], icon: 'chase-icon.png' },
   ];
 
@@ -865,7 +855,6 @@
     }
     return null;
   }
-  /* Force all payment txns to use chase icon */
   function iconForTransaction(t){ 
     if (t.kind==='payment') return 'chase-icon.png';
     return chooseIconForMerchant(t.merchant) || iconByCat(t.category); 
@@ -1060,7 +1049,7 @@
     const cx=rect.width/2, cy=rect.height/2; let theta=Math.atan2(y-cy,x-cx); theta+=Math.PI/2; if(theta<0) theta+=Math.PI*2; return theta/(Math.PI*2);
   }
   const cbStart=e=>{cbDragging=true;cbApplyFromFraction(cbFracFromPointer(e),true);e.preventDefault()}
-  const cbMove=e=>{if(!cbDragging)return;cbApplyFromFraction(cbFracFromPointer(e),true)}
+  const cbMove=e=>{if(!cbDragging)return;cbApplyFromFraction(cbFracFromPointer(e),true);e.preventDefault()}
   const cbEnd=()=>{cbDragging=false}
   cbHandle.addEventListener('mousedown',cbStart); cbHandle.addEventListener('touchstart',cbStart,{passive:false});
   cbRingSvg.addEventListener('mousedown',cbStart); cbRingSvg.addEventListener('touchstart',cbStart,{passive:false});
@@ -1074,16 +1063,6 @@
     confirmFlow = 'cashback';
     openPayPage();
   });
-
-  /* (Second page fields remain available but are not used in this flow) */
-  cbSubmit.addEventListener('click', ()=>{
-    const acct=(cbAcct.value||'').trim(), routing=(cbRouting.value||'').trim();
-    if(!acct||!routing||cbAmount<=0) return;
-    const nowIso=new Date().toISOString();
-    window.addCashbackDeposit({amount:cbAmount,iso:nowIso,account:acct,routing});
-    cbAmount=0; cbApplyFromFraction(0,false); closeCbSheet();
-  });
-  cbCancel.addEventListener('click', closeCbSheet);
 
   /* Update Balances sheet logic */
   const balancesSheet=document.getElementById('balancesSheet'),
@@ -1164,7 +1143,7 @@
     startX=(e.touches?e.touches[0].clientX:e.clientX);
     const wrapRect=slideWrap.getBoundingClientRect();
     const thumbRect=slideThumb.getBoundingClientRect();
-    maxX = wrapRect.width - thumbRect.width - 8; // both side paddings 4px
+    maxX = wrapRect.width - thumbRect.width - 8;
     thumbX = parseFloat(slideThumb.style.left||'4');
     thumbW = thumbRect.width;
     slideThumb.style.transition='none';
@@ -1177,9 +1156,9 @@
     const dx=x-startX;
     let nx=Math.max(4,Math.min(4+dx+ (thumbX-4),4+maxX));
     slideThumb.style.left=nx+'px';
-    // Blue trail follows thumb
     const fillW = Math.max(0, (nx - 4) + thumbW);
     slideFill.style.width = fillW + 'px';
+    e.preventDefault();
   }
   function endDrag(){
     if(!draggingSlide||confirmed) return;
@@ -1187,7 +1166,6 @@
     const currentLeft=parseFloat(slideThumb.style.left||'4');
     const threshold=4+maxX*0.92;
     if(currentLeft>=threshold){
-      // Confirmed
       confirmed=true;
       slideThumb.style.left=(4+maxX)+'px';
       slideFill.style.width='calc(100% - 8px)';
@@ -1224,7 +1202,6 @@
     if (isDeposit){
       window.addCashbackDeposit({amount:pendingPayAmt,iso:nowIso,account:fromAcctNameEl.textContent});
     }else{
-      // merchant ensures chase icon rule
       window.addPayment({amount:pendingPayAmt,iso:nowIso,merchant:'CARD PAYMENT 7295',category:'payment'});
     }
 
@@ -1235,7 +1212,7 @@
     },3000);
   }
 
-  /* === Start Firebase sync (loads cloud over local if present) === */
+  /* === Start Firebase sync === */
   (async ()=>{ const db=await fbInit(); if(db){ await cloudLoad(); } })();
 
 })();
