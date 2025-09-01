@@ -210,8 +210,8 @@
   .acctRow .names .small{color:var(--muted);font-size:12px;margin-top:2px}
   .acctRow input{accent-color:#0a84ff;transform:scale(1.1)}
 
-  /* === NEW: ring labels + snap markers === */
-  .ringTag{fill:rgba(255,255,255,.85);font-weight:900;letter-spacing:2px;font-size:14px;text-transform:uppercase}
+  /* === Added: ring labels & markers === */
+  .ringTag{fill:rgba(255,255,255,.85);font-weight:900;letter-spacing:2px;font-size:14px;text-transform:uppercase;pointer-events:none}
   .snapDot{pointer-events:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
   .snapDot text{font-weight:900;font-size:14px;text-anchor:middle;dominant-baseline:central}
 </style>
@@ -357,43 +357,34 @@
             <linearGradient id="gradBlue" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#51c0ff"/><stop offset="100%" stop-color="#0a84ff"/></linearGradient>
             <linearGradient id="gradGreen" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#b8ffb9"/><stop offset="100%" stop-color="#34c759"/></linearGradient>
             <linearGradient id="gradGray"  x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#e9ecef"/><stop offset="100%" stop-color="#cfd8dc"/></linearGradient>
-            <!-- a full circle path for text-on-path -->
-            <path id="ringArc" d="M160 40
-              A120 120 0 1 1 159.99 40" />
+            <!-- full circle path for ring text -->
+            <path id="ringArc" d="M160 40 A120 120 0 1 1 159.99 40"/>
           </defs>
-
           <!-- Base ring -->
           <circle cx="160" cy="160" r="120" stroke="#e9e9ef" stroke-opacity=".65" stroke-width="26" fill="none"/>
-
-          <!-- Progress -->
+          <!-- Progress stroke -->
           <circle id="progress" cx="160" cy="160" r="120" stroke="url(#gradGray)" stroke-width="26" fill="none"
                   stroke-linecap="round" transform="rotate(-90 160 160)" />
-
-          <!-- Snap markers (min $40 and max) -->
+          <!-- Markers -->
           <g id="minMarker" class="snapDot" style="display:none">
             <circle r="13" fill="#ffd60a" stroke="#fff" stroke-width="3"></circle>
             <text y="1" fill="#000">!</text>
           </g>
           <g id="maxMarker" class="snapDot">
-            <circle r="13" fill="#34c759" stroke="#fff" stroke-width="3"></circle>
-            <text y="1" fill="#000">✓</text>
+            <circle r="10" fill="#2ecc71" stroke="#1b8f4a" stroke-width="2"></circle>
           </g>
-
-          <!-- Handle -->
+          <!-- Handle + check -->
           <circle id="handle" cx="160" cy="40" r="12" fill="#fff" stroke="#e6e6e6" stroke-width="2"/>
-
-          <!-- Ring labels (drawn ON the ring stroke) -->
+          <text id="handleCheck" x="160" y="40" fill="#000" font-size="14" font-weight="900" text-anchor="middle" dominant-baseline="central" style="display:none">✓</text>
+          <!-- Tags on ring -->
           <text class="ringTag" text-anchor="middle">
-            <textPath id="balText" href="#ringArc" startOffset="50%"></textPath>
+            <textPath id="balText" href="#ringArc" startOffset="0%"></textPath>
           </text>
           <text class="ringTag" text-anchor="middle">
-            <textPath href="#ringArc" startOffset="0%" id="noIntText">NO INTEREST CHARGES</textPath>
+            <textPath id="noIntText" href="#ringArc" startOffset="50%">NO INTEREST CHARGES</textPath>
           </text>
         </svg>
-
-        <div class="centerText" aria-live="polite" aria-atomic="true">
-          <div class="amt" id="amountLabel">$0.00</div>
-        </div>
+        <div class="centerText" aria-live="polite" aria-atomic="true"><div class="amt" id="amountLabel">$0.00</div></div>
       </div>
 
       <div class="info" id="payInfo">
@@ -650,8 +641,9 @@
   openPay.addEventListener('click',()=>{
     sheet.classList.add('active');
     MAX = Math.max(0, SETTINGS.cardBalance);
-    // start at $0.00 (not max) when opening
-    lockedAtMax=false; lockedAtMin=false; lastFrac=0; applyFromFraction(0,false);
+    lockedAtMax=false; lockedAtMin=false; lastFrac=0;
+    handle.setAttribute('fill','#fff'); handleCheck.style.display='none';
+    applyFromFraction(0,false);  // start at $0.00
     updateRingLabelsAndMarkers();
   });
   dim.addEventListener('click',closeSheet); closeSheetBtn.addEventListener('click',closeSheet);
@@ -659,17 +651,16 @@
 
   /* Slider (ring amount chooser) */
   const MIN=0.00; let MAX=SETTINGS.cardBalance; let THRESH=+(MAX*0.82).toFixed(2);
-  const MIN_PAYMENT=40; // $40 minimum
+  const MIN_PAYMENT=40;
   const ringWrap=document.getElementById('ringWrap'), ringSvg=document.getElementById('ringSvg'),
         progress=document.getElementById('progress'), handle=document.getElementById('handle'),
+        handleCheck=document.getElementById('handleCheck'),
         amountLabel=document.getElementById('amountLabel'), payBtn=document.getElementById('payNowBtn'),
-        info=document.getElementById('payInfo');
+        info=document.getElementById('payInfo'),
+        minMarker=document.getElementById('minMarker'), maxMarker=document.getElementById('maxMarker'),
+        balText=document.getElementById('balText');
   const R=120, C=2*Math.PI*R; progress.setAttribute('stroke-dasharray',`${C}`); progress.setAttribute('stroke-dashoffset',`${C}`);
   let amount=MIN, dragging=false, lastFrac=0, lockedAtMax=false, lockedAtMin=false;
-
-  const minMarker=document.getElementById('minMarker');
-  const maxMarker=document.getElementById('maxMarker');
-  const balText=document.getElementById('balText');
 
   function setUI(v){
     if(lockedAtMax||Math.abs(v-MAX)<0.01){progress.setAttribute('stroke','url(#gradBlue)');
@@ -687,41 +678,37 @@
   }
 
   function updateRingLabelsAndMarkers(){
-    // labels on ring
     balText.textContent = 'CARD BALANCE: ' + (MAX||0).toLocaleString(undefined,{style:'currency',currency:'USD'});
-    // max marker always at 100%
+    // position max marker at end of ring
     const pMax=xyOnCircle(0.999999);
     maxMarker.setAttribute('transform',`translate(${pMax.x},${pMax.y})`);
-    // min marker only if MAX > MIN_PAYMENT
+    // position min-payment marker if applicable
     if(MAX>MIN_PAYMENT){
       const frac=Math.max(0,Math.min(1, MIN_PAYMENT/Math.max(1,MAX)));
       const p=xyOnCircle(frac);
-      minMarker.style.display='';
-      minMarker.setAttribute('transform',`translate(${p.x},${p.y})`);
+      minMarker.style.display=''; minMarker.setAttribute('transform',`translate(${p.x},${p.y})`);
     }else{
       minMarker.style.display='none';
     }
   }
 
   function applyFromFraction(fracRaw,fromDrag=false){
-    let f=Math.max(0,Math.min(0.999999,fracRaw));
-    const delta=signedDelta(f,lastFrac);
+    let f=Math.max(0,Math.min(0.999999,fracRaw)); const delta=signedDelta(f,lastFrac);
 
-    // lock to MAX near the end
+    // Lock to max near the end
     const NEAR_MAX=0.995;
     if(lockedAtMax){ if(delta>0){f=1}else{lockedAtMax=false} }
-    if(!lockedAtMax && f>=NEAR_MAX){ lockedAtMax=true; f=1; }
+    if(!lockedAtMax&&f>=NEAR_MAX){lockedAtMax=true;f=1}
 
-    // lock to $40 snap point if visible
+    // Lock to minimum payment ($40) when balance supports it
     const minActive = MAX>MIN_PAYMENT;
-    const SNAP=0.025; // ~9 degrees snap window
+    const SNAP=0.025; // snap window along the ring
     const minFrac = minActive ? Math.max(0,Math.min(0.999999, MIN_PAYMENT/Math.max(1,MAX))) : null;
 
     if(minActive){
       if(lockedAtMin){
-        // unlock if dragging sufficiently away past the window
-        if(Math.abs(f - minFrac) > SNAP*1.2 && delta>0) { lockedAtMin=false; }
-        else { f=minFrac; }
+        if(Math.abs(f - minFrac) > SNAP*1.2 && delta>0){ lockedAtMin=false; }
+        else{ f=minFrac; }
       }else{
         if(Math.abs(f - minFrac) < SNAP){ lockedAtMin=true; f=minFrac; }
       }
@@ -729,32 +716,16 @@
       lockedAtMin=false;
     }
 
-    lastFrac=f;
-    const fracForAmount=(f===1)?1:f;
-    amount=+((MIN+fracForAmount*(MAX-MIN)).toFixed(2));
-
-    const dash=C*(1-fracForAmount);
-    progress.style.transition=fromDrag?'none':'stroke-dashoffset 220ms ease, stroke 220ms ease';
+    lastFrac=f; const fracForAmount=(f===1)?1:f; amount=+((MIN+fracForAmount*(MAX-MIN)).toFixed(2));
+    const dash=C*(1-fracForAmount); progress.style.transition=fromDrag?'none':'stroke-dashoffset 220ms ease, stroke 220ms ease';
     progress.setAttribute('stroke-dashoffset',`${dash}`);
 
     const p=xyOnCircle(fracForAmount);
     handle.style.transition=fromDrag?'none':'cx 180ms ease, cy 180ms ease';
-    handle.setAttribute('cx',p.x.toFixed(2));
-    handle.setAttribute('cy',p.y.toFixed(2));
+    handle.setAttribute('cx',p.x.toFixed(2)); handle.setAttribute('cy',p.y.toFixed(2));
+    handleCheck.setAttribute('x',p.x.toFixed(2)); handleCheck.setAttribute('y',p.y.toFixed(2));
 
-    amountLabel.textContent='$'+amount.toFixed(2);
-    payBtn.textContent='Pay $'+amount.toFixed(2);
-    setUI(amount);
-  }
-
-  const cardBalanceEl=document.getElementById('cardBalance'), availableEl=document.getElementById('availableBalance'),
-        cashbackEl=document.getElementById('cashback'); const fmtUSD=n=>n.toLocaleString(undefined,{style:'currency',currency:'USD'});
-  function applyBalances(){
-    cardBalanceEl.textContent=fmtUSD(SETTINGS.cardBalance); availableEl.textContent=`${fmtUSD(SETTINGS.availableBalance)} Available`;
-    if(cashbackEl) cashbackEl.textContent=fmtUSD(SETTINGS.cashback);
-    MAX=Math.max(0,SETTINGS.cardBalance); THRESH=+(MAX*0.82).toFixed(2);
-    lockedAtMax=false; lockedAtMin=false; lastFrac=0; applyFromFraction(0,false);
-    updateRingLabelsAndMarkers();
+    amountLabel.textContent='$'+amount.toFixed(2); payBtn.textContent='Pay $'+amount.toFixed(2); setUI(amount);
   }
 
   function fractionFromPointer(evt){
@@ -764,11 +735,14 @@
     const cx=rect.width/2, cy=rect.height/2; let theta=Math.atan2(y-cy,x-cx); theta+=Math.PI/2; if(theta<0) theta+=Math.PI*2;
     return theta/(Math.PI*2);
   }
-  const start=e=>{dragging=true;applyFromFraction(fractionFromPointer(e),true);e.preventDefault()}
+
+  // Dragging ONLY from the knob to prevent jump-to-max
+  const start=e=>{dragging=true; handle.setAttribute('fill','#fff'); handleCheck.style.display='none';
+    applyFromFraction(fractionFromPointer(e),true); e.preventDefault()}
   const move=e=>{if(!dragging)return;applyFromFraction(fractionFromPointer(e),true)}
-  const end=()=>{dragging=false}
+  const end=()=>{ if(!dragging) return; dragging=false; handle.setAttribute('fill','#34c759'); handleCheck.style.display=''; }
   handle.addEventListener('mousedown',start); handle.addEventListener('touchstart',start,{passive:false});
-  ringSvg.addEventListener('mousedown',start); ringSvg.addEventListener('touchstart',start,{passive:false});
+  // (INTENTIONALLY do not allow starting drag from the ring)
   window.addEventListener('mousemove',move,{passive:false}); window.addEventListener('touchmove',move,{passive:false});
   window.addEventListener('mouseup',end); window.addEventListener('touchend',end);
 
@@ -776,6 +750,18 @@
     const raw=prompt('Enter a payment amount (0.00–'+MAX.toFixed(2)+')', amount.toFixed(2));
     if(!raw) return; const n=parseFloat(raw.replace(/[^\d.]/g,'')); if(isFinite(n)){applyFromFraction(Math.max(0,Math.min(1,n/Math.max(1,MAX))),false)}
   });
+
+  const cardBalanceEl=document.getElementById('cardBalance'), availableEl=document.getElementById('availableBalance'),
+        cashbackEl=document.getElementById('cashback'); const fmtUSD=n=>n.toLocaleString(undefined,{style:'currency',currency:'USD'});
+  function applyBalances(){
+    cardBalanceEl.textContent=fmtUSD(SETTINGS.cardBalance); availableEl.textContent=`${fmtUSD(SETTINGS.availableBalance)} Available`;
+    if(cashbackEl) cashbackEl.textContent=fmtUSD(SETTINGS.cashback);
+    MAX=Math.max(0,SETTINGS.cardBalance); THRESH=+(MAX*0.82).toFixed(2);
+    lockedAtMax=false; lockedAtMin=false; lastFrac=0;
+    handle.setAttribute('fill','#fff'); handleCheck.style.display='none';
+    applyFromFraction(0,false);
+    updateRingLabelsAndMarkers();
+  }
 
   function applyBalanceDelta(cardDelta,availDelta){
     const nextCard=+(SETTINGS.cardBalance+cardDelta).toFixed(2);
@@ -803,7 +789,7 @@
     app.className = 'app pos-2';
     resetSlider();
   }
-  payBtn.addEventListener('click', ()=>{
+  document.getElementById('payNowBtn').addEventListener('click', ()=>{
     pendingPayAmt = amount;
     if (pendingPayAmt <= 0) return;
     confirmFlow = 'pay';
