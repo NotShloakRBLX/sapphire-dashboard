@@ -99,33 +99,96 @@
   openPay.addEventListener('click',()=>{
     sheet.classList.add('active');
     MAX = Math.max(0, SETTINGS.cardBalance);
+    updateMinDot(); // position/visibility for $40 dot
     if (MAX > 0) { lockedAtMax=false; lastFrac=0; applyFromFraction(1,false); }
   });
   dim.addEventListener('click',closeSheet); closeSheetBtn.addEventListener('click',closeSheet);
   document.addEventListener('keydown',e=>{if(e.key==='Escape') closeSheet()});
 
   /* Slider (ring amount chooser) */
-  const MIN=0.00; let MAX=SETTINGS.cardBalance; let THRESH=+(MAX*0.82).toFixed(2);
+  const MIN=0.00; let MAX=SETTINGS.cardBalance; let THRESH=+(MAX*0.82).toFixed(2); // retained, not used for color now
   const ringWrap=document.getElementById('ringWrap'), ringSvg=document.getElementById('ringSvg'),
         progress=document.getElementById('progress'), handle=document.getElementById('handle'),
         amountLabel=document.getElementById('amountLabel'), payBtn=document.getElementById('payNowBtn'),
-        info=document.getElementById('payInfo');
+        info=document.getElementById('payInfo'),
+        minDot=document.getElementById('minDot'),
+        centerBadge=document.getElementById('centerBadge');
   const R=120, C=2*Math.PI*R; progress.setAttribute('stroke-dasharray',`${C}`); progress.setAttribute('stroke-dashoffset',`${C}`);
   let amount=MIN, dragging=false, lastFrac=0, lockedAtMax=false;
 
+  /* === New: $40 minimum payment dot & visuals === */
+  const MIN_PAYMENT = 40.00;
+  const SNAP_EPS = 0.02; // fraction tolerance for snapping to dot (~7 degrees)
+  let fMin = null;       // fraction of circle for $40
+  let snappedAtMin = false;
+
+  function updateMinDot(){
+    snappedAtMin = false;
+    if (MAX >= MIN_PAYMENT){
+      fMin = MIN_PAYMENT / Math.max(1, MAX);
+      const ang = (-90 + 360*fMin) * Math.PI/180;
+      const dx = 160 + R * Math.cos(ang);
+      const dy = 160 + R * Math.sin(ang);
+      minDot.setAttribute('cx', dx.toFixed(2));
+      minDot.setAttribute('cy', dy.toFixed(2));
+      minDot.style.display = '';
+    }else{
+      fMin = null;
+      minDot.style.display = 'none';
+    }
+  }
+
+  function svgCheckIcon(){
+    return `<svg viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="#34c759" d="M9 16.2l-3.5-3.5-1.4 1.4L9 19l10-10-1.4-1.4z"/></svg>`;
+  }
+  function svgBlueStar(){
+    // tiny blue gradient star
+    return `<svg viewBox="0 0 24 24" aria-hidden="true">
+      <defs><linearGradient id="gStar" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#51c0ff"/><stop offset="100%" stop-color="#0a84ff"/></linearGradient></defs>
+      <path fill="url(#gStar)" d="M12 2.5l2.3 4.7 5.2.8-3.8 3.7.9 5.2-4.6-2.4-4.6 2.4.9-5.2L4.5 8l5.2-.8L12 2.5z"/></svg>`;
+  }
+  function setCenterBadge(frac){
+    centerBadge.classList.remove('show');
+    centerBadge.innerHTML = '';
+    if (lockedAtMax || Math.abs(frac-1) < 1e-6){
+      centerBadge.innerHTML = svgBlueStar();
+      centerBadge.classList.add('show');
+    } else if (fMin!=null && frac >= fMin - 1e-6){
+      centerBadge.innerHTML = svgCheckIcon();
+      centerBadge.classList.add('show');
+    }
+  }
+
+  // Color rules: < min -> yellow, >= min and < max -> green→blue gradient, at max -> blue
   function setUI(v){
-    if(lockedAtMax||Math.abs(v-MAX)<0.01){progress.setAttribute('stroke','url(#gradBlue)');
-      info.innerHTML='Pay Card Balance<small>Paying the total amount you’ve spent is a great way to clear your balance and stay ahead on your finances.</small>'}
-    else if(v>THRESH){progress.setAttribute('stroke','url(#gradGreen)');
-      info.innerHTML='Pay More Toward Your Balance<small>Paying more of your card balance helps free up available credit and reduces the amount to pay next month.</small>'}
-    else{progress.setAttribute('stroke','url(#gradGray)');
-      info.innerHTML='Pay Statement Amount<small>Paying your monthly balance helps avoid interest charges.</small>'}
+    const frac = (MAX>0)? Math.min(1, Math.max(0, v / MAX)) : 0;
+    if (lockedAtMax || Math.abs(frac-1) < 1e-6){
+      progress.setAttribute('stroke','url(#gradBlue)');
+    } else if (fMin!=null && frac < fMin){
+      progress.setAttribute('stroke','url(#gradYellow)');
+    } else {
+      progress.setAttribute('stroke','url(#gradGreenBlue)');
+    }
+    setCenterBadge(frac);
   }
   const signedDelta=(a,b)=>(((a-b)+1.5)%1)-0.5;
 
   function applyFromFraction(fracRaw,fromDrag=false){
     let f=Math.max(0,Math.min(0.999999,fracRaw)); const delta=signedDelta(f,lastFrac);
     if(lockedAtMax){ if(delta>0){f=1}else{lockedAtMax=false} }
+
+    // Snap to min payment dot while dragging, allow to pass once user moves beyond snap window
+    if (fromDrag && fMin!=null){
+      if (!snappedAtMin && Math.abs(f - fMin) <= SNAP_EPS){
+        f = fMin; snappedAtMin = true;
+      } else if (snappedAtMin && Math.abs(f - fMin) > SNAP_EPS){
+        // user moved past the snap window, release
+        snappedAtMin = false;
+      }
+    }
+
     const NEAR_MAX=0.995; if(!lockedAtMax&&f>=NEAR_MAX){lockedAtMax=true;f=1}
     lastFrac=f; const fracForAmount=(f===1)?1:f; amount=+((MIN+fracForAmount*(MAX-MIN)).toFixed(2));
     const dash=C*(1-fracForAmount); progress.style.transition=fromDrag?'none':'stroke-dashoffset 220ms ease, stroke 220ms ease';
@@ -140,7 +203,7 @@
   function applyBalances(){
     cardBalanceEl.textContent=fmtUSD(SETTINGS.cardBalance); availableEl.textContent=`${fmtUSD(SETTINGS.availableBalance)} Available`;
     if(cashbackEl) cashbackEl.textContent=fmtUSD(SETTINGS.cashback);
-    MAX=Math.max(0,SETTINGS.cardBalance); THRESH=+(MAX*0.82).toFixed(2); lockedAtMax=false; lastFrac=0; applyFromFraction(0,false);
+    MAX=Math.max(0,SETTINGS.cardBalance); THRESH=+(MAX*0.82).toFixed(2); lockedAtMax=false; lastFrac=0; updateMinDot(); applyFromFraction(0,false);
   }
 
   function fractionFromPointer(evt){
@@ -157,6 +220,16 @@
   ringSvg.addEventListener('mousedown',start); ringSvg.addEventListener('touchstart',start,{passive:false});
   window.addEventListener('mousemove',move,{passive:false}); window.addEventListener('touchmove',move,{passive:false});
   window.addEventListener('mouseup',end); window.addEventListener('touchend',end);
+
+  // Click/tap the minimum dot to jump to $40
+  function gotoMinDot(e){
+    if (fMin==null) return;
+    e.stopPropagation();
+    snappedAtMin = true;
+    applyFromFraction(fMin,false);
+  }
+  minDot.addEventListener('click', gotoMinDot);
+  minDot.addEventListener('touchstart', (e)=>{gotoMinDot(e); e.preventDefault();}, {passive:false});
 
   document.getElementById('otherAmountBtn').addEventListener('click',()=>{
     const raw=prompt('Enter a payment amount (0.00–'+MAX.toFixed(2)+')', amount.toFixed(2));
