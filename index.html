@@ -344,7 +344,7 @@
           <circle id="progress" cx="160" cy="160" r="120" stroke="url(#gradGreen)" stroke-width="26" fill="none"
                   stroke-linecap="round" transform="rotate(-90 160 160)" />
           <!-- min dot (bigger, plain) -->
-          <circle id="minDot" r="12" fill="#ffb400" stroke="#995f00" stroke-width="3" style="display:none" />
+          <circle id="minDot" r="9" fill="#ffb400" stroke="#995f00" stroke-width="3" style="display:none" />
           <!-- state icons on inner ring (no background) -->
           <g id="badge" class="ringBadge" style="display:none">
             <!-- green check -->
@@ -612,6 +612,13 @@
         minDot=document.getElementById('minDot'),
         badge=document.getElementById('badge'), badgeCheck=document.getElementById('badgeCheck'), badgeStar=document.getElementById('badgeStar');
   const R=120, C=2*Math.PI*R; progress.setAttribute('stroke-dasharray',`${C}`); progress.setAttribute('stroke-dashoffset',`${C}`);
+  const BADGE = {
+    box: 18,
+    inset: 17,
+    deg: 0,
+    nudgeCheck: { x: -1, y: 1 },
+    nudgeStar: { x: 0, y: -1 }
+  };
   let amount=MIN, dragging=false, lastFrac=0, lockedAtMax=false, lockedAtMin=false, minDue=40;
 
   function setUI(v){
@@ -646,12 +653,19 @@
   function hideBadge(){ badge.style.display='none'; }
 
   function placeBadge(frac){
-    // place slightly inside the ring on the same angle as the handle
-    const innerR = R - 17; // towards center, inside stroke
-    const ang=(-90+360*frac)*Math.PI/180;
-    const bx=160+innerR*Math.cos(ang), by=160+innerR*Math.sin(ang);
-    badge.setAttribute('transform',`translate(${bx-9},${by-9})`); // center ≈ 18px icon box
-  }
+  // pick which nudge to use based on visible icon
+  const usingStar  = (badgeStar.style.display !== 'none');
+  const n = usingStar ? BADGE.nudgeStar : BADGE.nudgeCheck;
+
+  const ang = (-90 + BADGE.deg + 360*frac) * Math.PI/180;
+  const rr  = R - BADGE.inset;                       // radius for badge placement
+  const bx  = 160 + rr * Math.cos(ang);
+  const by  = 160 + rr * Math.sin(ang);
+
+  badge.setAttribute('transform',
+    `translate(${(bx - BADGE.box/2 + n.x).toFixed(2)}, ${(by - BADGE.box/2 + n.y).toFixed(2)})`);
+}
+
 
   function signedDelta(a,b){ return (((a-b)+1.5)%1)-0.5; }
 
@@ -1173,3 +1187,4 @@
 </script>
 </body>
 </html>
+
