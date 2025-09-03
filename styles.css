@@ -202,3 +202,9 @@ body{margin:0;background:#000;color:var(--text);
 .acctRow .names .big{font-weight:800}
 .acctRow .names .small{color:var(--muted);font-size:12px;margin-top:2px}
 .acctRow input{accent-color:#0a84ff;transform:scale(1.1)}
+
+/* === New slider adornments === */
+.centerBadge{position:absolute;inset:auto;pointer-events:none;display:none}
+.centerBadge svg{width:22px;height:22px}
+.centerBadge.show{display:block}
+#minDot{cursor:pointer;filter:drop-shadow(0 0 4px rgba(0,0,0,.35))}
