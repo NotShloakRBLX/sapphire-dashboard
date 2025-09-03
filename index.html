@@ -361,6 +361,21 @@
 
           <!-- handle -->
           <circle id="handle" cx="160" cy="40" r="12" fill="#fff" stroke="#e6e6e6" stroke-width="2"/>
+
+<!-- state icons on inner ring (no background) -->
+          <g id="badge" class="ringBadge" style="display:none">
+            <!-- green check -->
+            <g id="badgeCheck" style="display:none">
+              <path d="M2 8 L7 13 L16 4" stroke="#34c759" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <path d="M2 8 L7 13 L16 4" stroke="#fff" stroke-width="5.8" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity=".25"/>
+            </g>
+            <!-- blue star -->
+            <g id="badgeStar" style="display:none">
+              <path d="M9.5 1.5l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.3-4.5 2.3.9-5L2.3 6.7l5-.7z"
+                    fill="url(#gradBlue)" stroke="#fff" stroke-width="1" />
+            </g>
+          </g>
+          
         </svg>
         <div class="centerText" aria-live="polite" aria-atomic="true"><div class="amt" id="amountLabel">$0.00</div></div>
       </div>
@@ -1187,5 +1202,6 @@
 </script>
 </body>
 </html>
+
 
 
