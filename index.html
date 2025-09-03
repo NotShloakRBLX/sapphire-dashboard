@@ -147,13 +147,26 @@
             <linearGradient id="gradBlue" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#51c0ff"/><stop offset="100%" stop-color="#0a84ff"/></linearGradient>
             <linearGradient id="gradGreen" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#b8ffb9"/><stop offset="100%" stop-color="#34c759"/></linearGradient>
             <linearGradient id="gradGray"  x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#e9ecef"/><stop offset="100%" stop-color="#cfd8dc"/></linearGradient>
+            <!-- NEW: yellow and green→blue gradients for progress -->
+            <linearGradient id="gradYellow" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#ffe680"/><stop offset="100%" stop-color="#ffb300"/>
+            </linearGradient>
+            <linearGradient id="gradGreenBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#34c759"/><stop offset="100%" stop-color="#0a84ff"/>
+            </linearGradient>
           </defs>
           <circle cx="160" cy="160" r="120" stroke="#e9e9ef" stroke-opacity=".65" stroke-width="26" fill="none"/>
-          <circle id="progress" cx="160" cy="160" r="120" stroke="url(#gradGray)" stroke-width="26" fill="none"
+          <circle id="progress" cx="160" cy="160" r="120" stroke="url(#gradGreenBlue)" stroke-width="26" fill="none"
                   stroke-linecap="round" transform="rotate(-90 160 160)" />
+          <!-- NEW: minimum payment dot (hidden when balance < $40) -->
+          <circle id="minDot" cx="160" cy="40" r="6" fill="#ffd84d" stroke="#fff" stroke-width="2" style="display:none"/>
           <circle id="handle" cx="160" cy="40" r="12" fill="#fff" stroke="#e6e6e6" stroke-width="2"/>
         </svg>
-        <div class="centerText" aria-live="polite" aria-atomic="true"><div class="amt" id="amountLabel">$0.00</div></div>
+        <div class="centerText" aria-live="polite" aria-atomic="true">
+          <div class="amt" id="amountLabel">$0.00</div>
+          <!-- NEW: center badge (check/star) -->
+          <div class="centerBadge" id="centerBadge"></div>
+        </div>
       </div>
 
       <div class="info" id="payInfo">
@@ -311,4 +324,3 @@
 <script src="app.js"></script>
 </body>
 </html>
-
