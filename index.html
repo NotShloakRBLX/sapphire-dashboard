@@ -681,25 +681,25 @@
   function hideBadge(){ badge.style.display='none'; }
 
   function placeBadge(frac){
+  // move the icon without touching anything else
+  const OFFSET_X = -14; // negative = LEFT, positive = RIGHT
+  const OFFSET_Y = 0;   // negative = UP,   positive = DOWN
+
   const usingStar = (badgeStar.style.display !== 'none');
   const n = usingStar ? BADGE.nudgeStar : BADGE.nudgeCheck;
 
-  const ang = (-90 + BADGE.deg + 360*frac) * Math.PI/180;
-  const rr  = R - BADGE.inset;
-  const bx  = 160 + rr * Math.cos(ang);
-  const by  = 160 + rr * Math.sin(ang);
+  const ang = (-90 + (BADGE.deg||0) + 360*frac) * Math.PI/180;
+  const rr  = R - (BADGE.inset||11);         // radial distance from center
+  const cx  = 160 + rr * Math.cos(ang);
+  const cy  = 160 + rr * Math.sin(ang);
 
-  const SHIFT_X = -9;
-  const SHIFT_Y = 0;
+  const b = (BADGE.box||18);                 // icon box size used for centering
+  const px = cx - b/2 + n.x + OFFSET_X;      // apply extra nudge
+  const py = cy - b/2 + n.y + OFFSET_Y;
 
-  // scale relative to original 18x18 drawing box
-  const s  = (BADGE.size || BADGE.box) / BADGE.box;
-  const tx = bx - (BADGE.box * s)/2 + n.x;
-  const ty = by - (BADGE.box * s)/2 + n.y;
-
-  // translate first, then scale the icon group
-  badge.setAttribute('transform', `translate(${tx.toFixed(2)}, ${ty.toFixed(2)}) scale(${s})`);
+  badge.setAttribute('transform', `translate(${px.toFixed(2)}, ${py.toFixed(2)})`);
 }
+
 
 
   function signedDelta(a,b){ return (((a-b)+1.5)%1)-0.5; }
@@ -1259,6 +1259,7 @@
 </script>
 </body>
 </html>
+
 
 
 
