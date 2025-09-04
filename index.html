@@ -680,25 +680,26 @@
   }
   function hideBadge(){ badge.style.display='none'; }
 
-  function placeBadge(frac){
-  // move the icon without touching anything else
-  const OFFSET_X = -9; // negative = LEFT, positive = RIGHT
-  const OFFSET_Y = 5;   // negative = UP,   positive = DOWN
-
+  function placeBadge(/* frac is ignored on purpose */){
+  // Keep the badge fixed at the center of the ring
+  const CENTER = 160;                // viewBox center for 320×320 SVG
+  const b = (BADGE.box || 18);       // icon box size
   const usingStar = (badgeStar.style.display !== 'none');
   const n = usingStar ? BADGE.nudgeStar : BADGE.nudgeCheck;
 
-  const ang = (-90 + (BADGE.deg||0) + 360*frac) * Math.PI/180;
-  const rr  = R - (BADGE.inset||11);         // radial distance from center
-  const cx  = 160 + rr * Math.cos(ang);
-  const cy  = 160 + rr * Math.sin(ang);
+  // Optional tiny nudges if you want to fine-tune position
+  const OFFSET_X = 0;  // negative = left,  positive = right
+  const OFFSET_Y = 0;  // negative = up,    positive = down
 
-  const b = (BADGE.box||18);                 // icon box size used for centering
-  const px = cx - b/2 + n.x + OFFSET_X;      // apply extra nudge
-  const py = cy - b/2 + n.y + OFFSET_Y;
+  const px = CENTER - b/2 + (n?.x || 0) + OFFSET_X;
+  const py = CENTER - b/2 + (n?.y || 0) + OFFSET_Y;
+
+  // (optional) uncomment for a quick snap animation
+  // badge.style.transition = 'transform 140ms ease';
 
   badge.setAttribute('transform', `translate(${px.toFixed(2)}, ${py.toFixed(2)})`);
 }
+
 
 
 
@@ -1259,6 +1260,7 @@
 </script>
 </body>
 </html>
+
 
 
 
