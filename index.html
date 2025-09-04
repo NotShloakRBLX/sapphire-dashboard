@@ -689,6 +689,9 @@
   const bx  = 160 + rr * Math.cos(ang);
   const by  = 160 + rr * Math.sin(ang);
 
+  const SHIFT_X = -4;
+  const SHIFT_Y = 0;
+
   // scale relative to original 18x18 drawing box
   const s  = (BADGE.size || BADGE.box) / BADGE.box;
   const tx = bx - (BADGE.box * s)/2 + n.x;
@@ -1256,6 +1259,7 @@
 </script>
 </body>
 </html>
+
 
 
 
