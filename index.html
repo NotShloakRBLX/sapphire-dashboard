@@ -202,23 +202,6 @@
 .ringBadge, #badge, #badgeCheck, #badgeStar { display: none !important; }
   
 </style>
-
-<!-- Firebase (compat) -->
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-
-<script>
-  window.firebaseConfig = {
-    apiKey: "AIzaSyCVd0ORxpR20e5uq3dzW2_d3zQ50J-PhS4",
-    authDomain: "sapphire-reserve-e3b41.firebaseapp.com",
-    projectId: "sapphire-reserve-e3b41",
-    storageBucket: "sapphire-reserve-e3b41.firebasestorage.app",
-    messagingSenderId: "373486960680",
-    appId: "1:373486960680:web:e0c259af890a4ed7ebb51d"
-  };
-  window.CLOUD_DOC_ID = "sapphire-reserve";
-</script>
 </head>
 <body>
 <div class="app pos-0" id="app">
@@ -549,46 +532,8 @@
 
 <script>
 (()=> {
-  /* Firebase helpers */
-  let cloudSaveDebounced = ()=>{};
-  async function fbInit(){
-    try{
-      if(!window.firebaseConfig || !firebase?.initializeApp) return null;
-      if(!firebase.apps.length){ firebase.initializeApp(window.firebaseConfig); }
-      try{ await firebase.auth().signInAnonymously(); }catch(e){}
-      const db=firebase.firestore();
-      try{ await db.enablePersistence({synchronizeTabs:true}); }catch(e){}
-      window.db=db; return db;
-    }catch(e){ return null; }
-  }
-  async function cloudDocRef(){
-    if(!window.db) return null;
-    let id=(window.CLOUD_DOC_ID && String(window.CLOUD_DOC_ID).trim()) || "";
-    try{ if(!firebase.auth().currentUser) await firebase.auth().signInAnonymously(); }catch(e){}
-    if(!id) id = firebase.auth().currentUser?.uid || "";
-    if(!id) return null;
-    window.CLOUD_DOC_PATH=`wallet/${id}`;
-    return window.db.doc(window.CLOUD_DOC_PATH);
-  }
-  async function cloudLoad(){
-    const ref=await cloudDocRef(); if(!ref) return;
-    const snap=await ref.get();
-    if(snap.exists){
-      const data=snap.data()||{};
-      if(data.settings){ SETTINGS={...SETTINGS, ...data.settings, version: SETTINGS.version}; saveBalances(); applyBalances(); }
-      if(Array.isArray(data.transactions)){ transactions=data.transactions.slice(); saveTransactions(); renderTransactions(); refreshCashbackTile(); }
-    }else{
-      await ref.set({ settings: SETTINGS, transactions: transactions, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
-    }
-  }
-  async function cloudSave(){
-    try{
-      const ref=await cloudDocRef(); if(!ref) return;
-      await ref.set({ settings: SETTINGS, transactions: transactions, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, {merge:true});
-    }catch(e){}
-  }
-  function debounce(fn,ms){let t;return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);} }
-  cloudSaveDebounced = debounce(cloudSave, 600);
+  /* Cloud disabled: localStorage only */
+  const cloudSaveDebounced = ()=>{};
 
   /* App setup */
   const app=document.getElementById('app');
@@ -1256,20 +1201,10 @@
     },1200);
   }
 
-  /* Start */
-  (async ()=>{ const db=await fbInit(); if(db){ await cloudLoad(); } applyBalances(); })();
+  /* Start (local-only) */
+  applyBalances();
 
 })();
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
