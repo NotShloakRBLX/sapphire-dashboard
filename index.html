@@ -200,6 +200,14 @@
   .eyeBtn svg{display:block;width:22px;height:22px}
 
 .ringBadge, #badge, #badgeCheck, #badgeStar { display: none !important; }
+
+.dueTile .dueVal.oneLine .num{
+  font-weight:900;
+  font-size: clamp(22px, 6.2vw, 32px);
+  letter-spacing:-.2px;
+  line-height:1.1;
+}
+.dueTile .dueVal.oneLine .unit{ display:none; }
   
 </style>
 </head>
@@ -242,7 +250,7 @@
 
           <div class="tile dueTile dueTall" id="dueTile">
             <p class="dueHeader">Payment Due In</p>
-            <div class="dueVal"><span class="num">Tomorrow</span><span class="unit"></span></div>
+            <div class="dueVal oneLine"><span class="num">Tomorrow</span></div>
             <button class="payBubble" id="openPay">Pay</button>
           </div>
 
@@ -1208,4 +1216,5 @@
 </script>
 </body>
 </html>
+
 
