@@ -208,6 +208,21 @@
   line-height:1.1;
 }
 .dueTile .dueVal.oneLine .unit{ display:none; }
+
+  /* Clickable tile + right-side icon */
+.tile.link{
+  display:flex;                 /* keep the original look but allow a right icon */
+  align-items:center;
+  gap:12px;
+  text-decoration:none;         /* anchor without underline */
+  color:inherit;                /* keep light text */
+  cursor:pointer;
+}
+.tile.link .grow{ flex:1 }      /* text area takes remaining space */
+.tile.link .rightIcon{
+  width:26px; height:26px;      /* adjust as you like */
+  flex:0 0 auto; opacity:.9;
+}
   
 </style>
 </head>
@@ -258,7 +273,13 @@
             <div class="kb">Cashback</div><p class="val" id="cashback">$0.00</p>
           </div>
 
-          <div class="tile full"><div class="kb">Savings Account</div><div class="val">$756.34</div></div>
+          <a class="tile full link" id="savingsTile" href="https://notshloakrblx.github.io/savings-checking-dashboard" aria-label="Open Savings Account">
+  <div class="grow">
+    <div class="kb">Savings Account</div>
+    <div class="val">$783.11</div>
+  </div>
+  <img class="rightIcon" src="./bank-icon.png" alt="">
+</a>
 
           <div class="tile full" id="txnsTile">
             <div class="kb" style="margin-bottom:8px">Latest Card Transactions</div>
@@ -1216,6 +1237,7 @@
 </script>
 </body>
 </html>
+
 
 
 
