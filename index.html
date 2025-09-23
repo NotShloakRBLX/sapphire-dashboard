@@ -1056,6 +1056,18 @@
         cbClose1=document.getElementById('cbClose1'),cbClose2=document.getElementById('cbClose2'),
         cbDepositBtn=document.getElementById('cbDepositBtn'),cbSubmit=document.getElementById('cbSubmit'),
         cbCancel=document.getElementById('cbCancel'),cbAcct=document.getElementById('cbAcct'),cbRouting=document.getElementById('cbRouting');
+  // Make cashback deposit use the same confirmation slider flow as card payments
+cbDepositBtn.addEventListener('click', () => {
+  // Make sure we have the latest max and a sane amount
+  cbSetMax();
+  pendingPayAmt = Math.max(0, Math.min(cbAmount, CB_MAX));
+  if (pendingPayAmt <= 0) return;
+
+  // Switch the confirmation flow and open the Pay page
+  confirmFlow = 'cashback';
+  openPayPage(); // this automatically closes the cashback sheet and updates labels
+});
+  
   function openCbSheet(){cbViews.style.transform='translateX(0%)'; cbAmount=0; cbLockedAtMax=false; cbLastFrac=0; cbApplyFromFraction(0,false); cbSheet.classList.add('active')}
   function closeCbSheet(){cbSheet.classList.remove('active')}
   cashbackTile.addEventListener('click',openCbSheet); cbDim.addEventListener('click',closeCbSheet);
@@ -1242,6 +1254,7 @@
 </script>
 </body>
 </html>
+
 
 
 
