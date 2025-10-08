@@ -292,13 +292,13 @@
             <div class="kb">Cashback</div><p class="val" id="cashback">$0.00</p>
           </div>
 
-          <a class="tile full link" id="savingsTile" href="https://notshloakrblx.github.io/savings-checking-dashboard" aria-label="Open Savings Account">
+          <div class="tile full link" id="savingsTile" role="group" aria-label="Remaining statement balance">
   <div class="grow">
-    <div class="kb">Savings Account</div>
-    <div class="val">$686.13</div>
+    <div class="kb">Remaining Statement Balance</div>
+    <div class="val" id="remainingStmt">$0.00</div>
   </div>
   <img class="rightIcon" src="./bank-icon.png" alt="">
-</a>
+</div>
 
           <div class="tile full" id="txnsTile">
             <div class="kb" style="margin-bottom:8px">Latest Card Transactions</div>
@@ -588,6 +588,7 @@
   document.getElementById('backTxn').addEventListener('click', ()=>{ app.className='app pos-0'; });
 
   const SETTINGS_DEFAULT = {version:9,cardBalance:69.45,availableBalance:255.55,cashback:0.00,
+    remainingStatement: 0.00,
     cardNumber:'5278 6812 3931 7295',cardExpiry:'07/30',cardCvv:'528'};
 
   function loadBalances(){
@@ -596,10 +597,11 @@
       if(raw){
         const s = JSON.parse(raw);
         return {...SETTINGS_DEFAULT, ...s,
-          cardBalance: isFinite(+s.cardBalance) ? +s.cardBalance : SETTINGS_DEFAULT.cardBalance,
-          availableBalance: isFinite(+s.availableBalance) ? +s.availableBalance : SETTINGS_DEFAULT.availableBalance,
-          cashback: isFinite(+s.cashback) ? +s.cashback : SETTINGS_DEFAULT.cashback,
-          version: SETTINGS_DEFAULT.version };
+  cardBalance: isFinite(+s.cardBalance) ? +s.cardBalance : SETTINGS_DEFAULT.cardBalance,
+  availableBalance: isFinite(+s.availableBalance) ? +s.availableBalance : SETTINGS_DEFAULT.availableBalance,
+  cashback: isFinite(+s.cashback) ? +s.cashback : SETTINGS_DEFAULT.cashback,
+  remainingStatement: isFinite(+s.remainingStatement) ? +s.remainingStatement : SETTINGS_DEFAULT.remainingStatement,
+  version: SETTINGS_DEFAULT.version };
       }
     }catch(e){}
     return {...SETTINGS_DEFAULT};
@@ -775,16 +777,19 @@
     if(!raw) return; const n=parseFloat(raw.replace(/[^\d.]/g,'')); if(isFinite(n)){applyFromFraction(Math.max(0,Math.min(1,n/Math.max(1,MAX))),false)}
   });
 
-  const cardBalanceEl=document.getElementById('cardBalance'), availableEl=document.getElementById('availableBalance'),
-        cashbackEl=document.getElementById('cashback'); const fmtUSD=n=>n.toLocaleString(undefined,{style:'currency',currency:'USD'});
+ const cardBalanceEl=document.getElementById('cardBalance'), availableEl=document.getElementById('availableBalance'),
+      cashbackEl=document.getElementById('cashback'), remainingEl=document.getElementById('remainingStmt');
+const fmtUSD=n=>n.toLocaleString(undefined,{style:'currency',currency:'USD'});
   function applyBalances(){
-    cardBalanceEl.textContent=fmtUSD(SETTINGS.cardBalance); availableEl.textContent=`${fmtUSD(SETTINGS.availableBalance)} Available`;
-    if(cashbackEl) cashbackEl.textContent=fmtUSD(SETTINGS.cashback);
-    MAX=Math.max(0,SETTINGS.cardBalance); THRESH=+(MAX*0.82).toFixed(2); lockedAtMax=false; lockedAtMin=false; lastFrac=0;
-    minDue = MAX>0 ? Math.min(40, MAX) : 0;
-    applyFromFraction(Math.min(1, (minDue||0)/Math.max(1,MAX)), false);
-    showAndPlaceMinDot();
-  }
+  cardBalanceEl.textContent=fmtUSD(SETTINGS.cardBalance); availableEl.textContent=`${fmtUSD(SETTINGS.availableBalance)} Available`;
+  if(cashbackEl) cashbackEl.textContent=fmtUSD(SETTINGS.cashback);
+  if(remainingEl) remainingEl.textContent = fmtUSD(SETTINGS.remainingStatement || 0);
+
+  MAX=Math.max(0,SETTINGS.cardBalance); THRESH=+(MAX*0.82).toFixed(2); lockedAtMax=false; lockedAtMin=false; lastFrac=0;
+  minDue = MAX>0 ? Math.min(40, MAX) : 0;
+  applyFromFraction(Math.min(1, (minDue||0)/Math.max(1,MAX)), false);
+  showAndPlaceMinDot();
+}
 
   function applyBalanceDelta(cardDelta,availDelta){
     const nextCard=+(SETTINGS.cardBalance+cardDelta).toFixed(2);
@@ -961,10 +966,34 @@
     const amt=Number(amount);transactions.push({id:rid(),kind:'refund',merchant,amount:amt,iso,status,card,category,cashback:0});
     saveTransactions();renderTransactions();applyBalanceDelta(-amt,+amt);
   };
-  window.addPayment=({amount,iso,card='Sapphire Reserve',merchant='Card Payment',status='Posted',category='payment'})=>{
-    const amt=Number(amount);transactions.push({id:rid(),kind:'payment',merchant,amount:amt,iso,status,card,category,cashback:0});
-    saveTransactions();renderTransactions();applyBalanceDelta(-amt,+amt);
-  };
+  window.addPayment = ({amount, iso, card='Sapphire Reserve', merchant='Card Payment', status='Posted', category='payment'}) => {
+  const amt = Number(amount);
+  const prevCard = SETTINGS.cardBalance;         // capture the balance before applying payment
+  const MIN_PARTIAL = 40;                        // rule threshold
+
+  // record the txn
+  transactions.push({ id: rid(), kind: 'payment', merchant, amount: amt, iso, status, card, category, cashback: 0 });
+  saveTransactions();
+  renderTransactions();
+
+  // apply the normal balance math first (card - amt, available + amt)
+  applyBalanceDelta(-amt, +amt);
+
+  // if partial (>= $40) and less than full balance, transfer remainder to Remaining Statement
+  if (prevCard > 0 && amt >= MIN_PARTIAL - 0.005 && amt < prevCard - 0.005) {
+    const remainder = +(prevCard - amt).toFixed(2);
+
+    // move the unpaid portion to the Remaining Statement tile
+    SETTINGS.remainingStatement = +(remainder).toFixed(2);
+
+    // set current card balance to zero (new purchases will build here fresh)
+    SETTINGS.cardBalance = 0;
+
+    // available balance was already increased by the payment above; no extra change here
+    saveBalances();
+    applyBalances();
+  }
+};
   window.addCashbackDeposit=({amount,iso,card='Sapphire Reserve',status='Posted',account,routing})=>{
     transactions.push({id:rid(),kind:'cashback_deposit',merchant:'Cashback deposited',amount:Number(amount),iso,status,card,category:'payment',cashback:0,cbv:currentCbv(),account,routing,acctLast4:(account||'').slice(-4)});
     saveTransactions();renderTransactions();
@@ -1268,6 +1297,7 @@ cbDepositBtn.addEventListener('click', () => {
 </script>
 </body>
 </html>
+
 
 
 
